@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel de Pendências - Databricks</title>
+<style>
+/* Layout: barra de topo azul-escura com marca, abas e ações; abaixo, conteúdo em cartões sobre fundo cinza-azulado */
+:root{
+  --navy:#0B2540; --navy-2:#123456; --bg:#EDF1F5; --surface:#FFFFFF; --sunk:#F3F6F9; --ink:#14212B; --muted:#5E6E7B; --line:#DFE6EC; --line-2:#EAEFF3;
+  --accent:#0B6E99; --accent-2:#0E86B8; --accent-ink:#FFFFFF; --accent-soft:#E2F1F8;
+  --red:#C2362B; --red-soft:#FCE4E1; --orange:#D9711C; --orange-soft:#FDEBDB; --amber:#A66B00; --amber-soft:#FFF1CC; --green:#23824F; --green-soft:#DDF3E6; --violet:#7A4FD6; --violet-soft:#EEE7FC;
+  --shadow:0 1px 2px rgba(11,37,64,.06),0 6px 18px rgba(11,37,64,.05);
+  --f-display:"Bahnschrift","Segoe UI Semibold","Segoe UI",system-ui,sans-serif;
+  --f-body:"Segoe UI","Segoe UI Variable Text",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45}
+[hidden]{display:none!important}
+/* ---- barra de topo ---- */
+.appbar{background:linear-gradient(180deg,var(--navy) 0%,var(--navy-2) 100%);color:#fff;box-shadow:0 2px 10px rgba(11,37,64,.25);position:sticky;top:0;z-index:20}
+.appbar-in{max-width:1400px;margin:0 auto;padding:12px 24px 0;display:grid;grid-template-columns:auto 1fr auto;gap:8px 24px;align-items:center}
+.brand{display:flex;align-items:center;gap:12px;padding-bottom:12px;min-width:0}
+.logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#1C9BD1,#0B6E99);display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.brand-t{font-family:var(--f-display);font-size:20px;font-weight:600;letter-spacing:.01em;line-height:1.1}
+.brand-s{font-size:12.5px;color:#A9BCCD;margin-top:2px}
+.brand-s b{color:#fff;font-weight:600}
+.tabs{display:flex;gap:2px;align-self:end;justify-self:center}
+.tab{border:0;background:none;color:#A9BCCD;font:600 14px var(--f-body);padding:12px 18px 13px;border-radius:8px 8px 0 0;cursor:pointer;display:flex;gap:8px;align-items:center}
+.tab:hover{color:#fff;background:rgba(255,255,255,.06)}
+.tab[aria-selected="true"]{background:var(--bg);color:var(--ink)}
+.tab svg{opacity:.85}
+.actions{display:flex;gap:8px;align-items:center;padding-bottom:12px}
+button,.btn{font:600 13.5px/1 var(--f-body);border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;position:relative;transition:background .15s,border-color .15s,box-shadow .15s}
+button:hover,.btn:hover{border-color:var(--accent);box-shadow:0 1px 4px rgba(11,110,153,.15)}
+.primary{background:linear-gradient(180deg,var(--accent-2),var(--accent))!important;color:#fff!important;border-color:var(--accent)!important}
+.appbar .ghost{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.22)}
+.appbar .ghost:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.4)}
+.appbar .primary{background:linear-gradient(180deg,#22A7DE,#1287BC)!important;border-color:#22A7DE!important}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible,.btn:focus-within{outline:2px solid var(--accent-2);outline-offset:2px}
+.btn input{position:absolute;width:1px;height:1px;opacity:0}
+/* ---- conteúdo ---- */
+.wrap{max-width:1400px;margin:0 auto;padding:18px 24px 48px;display:flex;flex-direction:column;gap:16px}
+h2{font-family:var(--f-display);margin:0;font-size:17px;font-weight:600;letter-spacing:.01em;display:flex;align-items:center;gap:8px}
+h2 .ico{width:28px;height:28px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.lbl{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+.conn{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;box-shadow:var(--shadow)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--muted);flex:none;box-shadow:0 0 0 3px rgba(94,110,123,.15)}
+.dot.on{background:var(--green);box-shadow:0 0 0 3px rgba(35,130,79,.18)} .dot.warn{background:var(--amber);box-shadow:0 0 0 3px rgba(166,107,0,.18)} .dot.off{background:var(--red);box-shadow:0 0 0 3px rgba(194,54,43,.18)}
+.conn .txt{flex:1 1 320px;min-width:0;font-size:13px}
+.conn input{width:150px}
+.conn button{padding:8px 12px;font-size:13px}
+.status{font-size:13px;color:var(--accent);min-height:0;font-weight:600}
+.status:empty{display:none}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:14px;min-width:0;box-shadow:var(--shadow)}
+.panel-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.intro{border-left:4px solid var(--accent)}
+.intro ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;max-width:80ch}
+.view{display:flex;flex-direction:column;gap:16px}
+/* ---- KPIs ---- */
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px 13px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--tone,var(--line))}
+.kpi .top{display:flex;justify-content:space-between;align-items:center}
+.kpi .ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--tone-soft,var(--sunk));color:var(--tone,var(--muted))}
+.kpi b{font-family:var(--f-display);font-size:34px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi small{color:var(--muted);font-size:12px}
+.kpi.hl{background:linear-gradient(135deg,#0E86B8,#0B5F86);border-color:transparent;color:#fff}
+.kpi.hl::before{display:none}
+.kpi.hl .lbl,.kpi.hl small{color:rgba(255,255,255,.82)}
+.kpi.hl .ic{background:rgba(255,255,255,.16);color:#fff}
+.delta{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 7px;background:var(--sunk);color:var(--muted)}
+.delta.up{background:var(--red-soft);color:var(--red)} .delta.down{background:var(--green-soft);color:var(--green)}
+/* ---- tabelas ---- */
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.45fr);gap:16px}
+.scroll{overflow-x:auto;min-width:0}
+table{border-collapse:separate;border-spacing:0;width:100%}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line-2);vertical-align:middle}
+th{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap;background:var(--sunk)}
+th:first-child{border-top-left-radius:8px} th:last-child{border-top-right-radius:8px}
+tbody tr:hover td{background:#F7FAFC}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+tr.total td{font-weight:700;border-top:2px solid var(--ink);border-bottom:0;background:var(--surface)}
+.up{color:var(--red)} .down{color:var(--green)}
+.bar{height:8px;border-radius:999px;background:var(--line-2);overflow:hidden;min-width:60px;flex:1}
+.bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent-2),var(--accent))}
+.cdot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:8px;background:var(--c,var(--muted));vertical-align:0}
+/* ---- importação ---- */
+.imp{border:2px solid var(--accent-2)}
+.slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.slot{display:flex;gap:14px;align-items:flex-start;border:2px dashed #BFD3DF;border-radius:12px;padding:16px;cursor:pointer;background:var(--sunk);position:relative;transition:border-color .15s,background .15s}
+.slot:hover{border-color:var(--accent-2);background:#F2F8FB}
+.slot.ok{border-style:solid;border-color:var(--green);background:var(--green-soft)}
+.slot input{position:absolute;width:1px;height:1px;opacity:0}
+.sn1{width:32px;height:32px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+.slot.ok .sn1{background:var(--green)}
+.st1{display:flex;flex-direction:column;gap:3px;min-width:0}
+.st1 small{color:var(--muted);font-size:12.5px}
+.st1 em{font-style:normal;font-weight:600;color:var(--accent);font-size:13px;margin-top:4px;word-break:break-all}
+.slot.ok .st1 em{color:var(--green)}
+.cruz{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ctile{border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;background:#fff;border-top:4px solid var(--c)}
+.ctile b{font-family:var(--f-display);font-size:30px;font-weight:600;line-height:1.1;color:var(--c);font-variant-numeric:tabular-nums}
+.ctile .t{font-weight:700;font-size:13.5px}
+.ctile small{color:var(--muted);font-size:12px}
+.tag.rede{background:var(--green-soft);color:var(--green)}
+@media (max-width:900px){.slots,.cruz{grid-template-columns:minmax(0,1fr)}}
+/* ---- apresentação do painel ---- */
+.polos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.pcard{border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(180deg,#FBFDFE,#fff)}
+.pcard .ph{display:flex;justify-content:space-between;align-items:center}
+.pcard .pn{font-family:var(--f-display);font-size:17px;font-weight:600}
+.pcard .atc{font-size:11px;font-weight:700;color:var(--muted);background:var(--sunk);border-radius:999px;padding:2px 8px}
+.pcard .pv{display:flex;align-items:baseline;gap:10px}
+.pcard .pv b{font-family:var(--f-display);font-size:32px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.pcard .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.prog{height:8px;border-radius:999px;background:var(--line-2);overflow:hidden}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,#2FA36B,#23824F);border-radius:999px}
+.seg{display:flex;height:10px;border-radius:999px;overflow:hidden;background:var(--line-2);gap:2px}
+.seg i{display:block;height:100%}
+.seg.big{height:16px;border-radius:8px}
+.segleg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.segleg span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;background:var(--c)}
+.frows{display:flex;flex-direction:column;gap:2px}
+.frow{display:grid;grid-template-columns:110px minmax(0,1fr) 54px 92px;gap:12px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line-2)}
+.frow:last-child{border-bottom:0}
+.frow .fb{height:12px;border-radius:999px;background:var(--line-2);overflow:hidden}
+.frow .fb i{display:block;height:100%;border-radius:999px}
+.frow .fv{font-family:var(--f-display);font-size:19px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.frow .fd{text-align:right;font-size:12px;color:var(--muted);display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.srow{display:grid;grid-template-columns:130px minmax(0,1fr) 50px 70px 46px;gap:12px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line-2)}
+.srow .sn{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow .sb{display:flex;height:14px;border-radius:5px;overflow:hidden;background:transparent}
+.srow .sb i{display:block;height:100%}
+.srow .sv{font-family:var(--f-display);font-size:18px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.srow .sp{text-align:right;font-weight:700;font-size:12.5px;color:var(--green)}
+.vbox{margin-top:12px;background:var(--sunk);border-radius:10px;padding:12px 14px}
+.vrow{display:flex;gap:12px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.vrow:last-child{border-bottom:0}
+.vd{font-family:var(--f-display);font-size:18px;font-weight:600;color:var(--red);min-width:58px;text-align:right}
+.vd small{font-size:11px;color:var(--muted);font-weight:400;margin-left:3px}
+.va{display:flex;flex-direction:column;min-width:0}
+.va b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.va small{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srow.head span{white-space:nowrap}
+.srow.head{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-top:0}
+.srow.tot{border-bottom:0;border-top:2px solid var(--ink);margin-top:2px}
+.callout{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--accent-soft);border:1px solid #C5E3F0;border-radius:10px;padding:10px 14px;margin-top:10px;color:var(--accent);font-weight:600}
+.callout b{font-family:var(--f-display);font-size:20px}
+details.hist summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:13px;padding:4px 0}
+details.hist[open] summary{margin-bottom:8px}
+@media (max-width:900px){.polos{grid-template-columns:minmax(0,1fr)}.srow{grid-template-columns:110px minmax(0,1fr) 44px 64px}.srow .sp{display:none}}
+/* ---- lista de OS ---- */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;background:var(--surface);border:1px solid var(--line)}
+.chip .c{font-variant-numeric:tabular-nums;background:var(--sunk);color:var(--muted);border-radius:999px;padding:1px 7px;font-size:11.5px;font-weight:700;margin-left:2px}
+.chip[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.chip[aria-pressed="true"] .c{background:rgba(255,255,255,.18);color:#fff}
+.chip.warn{border-color:var(--red);color:var(--red)}
+.chip.warn .c{background:var(--red-soft);color:var(--red)}
+.chip.warn[aria-pressed="true"]{color:#fff}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;width:100%}
+.filters select{font:600 13.5px var(--f-body);padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.ativos{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.ativos .fa{background:var(--navy);color:#fff;border-radius:999px;padding:4px 10px;font-weight:600;font-size:12.5px}
+.ativos button{padding:5px 10px;font-size:12.5px}
+tr.dupE td{background:#F3EEFF!important} tr.dupE td:first-child{box-shadow:inset 4px 0 0 #8B5CF6}
+.tag.de{background:#8B5CF6;color:#fff}
+tr.grp td{background:var(--navy)!important;color:#fff;font-size:12.5px;padding:8px 12px;position:sticky;top:37px;z-index:1}
+tr.grp td b{font-family:var(--f-display);font-size:14px;margin-right:6px}
+tr.grp .gm{opacity:.85}
+/* ---- itens clicáveis do painel ---- */
+#v-painel [data-go]{cursor:pointer;transition:background .12s,box-shadow .12s,transform .12s}
+#v-painel .kpi[data-go]:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(11,37,64,.12)}
+#v-painel .pcard:hover{border-color:var(--accent-2);box-shadow:0 0 0 3px var(--accent-soft)}
+#v-painel .frow[data-go]:hover,#v-painel .srow[data-go]:hover,#v-painel .vrow[data-go]:hover{background:#F2F8FB;border-radius:8px}
+#v-painel .seg i[data-go]:hover{filter:brightness(1.12)}
+#v-painel .callout[data-go]:hover{background:#D3EAF4}
+.go{font-size:11.5px;color:var(--accent);font-weight:700;white-space:nowrap}
+.dica{font-size:12px;color:var(--accent);font-weight:600}
+.search{flex:1 1 280px;position:relative;min-width:0}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted)}
+input[type=search],input[type=date],input[type=text],input[type=password],input.trat{font:14px var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+input[type=search]{width:100%;padding-left:34px;background:var(--sunk)}
+input[type=search]:focus{background:var(--surface)}
+label.ck{display:flex;gap:6px;align-items:center;color:var(--muted);font-weight:600;font-size:13px}
+.list{max-height:68vh;overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface);box-shadow:var(--shadow)}
+.list table{min-width:1040px;width:100%}
+.list td.tss{min-width:140px;max-width:200px}
+.list td.mne{min-width:120px;max-width:170px;color:#3E4D59;font-size:12px}
+.list th,.list td{padding-left:10px;padding-right:10px}
+.list td.sit{white-space:nowrap}
+.list thead th{position:sticky;top:0;z-index:1;border-radius:0}
+.list td{font-size:13px;vertical-align:top;padding-top:10px;padding-bottom:10px}
+.list td.addr{min-width:200px;max-width:280px;font-weight:600}
+.list td.addr small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+.list td.mono{font-variant-numeric:tabular-nums;white-space:nowrap;color:#33424E}
+.list td.os{font-family:Consolas,"Cascadia Mono",monospace;font-size:12px;color:var(--muted)}
+.dias{font-family:var(--f-display);font-size:16px;font-weight:600}
+input.trat{width:210px;padding:7px 9px;font-size:13px;border-color:#C9D5DE}
+input.trat.vazio{background:#FFFBEB;border:1px dashed #E2C77A}
+input.trat.vazio::placeholder{color:#A88A3A}
+input.trat.ok{border-color:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
+tr.dupOS td{background:var(--red-soft)!important} tr.dupOS td:first-child{box-shadow:inset 4px 0 0 var(--red)}
+tr.dupF td{background:#FFF6DD!important} tr.dupF td:first-child{box-shadow:inset 4px 0 0 #E0A500}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.03em;padding:2px 7px;border-radius:999px;margin:5px 4px 0 0;white-space:nowrap}
+.tag.nova{background:var(--accent-soft);color:var(--accent)}
+.tag.dos{background:var(--red);color:#fff}
+.tag.df{background:#E0A500;color:#fff}
+.tag.pol{background:#EEF1F4;color:#3E4D59}
+.tag.cat{background:var(--sunk);color:#3E4D59;border:1px solid var(--line)}
+.tag.cat::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--c,var(--muted))}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap;background:var(--sunk);color:var(--muted)}
+.pill.f31{background:var(--red-soft);color:var(--red)} .pill.f15{background:var(--orange-soft);color:var(--orange)} .pill.f7{background:var(--amber-soft);color:var(--amber)} .pill.f0{background:var(--green-soft);color:var(--green)}
+.pill.s-nok{background:var(--orange-soft);color:var(--orange)} .pill.s-can{background:#ECEFF2;color:#5E6E7B} .pill.s-cur{background:var(--accent-soft);color:var(--accent)} .pill.s-nao{background:var(--red-soft);color:var(--red)} .pill.s-ok{background:var(--green-soft);color:var(--green)} .pill.s-sus{background:var(--violet-soft);color:var(--violet)}
+.more{border:0;background:var(--sunk);padding:4px 7px;color:var(--accent);font-size:11px;border-radius:6px}
+tr.det td{background:#F6F9FB!important;font-size:12.5px}
+tr.det dl{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;margin:0;max-width:950px}
+tr.det dt{color:var(--muted);font-weight:600} tr.det dd{margin:0}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+/* ---- upload ---- */
+.upload{border:2px solid var(--accent-2)}
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.check{border-radius:10px;padding:12px 14px;background:var(--sunk);display:flex;flex-direction:column;gap:2px;border:1px solid var(--line-2)}
+.check b{font-family:var(--f-display);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.check.bad{background:var(--red-soft);border-color:#F4C3BD} .check.bad b{color:var(--red)}
+.check.warn{background:var(--amber-soft);border-color:#F1D894} .check.warn b{color:var(--amber)}
+.check.good{background:var(--green-soft);border-color:#B9E2CA} .check.good b{color:var(--green)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.chart svg{width:100%;height:auto;display:block}
+.empty{padding:36px;text-align:center;color:var(--muted)}
+.note{font-size:12.5px;color:var(--muted)}
+.foot{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
+@media (max-width:1150px){.appbar-in{grid-template-columns:1fr auto}.tabs{grid-column:1/-1;justify-self:start;order:3}.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.grid2{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi b{font-size:28px}.appbar-in,.wrap{padding-left:14px;padding-right:14px}}
+
+/* ===== visual executivo ===== */
+body{font-size:15px}
+.wrap{gap:14px;padding-top:14px}
+:root{--bg:#F3F5F8;--line:#E2E8EE;--line-2:#EDF1F5;--f-display:"Segoe UI Semibold","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;--shadow:0 1px 2px rgba(16,32,48,.05),0 4px 14px rgba(16,32,48,.04)}
+.kpis{grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
+.kpi{border-radius:14px;padding:16px 18px;gap:8px;border:1px solid var(--line)}
+.kpi::before{display:none}
+.kpi .lbl{font-size:12px;letter-spacing:.07em}
+.kpi .ic{width:30px;height:30px;border-radius:50%}
+.kpi b{font-family:var(--f-display);font-size:38px;font-weight:600;letter-spacing:-.02em}
+.kpi small{font-size:13px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.kpi.hl{background:linear-gradient(140deg,#0E2C4A 0%,#0B5F86 100%)}
+.dash{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}
+.s4{grid-column:span 4}.s8{grid-column:span 8}.s12{grid-column:span 12}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;min-width:0}
+.ch{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid var(--line-2)}
+.ch h3{margin:0;font-family:var(--f-display);font-size:18px;font-weight:600;color:var(--ink);letter-spacing:.005em}
+.ch p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.leg2{display:flex;gap:14px;font-size:12px;color:var(--muted)}
+.leg2 span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+/* serviços */
+.sv2{display:flex;flex-direction:column}
+.sv2 .r{display:grid;grid-template-columns:160px minmax(0,1fr) 60px 70px 56px;gap:14px;align-items:center;padding:9px 8px;border-radius:10px}
+.sv2 .r+.r{border-top:1px solid var(--line-2)}
+.sv2 .hd{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding-top:0;padding-bottom:6px}
+.sv2 .hd span:nth-child(n+3){text-align:right}
+.sv2 .nm{font-weight:600;font-size:15.5px;display:flex;align-items:center;gap:9px;min-width:0}
+.sv2 .nm i{width:10px;height:10px;border-radius:3px;background:var(--c);flex:none}
+.sv2 .br{height:14px;border-radius:999px;background:var(--line-2);display:flex;overflow:hidden}
+.sv2 .br i{display:block;height:100%}
+.sv2 .n{font-family:var(--f-display);font-size:22px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.sv2 .d,.sv2 .p{text-align:right}
+.sv2 .p{font-weight:700;font-size:14px;color:var(--green)}
+.sv2 .tt{border-top:2px solid var(--ink)!important;margin-top:4px;border-radius:0}
+.sv2 .tt .nm{font-weight:700}
+/* rosca de atraso */
+.donut{display:grid;place-items:center;position:relative;padding:4px 0 6px}
+.donut svg{width:190px;height:190px;transform:rotate(-90deg)}
+.donut circle[data-go]:hover{stroke-width:26}
+.donut .ctr{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none}
+.donut .ctr b{display:block;font-family:var(--f-display);font-size:30px;font-weight:600;line-height:1}
+.donut .ctr small{font-size:11.5px;color:var(--muted)}
+.fl{display:flex;flex-direction:column}
+.fl .r{display:grid;grid-template-columns:14px minmax(0,1fr) 48px 44px 64px;gap:10px;align-items:center;padding:9px 6px;border-radius:9px}
+.fl .r+.r{border-top:1px solid var(--line-2)}
+.fl .r i{width:12px;height:12px;border-radius:4px;background:var(--c)}
+.fl .r .l{font-weight:600}
+.fl .r .n{font-family:var(--f-display);font-weight:600;font-size:16px;text-align:right}
+.fl .r .pc{color:var(--muted);font-size:12px;text-align:right}
+.fl .r .d{text-align:right}
+/* faixas em barras */
+.frs{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.fr2{padding:10px 8px;border-radius:10px}
+.fr2+.fr2{border-top:1px solid var(--line-2)}
+.fh{display:flex;justify-content:space-between;align-items:baseline}
+.fl2{font-weight:600;font-size:15.5px;display:flex;align-items:center;gap:8px}
+.fl2 i{width:12px;height:12px;border-radius:4px;background:var(--c)}
+.fn{font-family:var(--f-display);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.fbar{height:12px;border-radius:999px;background:var(--line-2);overflow:hidden;margin:6px 0}
+.fbar i{display:block;height:100%;border-radius:999px}
+.fm{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--muted)}
+#v-painel .fr2[data-go]:hover{background:#F2F8FB}
+/* polos */
+.polos{gap:16px}
+.pcard{border-radius:14px;padding:16px 18px;background:#FAFCFD}
+.pcard .pv b{font-size:40px}
+.pcard .pn{font-size:19px}
+.pcard .meta{font-size:13px}
+/* atenção */
+.at{display:flex;flex-direction:column;gap:10px}
+.ai{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:12px;padding:12px 14px;background:#fff}
+.ai .t{font-weight:600;font-size:15px}
+.ai .t small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+.ai b{font-family:var(--f-display);font-size:28px;font-weight:600;color:var(--c);white-space:nowrap}
+.at .lbl{margin-top:4px}
+.vrow{padding:8px 4px}
+#v-painel .ai[data-go]:hover{background:#F6FAFC;box-shadow:0 2px 10px rgba(16,32,48,.06)}
+#v-painel .sv2 .r[data-go]:hover,#v-painel .fl .r[data-go]:hover{background:#F2F8FB}
+.chart svg text{font-family:var(--f-body)}
+@media (max-width:1150px){.s4,.s8{grid-column:span 12}.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:640px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.sv2 .r{grid-template-columns:110px minmax(0,1fr) 44px 60px}.sv2 .p,.sv2 .hd span:last-child{display:none}}
+</style>
+</head>
+<body>
+<header class="appbar"><div class="appbar-in">
+  <div class="brand"><span class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c-3.6 4.4-6.5 8-6.5 11.6a6.5 6.5 0 0 0 13 0C18.5 10.5 15.6 6.9 12 2.5Z" fill="#fff" fill-opacity=".95"/><path d="M9 14.5a3 3 0 0 0 3 3" stroke="#0B6E99" stroke-width="1.8" stroke-linecap="round"/></svg></span><div style="min-width:0"><div class="brand-t">Painel de Pendências - Databricks</div><div class="brand-s" id="sub">Conecte o arquivo de dados da equipe para começar.</div></div></div>
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" id="t-painel" aria-selected="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg> Painel</button>
+    <button class="tab" role="tab" id="t-os" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg> OS e tratativas</button>
+  </nav>
+  <div class="actions">
+    <button type="button" class="primary" id="btnSubir"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg> Atualizar com os arquivos do dia</button><input type="file" id="arquivo" accept=".xlsx,.csv,.json" multiple hidden>
+    <button id="baixar" type="button" class="ghost"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6 10l6 6 6-6M4 20h16"/></svg> Baixar Excel</button>
+  </div>
+</div></header>
+<div class="wrap">
+  <div class="conn">
+    <span class="dot" id="connDot"></span>
+    <div class="txt"><b id="connTit">Carregando…</b> <span class="note" id="connSub"></span></div>
+    <label class="note" for="nome">Seu nome</label>
+    <input type="text" id="nome" placeholder="ex.: Fernanda">
+    <button type="button" id="btnAjuda">Como usar</button>
+    <button type="button" id="btnBackup" title="Baixa um arquivo com o histórico e as tratativas, para levar a outro computador">Cópia de segurança</button>
+  </div>
+  <div class="status" id="msg" role="status" aria-live="polite"></div>
+
+  <section class="panel intro" id="intro" hidden>
+    <div class="panel-h"><h2>Como usar todo dia</h2><button type="button" id="btnFecharAjuda">Fechar</button></div>
+    <ol>
+      <li>Baixe o <b>Detalhamento por fornecimento</b> do sistema, como sempre.</li>
+      <li>Clique em <b>Atualizar com os arquivos do dia</b>. No campo <b>1</b>, escolha o Detalhamento. No campo <b>2</b>, escolha a cópia da planilha da rede de ontem, com os Status que a equipe escreveu.</li>
+      <li>Clique em <b>Atualizar painel</b>. O painel traz os Status para as OS que continuam, mostra o que saiu, o que entrou e o que já foi tratado, para ninguém tratar de novo.</li>
+      <li>Clique em <b>Baixar Excel</b> e coloque o arquivo na rede. Ele sai no formato da planilha de sempre, com o PAINEL para mandar aos gestores.</li>
+    </ol>
+    <div class="note">O painel guarda o histórico e as tratativas neste computador, no próprio navegador. Para usar em outro computador, leve a <b>Cópia de segurança</b> e use o botão Restaurar cópia de segurança.</div>
+  </section>
+
+  <section class="panel imp" id="imp" hidden>
+    <div class="panel-h"><h2>Atualizar o painel do dia</h2><button type="button" id="impFechar">Fechar</button></div>
+    <div class="slots">
+      <label class="slot" for="fDet"><span class="sn1">1</span><span class="st1"><b>Detalhamento do sistema</b><small>o arquivo que você baixa do sistema hoje (obrigatório)</small><em id="nDet">Clique para escolher o arquivo</em></span><input type="file" id="fDet" accept=".xlsx,.csv"></label>
+      <label class="slot" for="fRede"><span class="sn1">2</span><span class="st1"><b>Planilha da rede (de ontem)</b><small>a cópia da planilha em que a equipe escreveu os Status e as tratativas</small><em id="nRede">Clique para escolher o arquivo</em></span><input type="file" id="fRede" accept=".xlsx"></label>
+    </div>
+    <div class="row"><button type="button" class="primary" id="impOk" disabled>Atualizar painel</button><span class="note" id="impNota">O painel cruza os dois: traz os Status da equipe para as OS que continuam, mostra o que saiu e o que entrou.</span></div>
+    <div class="row" style="gap:6px"><span class="note">Outros arquivos:</span><button type="button" id="btnRestaurar" style="padding:6px 10px;font-size:12.5px">Restaurar cópia de segurança</button></div>
+  </section>
+
+  <section class="panel upload" id="upload" hidden>
+    <div class="row" style="justify-content:space-between"><h2>Conferência do arquivo</h2><span class="note" id="upArquivo"></span></div>
+    <div class="checks" id="upChecks"></div>
+    <div class="row">
+      <label for="upData" class="lbl">Data da base</label>
+      <input type="date" id="upData">
+      <button class="primary" id="upSalvar" type="button">Salvar base do dia</button>
+      <button id="upCancelar" type="button">Cancelar</button>
+    </div>
+    <div class="note" id="upAviso"></div>
+  </section>
+
+
+
+  <section id="v-painel" class="view">
+    <div class="kpis" id="kpis"></div>
+    <div class="dash" id="blocos">
+      <article class="card s8"><header class="ch"><div><h3>Pendências por serviço</h3><p>quantidade de OS hoje e quanto já tem tratativa</p></div><div class="leg2"><span style="--c:#2FA36B">Com tratativa</span><span style="--c:#F3C46B">Sem tratativa</span></div></header><div id="tbServ"></div></article>
+      <article class="card s4"><header class="ch"><div><h3>Tempo de atraso</h3><p id="faixaNota">distribuição das OS por faixa</p></div></header><div id="tbFaixa"></div></article>
+      <article class="card s12"><header class="ch"><div><h3>Por polo</h3><p>Interlagos, Grajaú e Embu Guaçu</p></div><span class="dica">Clique em qualquer número, barra ou cartão para ver as OS</span></header><div class="polos" id="poloCards"></div></article>
+      <article class="card s8"><header class="ch"><div><h3>Evolução das pendências</h3><p id="reducao"></p></div></header><div class="chart" id="chart"></div><details class="hist"><summary>Ver tabela do histórico</summary><div class="scroll"><table id="tbHist"></table></div></details></article>
+      <article class="card s4"><header class="ch"><div><h3>Pontos de atenção</h3><p>o que pede ação hoje</p></div></header><div id="atencao"></div></article>
+      <article class="card s12" id="pCruz"><header class="ch"><div><h3>Cruzamento com a planilha da rede</h3><p id="cruzNota">o que a equipe tratou, o que saiu e o que entrou</p></div></header><div id="cruzBox"></div></article>
+    </div>
+  </section>
+
+  <section id="v-os" class="view" hidden>
+    <div class="toolbar">
+      <div class="chips" id="chips"></div>
+      <div class="filters">
+        <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="busca" placeholder="Buscar endereço, OS, fornecimento, PDE ou tratativa"></div>
+        <select id="polo" aria-label="Polo" style="font:600 13.5px var(--f-body);padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)"><option value="">Todos os polos</option><option value="923">Interlagos (923)</option><option value="929">Grajaú (929)</option><option value="299">Embu Guaçu (299)</option></select>
+        <select id="faixa" aria-label="Faixa de atraso"><option value="">Todas as faixas</option><option value="+31 dias">+31 dias</option><option value="15 a 30 dias">15 a 30 dias</option><option value="7 a 15 dias">7 a 15 dias</option><option value="até 7 dias">Até 7 dias</option></select>
+        <select id="fTrat" aria-label="Tratativa"><option value="">Com e sem tratativa</option><option value="sem">Só sem tratativa</option><option value="com">Só com tratativa</option></select>
+      </div>
+      <div class="ativos" id="ativos" hidden></div>
+      <div class="legend">
+        <span style="--c:var(--red)">OS repetida no arquivo</span>
+        <span style="--c:#E0A500">Mesmo fornecimento com mais de uma OS</span>
+        <span style="--c:#8B5CF6">Mesmo endereço com mais de uma OS</span>
+        <span style="--c:var(--accent)">NOVA: não estava na base anterior</span>
+      </div>
+    </div>
+    <div class="list" id="lista"></div>
+    <div class="note" id="rodape"></div>
+  </section>
+  <div class="foot">Painel de Pendências - Databricks · os dados ficam guardados só neste computador</div>
+</div>
+<datalist id="sugestoes"></datalist>
+
+<script>
+(function(){
+"use strict";
+/* ================= XLSX: leitura (zip + XML) ================= */
+async function inflateRaw(bytes){
+  const ds=new DecompressionStream("deflate-raw");
+  const out=await new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer();
+  return new Uint8Array(out);
+}
+async function unzip(buf){
+  const u=new Uint8Array(buf),v=new DataView(buf);let e=-1;
+  for(let i=u.length-22;i>=Math.max(0,u.length-70000);i--){if(v.getUint32(i,true)===0x06054b50){e=i;break;}}
+  if(e<0)throw new Error("zip");
+  const n=v.getUint16(e+10,true);let p=v.getUint32(e+16,true);const files={};const td=new TextDecoder();
+  for(let k=0;k<n;k++){
+    const method=v.getUint16(p+10,true),csize=v.getUint32(p+20,true),nl=v.getUint16(p+28,true),xl=v.getUint16(p+30,true),cl=v.getUint16(p+32,true),off=v.getUint32(p+42,true);
+    const name=td.decode(u.subarray(p+46,p+46+nl));files[name]={method,csize,off};p+=46+nl+xl+cl;
+  }
+  return async name=>{const f=files[name];if(!f)return null;const ln=v.getUint16(f.off+26,true),lx=v.getUint16(f.off+28,true);
+    const data=u.subarray(f.off+30+ln+lx,f.off+30+ln+lx+f.csize);const raw=f.method===8?await inflateRaw(data):data;return td.decode(raw);};
+}
+const xmlp=s=>new DOMParser().parseFromString(s,"application/xml");
+const tags=(n,t)=>Array.from(n.getElementsByTagNameNS("*",t));
+function colIdx(ref){let c=0;for(const ch of ref){const k=ch.charCodeAt(0);if(k<65||k>90)break;c=c*26+(k-64);}return c-1;}
+async function abrirXlsx(buf){
+  const get=await unzip(buf);
+  const wb=xmlp(await get("xl/workbook.xml"));
+  const rels=xmlp(await get("xl/_rels/workbook.xml.rels"));const alvo={};
+  for(const r of tags(rels,"Relationship"))alvo[r.getAttribute("Id")]=r.getAttribute("Target");
+  const abas=tags(wb,"sheet").map(sh=>{const rid=sh.getAttribute("r:id")||sh.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships","id");
+    let t=alvo[rid]||"worksheets/sheet1.xml";t=t.replace(/^\/?xl\//,"").replace(/^\//,"");return {nome:sh.getAttribute("name"),t};});
+  let ss=null;
+  async function strings(){if(ss)return ss;ss=[];const x=await get("xl/sharedStrings.xml");if(x)for(const si of tags(xmlp(x),"si"))ss.push(tags(si,"t").map(t=>t.textContent).join(""));return ss;}
+  async function ler(nome){
+    const a=abas.find(x=>x.nome===nome)||abas.find(x=>U(x.nome).trim()===U(nome).trim());if(!a)return null;
+    const sst=await strings();const doc=xmlp(await get("xl/"+a.t));const aoa=[];
+    for(const row of tags(doc,"row")){const r=[];const rn=Number(row.getAttribute("r"))||aoa.length+1;
+      for(const c of tags(row,"c")){const ref=c.getAttribute("r");const ci=ref?colIdx(ref):r.length;const t=c.getAttribute("t");
+        const vEl=tags(c,"v")[0];let val="";
+        if(t==="s")val=vEl?sst[Number(vEl.textContent)]??"":"";
+        else if(t==="inlineStr")val=tags(c,"t").map(x=>x.textContent).join("");
+        else if(vEl){val=vEl.textContent;if(t!=="str"&&t!=="b"&&t!=="e"&&val!==""&&!isNaN(val))val=Number(val);}
+        r[ci]=val;}
+      for(let i=0;i<r.length;i++)if(r[i]===undefined)r[i]="";
+      while(aoa.length<rn-1)aoa.push([]);
+      aoa.push(r);}
+    return aoa;}
+  return {nomes:abas.map(a=>a.nome),ler};
+}
+async function lerXlsx(buf){const w=await abrirXlsx(buf);return w.ler(w.nomes[0]);}
+function lerCsv(txt){const sep=(txt.split("\n")[0].match(/;/g)||[]).length>(txt.split("\n")[0].match(/,/g)||[]).length?";":",";
+  const rows=[];let row=[],cur="",q=false;
+  for(let i=0;i<txt.length;i++){const ch=txt[i];
+    if(q){if(ch==='"'){if(txt[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=ch;}
+    else if(ch==='"')q=true;else if(ch===sep){row.push(cur);cur="";}else if(ch==="\n"){row.push(cur.replace(/\r$/,""));rows.push(row);row=[];cur="";}else cur+=ch;}
+  if(cur||row.length){row.push(cur);rows.push(row);}return rows;}
+
+/* ================= XLSX: escrita (zip sem compressão) ================= */
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(u){let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRC[(c^u[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipStore(files){const te=new TextEncoder();const parts=[],cent=[];let off=0;
+  for(const [name,str] of files){const nb=te.encode(name),data=te.encode(str),crc=crc32(data);
+    const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);
+    h.setUint32(14,crc,true);h.setUint32(18,data.length,true);h.setUint32(22,data.length,true);h.setUint16(26,nb.length,true);
+    parts.push(new Uint8Array(h.buffer),nb,data);
+    const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);
+    c.setUint32(16,crc,true);c.setUint32(20,data.length,true);c.setUint32(24,data.length,true);c.setUint16(28,nb.length,true);c.setUint32(42,off,true);
+    cent.push(new Uint8Array(c.buffer),nb);off+=30+nb.length+data.length;}
+  const csize=cent.reduce((a,b)=>a+b.length,0);const e=new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,csize,true);e.setUint32(16,off,true);
+  return new Blob(parts.concat(cent,[new Uint8Array(e.buffer)]),{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});}
+const xe=s=>String(s??"").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+function colName(i){let s="";i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26);}return s;}
+function serial(d){return (Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(1899,11,30))/86400000;}
+/* gerador de .xlsx com estilos (fonte, preenchimento, alinhamento, borda, formato) */
+function novoLivro(){
+  const fonts=['<font><sz val="11"/><name val="Calibri"/></font>'],fills=['<fill><patternFill patternType="none"/></fill>','<fill><patternFill patternType="gray125"/></fill>'],
+        borders=['<border><left/><right/><top/><bottom/><diagonal/></border>'],fmts=[],xfs=['<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'],cache={"":0};
+  const idx=(arr,x)=>{let i=arr.indexOf(x);if(i<0){arr.push(x);i=arr.length-1;}return i;};
+  function st(o){if(!o)return 0;const k=JSON.stringify(o);if(k in cache)return cache[k];
+    const f=o.f||{};const font=`<font>${f.b?"<b/>":""}${f.i?"<i/>":""}<sz val="${f.sz||11}"/><color rgb="FF${f.c||"000000"}"/><name val="${f.n||"Calibri"}"/></font>`;
+    const fi=idx(fonts,font);
+    const fl=o.fill?idx(fills,`<fill><patternFill patternType="solid"><fgColor rgb="FF${o.fill}"/><bgColor indexed="64"/></patternFill></fill>`):0;
+    const bd=o.bd?idx(borders,`<border><left style="thin"><color rgb="FF${o.bd}"/></left><right style="thin"><color rgb="FF${o.bd}"/></right><top style="thin"><color rgb="FF${o.bd}"/></top><bottom style="thin"><color rgb="FF${o.bd}"/></bottom><diagonal/></border>`):(o.bt?idx(borders,`<border><left/><right/><top style="medium"><color rgb="FF${o.bt}"/></top><bottom/><diagonal/></border>`):0);
+    let nf=0;if(o.nf){const builtin={"0%":9,"0":1,"#,##0":3};nf=builtin[o.nf]||(164+idx(fmts,o.nf));}
+    const al=(o.h||o.v||o.wrap)?`<alignment${o.h?` horizontal="${o.h}"`:""}${o.v?` vertical="${o.v}"`:""}${o.wrap?' wrapText="1"':""}/>`:"";
+    xfs.push(`<xf numFmtId="${nf}" fontId="${fi}" fillId="${fl}" borderId="${bd}" xfId="0"${nf?' applyNumberFormat="1"':""} applyFont="1"${fl?' applyFill="1"':""}${bd?' applyBorder="1"':""}${al?' applyAlignment="1">'+al+"</xf>":"/>"}`);
+    return cache[k]=xfs.length-1;}
+  function styles(){return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${fmts.length?`<numFmts count="${fmts.length}">${fmts.map((f,i)=>`<numFmt numFmtId="${164+i}" formatCode="${xe(f)}"/>`).join("")}</numFmts>`:""}<fonts count="${fonts.length}">${fonts.join("")}</fonts><fills count="${fills.length}">${fills.join("")}</fills><borders count="${borders.length}">${borders.join("")}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="${xfs.length}">${xfs.join("")}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;}
+  return {st,styles};
+}
+/* sheets: [{name, cells:Map "r,c"->{v,s}, widths:[], heights:{}, merges:[], freeze:"A2", filter:"A1:T10", grid:false, tab:"16365C"}] */
+function gerarXlsx(livro,sheets){
+  const files=[];const used=new Set();
+  const nomes=sheets.map(s=>{let n=s.name.replace(/[\[\]:*?\/\\]/g,"").slice(0,31)||"Aba";let b=n,k=2;while(used.has(n.toLowerCase()))n=b.slice(0,28)+" "+k++;used.add(n.toLowerCase());return n;});
+  sheets.forEach((s,si)=>{
+    const rowsMap=new Map();
+    for(const [k,cell] of s.cells){const [r,c]=k.split(",").map(Number);if(!rowsMap.has(r))rowsMap.set(r,[]);rowsMap.get(r).push([c,cell]);}
+    let rows="";
+    for(const r of [...rowsMap.keys()].sort((a,b)=>a-b)){const cs=rowsMap.get(r).sort((a,b)=>a[0]-b[0]);let cells="";
+      for(const [c,{v,s:sty}] of cs){const ref=colName(c)+(r+1);const sa=sty?` s="${sty}"`:"";
+        if(v===""||v==null){if(sty)cells+=`<c r="${ref}"${sa}/>`;continue;}
+        if(v instanceof Date)cells+=`<c r="${ref}"${sa}><v>${serial(v)}</v></c>`;
+        else if(typeof v==="number"&&isFinite(v))cells+=`<c r="${ref}"${sa}><v>${v}</v></c>`;
+        else cells+=`<c r="${ref}" t="inlineStr"${sa}><is><t xml:space="preserve">${xe(v)}</t></is></c>`;}
+      const h=s.heights&&s.heights[r]?` ht="${s.heights[r]}" customHeight="1"`:"";
+      rows+=`<row r="${r+1}"${h}>${cells}</row>`;}
+    const cols=s.widths?`<cols>${s.widths.map((w,i)=>w==null?"":`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join("")}</cols>`:"";
+    const pane=s.freeze?`<pane ySplit="${Number(s.freeze.replace(/\D/g,""))-1}" topLeftCell="${s.freeze}" activePane="bottomLeft" state="frozen"/>`:"";
+    const sv=`<sheetViews><sheetView workbookViewId="0"${s.grid===false?' showGridLines="0"':""}${si===0?' tabSelected="1"':""}>${pane}</sheetView></sheetViews>`;
+    const pr=s.tab?`<sheetPr><tabColor rgb="FF${s.tab}"/></sheetPr>`:"";
+    const af=s.filter?`<autoFilter ref="${s.filter}"/>`:"";
+    const mg=s.merges&&s.merges.length?`<mergeCells count="${s.merges.length}">${s.merges.map(m=>`<mergeCell ref="${m}"/>`).join("")}</mergeCells>`:"";
+    files.push([`xl/worksheets/sheet${si+1}.xml`,`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${pr}${sv}<sheetFormatPr defaultRowHeight="15"/>${cols}<sheetData>${rows}</sheetData>${af}${mg}</worksheet>`]);});
+  const dn=sheets.map((s,i)=>s.filter?`<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">'${xe(nomes[i]).replace(/'/g,"''")}'!${s.filter.replace(/([A-Z]+)(\d+)/g,"$$$1$$$2")}</definedName>`:"").join("");
+  const wbx=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView activeTab="0"/></bookViews><sheets>${nomes.map((n,i)=>`<sheet name="${xe(n)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")}</sheets>${dn?`<definedNames>${dn}</definedNames>`:""}</workbook>`;
+  const rels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")}<Relationship Id="rId${sheets.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+  const ct=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}</Types>`;
+  const root=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+  return zipStore([["[Content_Types].xml",ct],["_rels/.rels",root],["xl/workbook.xml",wbx],["xl/_rels/workbook.xml.rels",rels],["xl/styles.xml",livro.styles()]].concat(files));
+}
+function baixarBlob(blob,nome){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);}
+
+/* ================= regras do painel ================= */
+const CATS=["Vazamento","Esgoto","Desobstrução","Cavalete","Embu Guaçu","Hidro","Vistorias"];
+const FAIXAS=[["+31 dias","+31 dias"],["15 a 30 dias","15 a 30 dias"],["7 a 15 dias","7 a 15 dias"],["até 7 dias","Até 7 dias"]];
+const COLS=["Fornecimento","PDE","Endereço OS","Serviço (Família)","Serviço (TSS)","Status","Município","Regional","ATC","ATP","Data Abertura","Dias Pendente","Faixa","MNE","Nota OS","Nota de Baixa","Iniciativa","Qtd OS","OS"];
+const I={forn:0,pde:1,end:2,fam:3,tss:4,st:5,mun:6,reg:7,atc:8,atp:9,data:10,dias:11,faixa:12,mne:13,nota:14,baixa:15,inic:16,qtd:17,os:18};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const U=s=>String(s??"").normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase();
+const clean=s=>String(s??"").replace(/ /g," ").replace(/_x000d_/g,"").replace(/\s+/g," ").trim();
+function key(v){const s=String(v??"").trim();if(/e\+/i.test(s))return "";return s.split(".")[0].replace(/^0+/,"");}
+const nf=n=>Number(n||0).toLocaleString("pt-BR");
+const dm=d=>d?d.slice(8,10)+"/"+d.slice(5,7):"–";
+const msg=t=>{$("msg").textContent=t||"";};
+const sinal=n=>(n==null||isNaN(n))?"–":(n>0?"+":"")+nf(n);
+const cls=n=>n>0?"up":n<0?"down":"";
+const pct=(a,b)=>b?Math.round(a*100/b)+"%":"0%";
+function catBase(r){
+  if(U(r[I.mun]).trim()==="EMBU-GUACU")return "Embu Guaçu";
+  const t=U(r[I.tss]);
+  if(t.includes("HIDROMETRO"))return "Hidro";
+  if(t.includes("CAVALETE"))return "Cavalete";
+  if(t.includes("DESOBSTRUIR"))return "Desobstrução";
+  const f=U(r[I.fam]);
+  if(f.includes("OBSTRUCAO"))return "Esgoto";
+  if(f.includes("VAZAMENTO"))return "Vazamento";
+  return "Outros";
+}
+const CORES={"Vazamento":"#2A7FD4","Esgoto":"#7A4FD6","Desobstrução":"#0F9D8A","Cavalete":"#E07B24","Embu Guaçu":"#C2417A","Hidro":"#3A9BC4","Vistorias":"#6B7785","Outros":"#A0AAB3","Novas":"#0B6E99"};
+const POLO_NOME={"923":"Interlagos","929":"Grajaú","299":"Embu Guaçu"};
+const poloDe=r=>String(r[I.atc]??"").trim().replace(/^0+/,"");
+const poloNome=a=>POLO_NOME[a]||("ATC "+a);
+const faixaCls=f=>{const u=U(f);return u.startsWith("+31")?"f31":u.startsWith("15")?"f15":u.startsWith("7")?"f7":u.startsWith("ATE")?"f0":"";};
+function situ(st){const u=U(st);const m={EXECUTADONAOOK:["Executado não OK","s-nok"],CANCELADO:["Cancelado","s-can"],EMCURSO:["Em curso","s-cur"],OSEMCURSO:["OS em curso","s-cur"],NAOEXECUTADO:["Não executado","s-nao"],NAOEXECUTADOCOMERCIAL:["Não exec. comercial","s-nao"],EXECUTADOCOMERCIAL:["Executado comercial","s-ok"],SUSPENSO:["Suspenso","s-sus"],ABERTO:["Aberto","s-cur"]}[u];return m?`<span class="pill ${m[1]}" title="${esc(st)}">${m[0]}</span>`:esc(st);}
+const IC={hoje:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>',
+ ontem:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>',
+ dif:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"/></svg>',
+ com:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+ sem:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>',
+ atraso:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0ZM12 9v4M12 17h.01"/></svg>'};
+const catFrom=(base,t)=>U(t).includes("VISTORI")?"Vistorias":base;
+
+/* ================= dados guardados neste computador ================= */
+// S = {versao, config:{atcs,inicio}, dias:[{data,total,novas,executadas,fonte,enviadoEm,slim:[[os,cat,faixa,polo]],resumo}], linhas:{data:[[19 colunas]]}, tratBase:{os:texto}, trat:{os:{texto,em,por}}}
+const SEMENTE={"versao":1,"config":{"atcs":["923","929","299"],"inicio":785,"em":1},"dias":[{"data":"2026-10-07","total":627,"novas":null,"executadas":null,"fonte":"histórico da planilha"},{"data":"2026-10-08","total":596,"novas":null,"executadas":null,"fonte":"histórico da planilha"},{"data":"2026-10-09","total":600,"novas":55,"executadas":51,"fonte":"histórico da planilha"},{"data":"2026-10-13","total":732,"novas":187,"executadas":77,"slim":[["20264862103","Esgoto","+31 dias","923"],["20265081537","Embu Guaçu","+31 dias","299"],["202683930077","Desobstrução","+31 dias","929"],["202684795167","Embu Guaçu","+31 dias","299"],["202610343892","Vazamento","+31 dias","929"],["202611378562","Desobstrução","+31 dias","923"],["202688559434","Desobstrução","+31 dias","923"],["202615428826","Vazamento","+31 dias","929"],["202621691427","Embu Guaçu","+31 dias","299"],["202694224085","Embu Guaçu","+31 dias","299"],["202696033259","Desobstrução","+31 dias","923"],["202628209669","Esgoto","+31 dias","923"],["202632302237","Embu Guaçu","+31 dias","299"],["202634447552","Vazamento","+31 dias","923"],["2026102638819","Vazamento","+31 dias","923"],["2026102815760","Desobstrução","+31 dias","923"],["2026103304698","Hidro","+31 dias","929"],["202633110111","Esgoto","+31 dias","923"],["2026103477500","Hidro","+31 dias","923"],["202635954752","Vazamento","+31 dias","923"],["202636067255","Vazamento","+31 dias","929"],["202636389059","Esgoto","+31 dias","929"],["202636338578","Vazamento","+31 dias","923"],["2026104000159","Cavalete","+31 dias","923"],["2026104004686","Vazamento","+31 dias","923"],["202636831716","Desobstrução","+31 dias","929"],["202636820242","Desobstrução","+31 dias","929"],["202636888258","Vazamento","15 a 30 dias","929"],["2026104162046","Vazamento","15 a 30 dias","923"],["202636892241","Cavalete","15 a 30 dias","923"],["2026104196110","Vazamento","15 a 30 dias","923"],["202636895470","Cavalete","15 a 30 dias","923"],["202636913902","Embu Guaçu","15 a 30 dias","299"],["202637064993","Vazamento","15 a 30 dias","923"],["202637112920","Embu Guaçu","15 a 30 dias","299"],["202637075142","Embu Guaçu","15 a 30 dias","299"],["202637071122","Cavalete","15 a 30 dias","923"],["202637110337","Desobstrução","15 a 30 dias","923"],["202637384016","Vazamento","15 a 30 dias","923"],["2026104455693","Embu Guaçu","15 a 30 dias","299"],["2026104435990","Vazamento","15 a 30 dias","929"],["202637260535","Vazamento","15 a 30 dias","929"],["202637253130","Esgoto","15 a 30 dias","923"],["202637488374","Esgoto","15 a 30 dias","929"],["202637559430","Cavalete","15 a 30 dias","923"],["202637550174","Desobstrução","15 a 30 dias","929"],["2026104563704","Cavalete","15 a 30 dias","929"],["202639597662","Vazamento","7 a 15 dias","923"],["2026107606548","Desobstrução","até 7 dias","923"],["2026107225680","Vazamento","até 7 dias","923"],["202639103186","Hidro","7 a 15 dias","929"],["202638611042","Cavalete","15 a 30 dias","923"],["202638236368","Desobstrução","15 a 30 dias","923"],["202640137484","Vazamento","até 7 dias","929"],["202638932826","Cavalete","7 a 15 dias","923"],["2026107191592","Vazamento","até 7 dias","923"],["202639045507","Cavalete","7 a 15 dias","923"],["202639096706","Desobstrução","7 a 15 dias","923"],["2026107402480","Vazamento","até 7 dias","923"],["2026107666397","Desobstrução","até 7 dias","929"],["202638854055","Hidro","7 a 15 dias","923"],["202639573811","Embu Guaçu","até 7 dias","299"],["202640433263","Vazamento","até 7 dias","923"],["202638188053","Embu Guaçu","15 a 30 dias","299"],["2026107581206","Hidro","até 7 dias","923"],["2026105777865","Hidro","7 a 15 dias","929"],["202640459607","Vazamento","até 7 dias","923"],["202639492352","Embu Guaçu","7 a 15 dias","299"],["2026106510522","Cavalete","7 a 15 dias","923"],["2026104790606","Hidro","15 a 30 dias","923"],["2026105518716","Vazamento","15 a 30 dias","929"],["2026107639401","Cavalete","até 7 dias","923"],["2026105573110","Embu Guaçu","15 a 30 dias","299"],["2026106595263","Cavalete","7 a 15 dias","929"],["202638084450","Cavalete","15 a 30 dias","923"],["202638791696","Embu Guaçu","15 a 30 dias","299"],["202639260310","Vazamento","7 a 15 dias","923"],["2026106870348","Vazamento","7 a 15 dias","929"],["202640137257","Desobstrução","até 7 dias","929"],["202639782789","Cavalete","até 7 dias","929"],["202640354957","Cavalete","até 7 dias","923"],["2026107348997","Vazamento","até 7 dias","929"],["202639123163","Cavalete","7 a 15 dias","923"],["2026104695921","Hidro","15 a 30 dias","923"],["2026107339548","Vazamento","até 7 dias","929"],["202640819703","Esgoto","até 7 dias","923"],["202639811115","Cavalete","7 a 15 dias","923"],["2026107026133","Cavalete","até 7 dias","923"],["202639619796","Esgoto","7 a 15 dias","929"],["2026106991072","Hidro","até 7 dias","923"],["2026105560375","Embu Guaçu","15 a 30 dias","299"],["202640072607","Esgoto","até 7 dias","929"],["2026104989699","Hidro","15 a 30 dias","923"],["2026107545558","Vazamento","até 7 dias","929"],["202640444800","Esgoto","até 7 dias","929"],["202639072696","Desobstrução","7 a 15 dias","929"],["202637663334","Vazamento","15 a 30 dias","923"],["2026105434126","Desobstrução","15 a 30 dias","923"],["202639777977","Vazamento","7 a 15 dias","923"],["202637838467","Vazamento","15 a 30 dias","923"],["2026107274198","Vazamento","até 7 dias","923"],["2026107272405","Cavalete","até 7 dias","929"],["202640868822","Cavalete","até 7 dias","929"],["202640440936","Desobstrução","até 7 dias","929"],["2026105745163","Hidro","7 a 15 dias","923"],["202639952303","Vazamento","7 a 15 dias","923"],["202639832585","Cavalete","até 7 dias","923"],["202639060730","Desobstrução","7 a 15 dias","923"],["2026105463613","Hidro","15 a 30 dias","923"],["202638467697","Cavalete","15 a 30 dias","923"],["202639113477","Esgoto","7 a 15 dias","923"],["2026107015839","Vazamento","até 7 dias","923"],["2026107317296","Hidro","até 7 dias","923"],["202640902944","Desobstrução","até 7 dias","923"],["202639614011","Desobstrução","7 a 15 dias","923"],["202640727603","Vazamento","até 7 dias","923"],["2026105817752","Desobstrução","7 a 15 dias","923"],["202638521276","Vazamento","15 a 30 dias","923"],["2026106656472","Embu Guaçu","7 a 15 dias","299"],["2026107211412","Embu Guaçu","até 7 dias","299"],["2026105667388","Hidro","7 a 15 dias","923"],["2026105661710","Cavalete","7 a 15 dias","929"],["202639947283","Desobstrução","7 a 15 dias","929"],["2026106805979","Vazamento","7 a 15 dias","923"],["2026105812906","Vazamento","7 a 15 dias","929"],["2026104756362","Desobstrução","15 a 30 dias","923"],["202640014802","Desobstrução","até 7 dias","929"],["202639938901","Desobstrução","7 a 15 dias","929"],["202640434313","Vazamento","até 7 dias","929"],["202640323587","Vazamento","até 7 dias","929"],["2026107660525","Vazamento","até 7 dias","923"],["202639082952","Desobstrução","7 a 15 dias","923"],["2026104718494","Vazamento","15 a 30 dias","923"],["2026105650541","Hidro","7 a 15 dias","929"],["2026106713492","Desobstrução","7 a 15 dias","929"],["2026106882420","Desobstrução","7 a 15 dias","929"],["202640820151","Cavalete","até 7 dias","929"],["202638084356","Cavalete","15 a 30 dias","923"],["202637845740","Hidro","15 a 30 dias","929"],["202640051343","Embu Guaçu","até 7 dias","299"],["202639817925","Embu Guaçu","até 7 dias","299"],["202640466269","Hidro","até 7 dias","929"],["2026107634833","Cavalete","até 7 dias","929"],["2026107400856","Vazamento","até 7 dias","923"],["202639468059","Esgoto","7 a 15 dias","923"],["202639095007","Vazamento","7 a 15 dias","923"],["202639773525","Desobstrução","7 a 15 dias","929"],["2026105161475","Hidro","15 a 30 dias","923"],["2026105605028","Hidro","7 a 15 dias","923"],["2026106744885","Hidro","7 a 15 dias","929"],["202639830433","Hidro","7 a 15 dias","923"],["2026107628202","Vazamento","até 7 dias","923"],["202639634994","Vazamento","7 a 15 dias","929"],["202640450129","Vazamento","até 7 dias","923"],["202638222804","Embu Guaçu","15 a 30 dias","299"],["2026105952846","Cavalete","7 a 15 dias","923"],["202638721300","Cavalete","15 a 30 dias","929"],["2026104647394","Vazamento","15 a 30 dias","929"],["202639468399","Embu Guaçu","7 a 15 dias","299"],["2026107190373","Vazamento","até 7 dias","923"],["202640550660","Desobstrução","até 7 dias","929"],["202639938110","Cavalete","7 a 15 dias","923"],["2026105477682","Vazamento","15 a 30 dias","923"],["202638327621","Desobstrução","15 a 30 dias","923"],["2026107613486","Vazamento","até 7 dias","929"],["202638937916","Hidro","7 a 15 dias","929"],["2026107376279","Embu Guaçu","até 7 dias","299"],["202640284725","Esgoto","até 7 dias","923"],["2026106097444","Desobstrução","7 a 15 dias","929"],["202638471957","Desobstrução","15 a 30 dias","923"],["202640059771","Cavalete","até 7 dias","923"],["2026106113054","Vazamento","7 a 15 dias","923"],["202637833056","Desobstrução","15 a 30 dias","923"],["202638958690","Desobstrução","7 a 15 dias","929"],["2026107447711","Vazamento","até 7 dias","929"],["202638209806","Esgoto","15 a 30 dias","929"],["2026104805877","Vazamento","15 a 30 dias","923"],["2026107200804","Vazamento","até 7 dias","923"],["202640477222","Vazamento","até 7 dias","923"],["202639147534","Vazamento","7 a 15 dias","923"],["202639844874","Cavalete","7 a 15 dias","923"],["2026105421489","Desobstrução","15 a 30 dias","923"],["202638936188","Desobstrução","7 a 15 dias","929"],["2026105637686","Cavalete","7 a 15 dias","929"],["202638322870","Vazamento","15 a 30 dias","929"],["202638220449","Vazamento","15 a 30 dias","929"],["2026106093101","Vazamento","7 a 15 dias","929"],["202640143293","Vazamento","até 7 dias","929"],["2026105635878","Vazamento","7 a 15 dias","923"],["2026104799906","Cavalete","15 a 30 dias","929"],["202640726911","Vazamento","até 7 dias","929"],["2026105689724","Vazamento","7 a 15 dias","929"],["2026105282648","Vazamento","15 a 30 dias","923"],["2026106123722","Desobstrução","7 a 15 dias","923"],["2026105532078","Desobstrução","15 a 30 dias","923"],["202638803973","Desobstrução","15 a 30 dias","929"],["202638186867","Desobstrução","15 a 30 dias","929"],["202639133637","Cavalete","7 a 15 dias","929"],["202639234893","Desobstrução","7 a 15 dias","929"],["2026106519762","Vazamento","7 a 15 dias","923"],["2026105567661","Vazamento","15 a 30 dias","923"],["2026104757882","Hidro","15 a 30 dias","923"],["202638224351","Cavalete","15 a 30 dias","929"],["202639292997","Desobstrução","7 a 15 dias","923"],["2026105151954","Vazamento","15 a 30 dias","929"],["202639098966","Desobstrução","7 a 15 dias","923"],["2026105655172","Hidro","7 a 15 dias","923"],["202639540014","Vazamento","7 a 15 dias","929"],["202640851510","Cavalete","até 7 dias","923"],["202639502556","Desobstrução","7 a 15 dias","929"],["202638098734","Vazamento","15 a 30 dias","929"],["202639481559","Esgoto","7 a 15 dias","929"],["2026107491130","Desobstrução","até 7 dias","923"],["2026106351930","Vazamento","7 a 15 dias","929"],["2026105408316","Cavalete","15 a 30 dias","923"],["202640293704","Vazamento","até 7 dias","929"],["2026105759156","Cavalete","7 a 15 dias","923"],["202640830659","Vazamento","até 7 dias","923"],["202640448530","Cavalete","até 7 dias","923"],["2026107261781","Hidro","até 7 dias","923"],["2026105936323","Vazamento","7 a 15 dias","923"],["202639079842","Cavalete","7 a 15 dias","923"],["2026104851617","Hidro","15 a 30 dias","923"],["202639827575","Vazamento","7 a 15 dias","923"],["202640843067","Cavalete","até 7 dias","923"],["2026104715991","Cavalete","15 a 30 dias","929"],["202639833834","Desobstrução","7 a 15 dias","929"],["202637773737","Desobstrução","15 a 30 dias","929"],["2026106369028","Vazamento","7 a 15 dias","929"],["2026105556304","Cavalete","15 a 30 dias","923"],["2026107192257","Vazamento","até 7 dias","929"],["2026107369442","Vazamento","até 7 dias","923"],["202640727041","Desobstrução","até 7 dias","923"],["202640727138","Esgoto","até 7 dias","929"],["202639120409","Vazamento","7 a 15 dias","929"],["202637839637","Cavalete","7 a 15 dias","929"],["202640013091","Vazamento","até 7 dias","929"],["202639454028","Desobstrução","7 a 15 dias","923"],["2026106994663","Vazamento","até 7 dias","929"],["202638095647","Hidro","15 a 30 dias","929"],["2026104773448","Desobstrução","15 a 30 dias","923"],["2026105698474","Vazamento","7 a 15 dias","923"],["202638321660","Cavalete","15 a 30 dias","923"],["202639811825","Vazamento","7 a 15 dias","923"],["2026106188701","Vazamento","7 a 15 dias","929"],["202639809991","Desobstrução","7 a 15 dias","923"],["2026107468056","Vazamento","até 7 dias","923"],["2026107357847","Cavalete","até 7 dias","923"],["2026105364622","Hidro","15 a 30 dias","923"],["2026106287532","Hidro","7 a 15 dias","923"],["202638815222","Esgoto","7 a 15 dias","929"],["202638236718","Esgoto","15 a 30 dias","929"],["2026106789475","Vazamento","7 a 15 dias","923"],["202639943968","Cavalete","7 a 15 dias","923"],["2026106291343","Cavalete","7 a 15 dias","929"],["202638508145","Esgoto","15 a 30 dias","929"],["202639848865","Cavalete","7 a 15 dias","923"],["202639619328","Vazamento","7 a 15 dias","929"],["2026107582457","Embu Guaçu","até 7 dias","299"],["202637773034","Desobstrução","15 a 30 dias","923"],["202640484266","Esgoto","até 7 dias","929"],["2026104994918","Vazamento","15 a 30 dias","929"],["202640129466","Desobstrução","até 7 dias","923"],["2026105646604","Vazamento","7 a 15 dias","923"],["202639036366","Vazamento","7 a 15 dias","923"],["2026106699596","Cavalete","7 a 15 dias","923"],["202639922965","Cavalete","7 a 15 dias","923"],["2026101444753","Desobstrução","+31 dias","923"],["2026106157259","Hidro","7 a 15 dias","923"],["2026106282531","Cavalete","7 a 15 dias","923"],["202639121660","Vazamento","7 a 15 dias","929"],["2026105542826","Vazamento","15 a 30 dias","929"],["2026107368807","Hidro","até 7 dias","923"],["202637882278","Vazamento","15 a 30 dias","923"],["2026107309276","Cavalete","até 7 dias","923"],["2026106447791","Vazamento","7 a 15 dias","923"],["2026105169148","Vazamento","15 a 30 dias","923"],["2026104648707","Hidro","15 a 30 dias","923"],["2026107191944","Cavalete","até 7 dias","929"],["2026105518482","Vazamento","15 a 30 dias","923"],["202640844414","Cavalete","até 7 dias","923"],["2026106867024","Vazamento","7 a 15 dias","929"],["202639482406","Esgoto","7 a 15 dias","929"],["2026105526368","Cavalete","15 a 30 dias","923"],["2026105766769","Hidro","7 a 15 dias","923"],["202639084449","Cavalete","7 a 15 dias","923"],["2026105441200","Embu Guaçu","15 a 30 dias","299"],["2026105371688","Vazamento","15 a 30 dias","929"],["2026105119963","Vazamento","15 a 30 dias","929"],["2026104864010","Desobstrução","15 a 30 dias","929"],["202638185448","Desobstrução","15 a 30 dias","929"],["2026107599412","Embu Guaçu","até 7 dias","299"],["2026107350142","Vazamento","até 7 dias","929"],["2026106414722","Cavalete","7 a 15 dias","923"],["2026105891937","Vazamento","7 a 15 dias","923"],["202637881616","Embu Guaçu","15 a 30 dias","299"],["2026107338040","Vazamento","até 7 dias","923"],["2026105659638","Hidro","7 a 15 dias","923"],["2026105344146","Vazamento","15 a 30 dias","929"],["202638920000","Desobstrução","7 a 15 dias","923"],["202639094206","Vazamento","7 a 15 dias","929"],["202640886979","Cavalete","até 7 dias","929"],["2026107217099","Vazamento","até 7 dias","929"],["2026105753916","Vazamento","7 a 15 dias","923"],["2026107649167","Desobstrução","até 7 dias","923"],["202640843821","Cavalete","até 7 dias","929"],["2026106278147","Vazamento","7 a 15 dias","923"],["2026107191073","Vazamento","até 7 dias","929"],["2026106539845","Desobstrução","7 a 15 dias","929"],["2026106696481","Vazamento","7 a 15 dias","929"],["202638083774","Cavalete","15 a 30 dias","923"],["2026106942339","Desobstrução","até 7 dias","929"],["202639291780","Esgoto","7 a 15 dias","923"],["2026107339066","Vazamento","até 7 dias","929"],["202639727526","Cavalete","7 a 15 dias","929"],["202640008081","Cavalete","até 7 dias","923"],["2026104986541","Desobstrução","15 a 30 dias","929"],["202640877510","Vazamento","até 7 dias","929"],["2026107333042","Vazamento","até 7 dias","923"],["2026104655610","Hidro","15 a 30 dias","923"],["2026106599625","Vazamento","7 a 15 dias","923"],["202639224542","Cavalete","7 a 15 dias","923"],["2026105280408","Hidro","15 a 30 dias","923"],["202639593193","Desobstrução","7 a 15 dias","929"],["202640855496","Embu Guaçu","até 7 dias","299"],["202640331080","Desobstrução","até 7 dias","923"],["2026106904648","Vazamento","até 7 dias","929"],["2026106453995","Desobstrução","7 a 15 dias","929"],["202638191585","Esgoto","15 a 30 dias","923"],["202638601937","Cavalete","15 a 30 dias","923"],["2026106343742","Hidro","7 a 15 dias","923"],["202640059330","Cavalete","até 7 dias","929"],["202639137580","Vazamento","7 a 15 dias","923"],["202640868813","Desobstrução","até 7 dias","923"],["2026106288912","Vazamento","7 a 15 dias","923"],["202640069718","Vazamento","até 7 dias","929"],["202639783356","Cavalete","7 a 15 dias","929"],["202637568560","Vazamento","15 a 30 dias","929"],["202639246175","Desobstrução","7 a 15 dias","923"],["2026107321528","Vazamento","até 7 dias","929"],["202639292416","Vazamento","7 a 15 dias","923"],["2026107325431","Vazamento","até 7 dias","929"],["2026104666510","Hidro","15 a 30 dias","923"],["202639614407","Esgoto","7 a 15 dias","929"],["2026104798712","Embu Guaçu","15 a 30 dias","299"],["202639616431","Esgoto","7 a 15 dias","929"],["202639122854","Cavalete","7 a 15 dias","923"],["2026106043201","Cavalete","7 a 15 dias","923"],["202638814072","Cavalete","7 a 15 dias","923"],["202640820094","Cavalete","até 7 dias","929"],["2026105638484","Vazamento","7 a 15 dias","929"],["2026105969399","Desobstrução","7 a 15 dias","923"],["2026106531219","Cavalete","7 a 15 dias","923"],["202637587534","Vazamento","15 a 30 dias","923"],["202639186211","Cavalete","7 a 15 dias","929"],["202639466310","Vazamento","7 a 15 dias","929"],["2026106451222","Cavalete","7 a 15 dias","923"],["202637769442","Esgoto","15 a 30 dias","923"],["2026106286822","Vazamento","7 a 15 dias","923"],["202639556921","Vazamento","7 a 15 dias","923"],["202640851206","Vazamento","até 7 dias","923"],["202640834030","Esgoto","até 7 dias","923"],["202640054505","Esgoto","até 7 dias","923"],["202640326184","Desobstrução","até 7 dias","923"],["2026107442969","Vazamento","até 7 dias","923"],["2026105658530","Desobstrução","7 a 15 dias","923"],["2026106900026","Vazamento","até 7 dias","929"],["202638687906","Desobstrução","15 a 30 dias","929"],["202640449300","Esgoto","até 7 dias","929"],["202639042011","Esgoto","7 a 15 dias","929"],["202638087298","Desobstrução","15 a 30 dias","923"],["202640849280","Hidro","até 7 dias","923"],["2026106947703","Vazamento","até 7 dias","923"],["2026107662500","Hidro","até 7 dias","929"],["202637777983","Desobstrução","15 a 30 dias","929"],["202638164360","Cavalete","15 a 30 dias","923"],["2026107664326","Desobstrução","até 7 dias","923"],["2026106518623","Cavalete","7 a 15 dias","923"],["2026105199112","Vazamento","15 a 30 dias","923"],["202640314999","Cavalete","até 7 dias","923"],["202640293102","Vazamento","até 7 dias","923"],["202640868419","Desobstrução","até 7 dias","923"],["2026106892625","Hidro","até 7 dias","923"],["2026107386524","Vazamento","até 7 dias","923"],["202637771232","Desobstrução","15 a 30 dias","923"],["202638520254","Cavalete","15 a 30 dias","923"],["202638961489","Desobstrução","7 a 15 dias","929"],["202638965793","Vazamento","7 a 15 dias","929"],["202640743470","Cavalete","até 7 dias","929"],["202638313950","Vazamento","15 a 30 dias","923"],["2026106793447","Desobstrução","7 a 15 dias","929"],["2026105666614","Embu Guaçu","7 a 15 dias","299"],["2026105959164","Embu Guaçu","7 a 15 dias","299"],["202640296878","Vazamento","até 7 dias","929"],["202638795716","Desobstrução","15 a 30 dias","929"],["2026107446798","Desobstrução","até 7 dias","923"],["2026106057668","Vazamento","7 a 15 dias","923"],["202638932653","Vazamento","7 a 15 dias","923"],["2026107001484","Vazamento","até 7 dias","929"],["2026106550713","Cavalete","7 a 15 dias","923"],["202637764466","Desobstrução","15 a 30 dias","929"],["202639247423","Desobstrução","7 a 15 dias","923"],["2026106800322","Vazamento","7 a 15 dias","929"],["202639105070","Desobstrução","7 a 15 dias","923"],["2026105000377","Vazamento","15 a 30 dias","923"],["202639943331","Cavalete","até 7 dias","923"],["202637605582","Vazamento","15 a 30 dias","923"],["202640897684","Cavalete","até 7 dias","929"],["202640121944","Desobstrução","até 7 dias","929"],["202640141714","Vazamento","até 7 dias","923"],["202638708951","Desobstrução","15 a 30 dias","929"],["2026105453179","Hidro","15 a 30 dias","923"],["202639619865","Esgoto","7 a 15 dias","929"],["2026107400794","Hidro","até 7 dias","923"],["202640293822","Esgoto","até 7 dias","923"],["202639521475","Vazamento","7 a 15 dias","929"],["202640301931","Desobstrução","até 7 dias","929"],["202638921408","Desobstrução","7 a 15 dias","923"],["2026106913745","Vazamento","até 7 dias","929"],["2026107174378","Desobstrução","até 7 dias","929"],["2026107337225","Vazamento","até 7 dias","929"],["2026104620840","Cavalete","15 a 30 dias","929"],["2026106145810","Hidro","7 a 15 dias","923"],["2026106667855","Desobstrução","7 a 15 dias","929"],["202639623472","Desobstrução","7 a 15 dias","929"],["202638862936","Desobstrução","7 a 15 dias","923"],["2026106949190","Hidro","até 7 dias","923"],["2026107360101","Cavalete","até 7 dias","923"],["202638916895","Desobstrução","7 a 15 dias","923"],["2026105793721","Vazamento","7 a 15 dias","923"],["2026106246871","Vazamento","7 a 15 dias","923"],["2026107336575","Vazamento","até 7 dias","929"],["2026104755597","Vazamento","15 a 30 dias","929"],["2026106304644","Vazamento","7 a 15 dias","923"],["2026104960642","Hidro","15 a 30 dias","923"],["2026106413892","Hidro","7 a 15 dias","923"],["2026106967192","Vazamento","até 7 dias","923"],["2026106098772","Vazamento","7 a 15 dias","929"],["2026105860244","Cavalete","7 a 15 dias","923"],["2026106874777","Vazamento","7 a 15 dias","929"],["2026105135784","Cavalete","15 a 30 dias","923"],["202640886140","Vazamento","até 7 dias","923"],["202638603121","Desobstrução","15 a 30 dias","929"],["202637842960","Vazamento","15 a 30 dias","929"],["2026105665648","Vazamento","7 a 15 dias","923"],["2026106794472","Vazamento","7 a 15 dias","923"],["202639479518","Vazamento","7 a 15 dias","929"],["202639184465","Desobstrução","7 a 15 dias","923"],["2026107401578","Desobstrução","até 7 dias","929"],["2026105687059","Desobstrução","7 a 15 dias","923"],["2026105683496","Hidro","7 a 15 dias","929"],["202640102858","Vazamento","até 7 dias","923"],["2026107669089","Desobstrução","até 7 dias","929"],["2026106423737","Vazamento","7 a 15 dias","923"],["2026105012118","Hidro","15 a 30 dias","923"],["2026106598591","Desobstrução","7 a 15 dias","929"],["2026106138647","Vazamento","7 a 15 dias","929"],["2026107374515","Vazamento","até 7 dias","923"],["202638717796","Vazamento","15 a 30 dias","929"],["202640288591","Cavalete","até 7 dias","923"],["202640856794","Desobstrução","até 7 dias","923"],["202638060654","Cavalete","15 a 30 dias","923"],["202640463340","Cavalete","até 7 dias","923"],["202639219889","Esgoto","7 a 15 dias","929"],["202640462365","Esgoto","até 7 dias","923"],["2026107361649","Hidro","até 7 dias","923"],["202639118314","Esgoto","7 a 15 dias","929"],["202638193346","Vazamento","15 a 30 dias","929"],["202639614190","Esgoto","7 a 15 dias","929"],["202639527957","Vazamento","7 a 15 dias","929"],["2026105668632","Hidro","7 a 15 dias","929"],["202639173769","Cavalete","7 a 15 dias","923"],["202638737423","Esgoto","15 a 30 dias","929"],["202639129411","Vazamento","7 a 15 dias","923"],["2026106808669","Vazamento","7 a 15 dias","923"],["202639072864","Vazamento","7 a 15 dias","923"],["2026107467795","Vazamento","até 7 dias","929"],["2026105384721","Hidro","15 a 30 dias","929"],["202638600726","Vazamento","15 a 30 dias","929"],["2026107351765","Vazamento","até 7 dias","929"],["2026106951888","Hidro","até 7 dias","923"],["2026107570952","Hidro","até 7 dias","923"],["2026105542257","Vazamento","15 a 30 dias","923"],["202639557962","Cavalete","7 a 15 dias","923"],["2026107099947","Cavalete","até 7 dias","923"],["2026107020936","Cavalete","até 7 dias","929"],["202638364524","Vazamento","15 a 30 dias","923"],["202639029744","Desobstrução","7 a 15 dias","923"],["202639057299","Embu Guaçu","7 a 15 dias","299"],["202639839628","Embu Guaçu","7 a 15 dias","299"],["202640830592","Embu Guaçu","até 7 dias","299"],["202638529214","Desobstrução","15 a 30 dias","923"],["202639492148","Vazamento","7 a 15 dias","929"],["2026106452439","Vazamento","7 a 15 dias","929"],["2026107340613","Vazamento","até 7 dias","929"],["202637983580","Desobstrução","15 a 30 dias","929"],["202639140739","Esgoto","7 a 15 dias","923"],["202639729152","Vazamento","7 a 15 dias","923"],["202640330455","Vazamento","até 7 dias","923"],["2026104983095","Hidro","15 a 30 dias","923"],["202639597312","Vazamento","7 a 15 dias","923"],["202638055877","Hidro","15 a 30 dias","929"],["202637601318","Embu Guaçu","15 a 30 dias","299"],["2026107210509","Vazamento","até 7 dias","929"],["2026106258741","Cavalete","7 a 15 dias","923"],["202637505413","Cavalete","15 a 30 dias","923"],["2026106011062","Desobstrução","7 a 15 dias","923"],["2026106177782","Desobstrução","7 a 15 dias","929"],["2026106245722","Cavalete","7 a 15 dias","929"],["2026106010530","Desobstrução","7 a 15 dias","929"],["2026104670189","Cavalete","15 a 30 dias","929"],["202638689183","Embu Guaçu","15 a 30 dias","299"],["2026105259992","Hidro","15 a 30 dias","923"],["202640435247","Vazamento","até 7 dias","929"],["202639622008","Vazamento","7 a 15 dias","923"],["202640477895","Cavalete","até 7 dias","929"],["2026107375780","Cavalete","até 7 dias","923"],["2026107635738","Embu Guaçu","até 7 dias","299"],["202640816902","Vazamento","até 7 dias","929"],["2026107454376","Cavalete","até 7 dias","923"],["202640316692","Cavalete","até 7 dias","929"],["2026106576977","Embu Guaçu","7 a 15 dias","299"],["2026106857647","Cavalete","7 a 15 dias","929"],["202639782749","Esgoto","7 a 15 dias","929"],["202640490086","Desobstrução","até 7 dias","923"],["202640822352","Embu Guaçu","até 7 dias","299"],["202637849591","Desobstrução","15 a 30 dias","923"],["2026107540839","Embu Guaçu","até 7 dias","299"],["2026107188936","Vazamento","até 7 dias","929"],["202639906124","Cavalete","até 7 dias","929"],["2026104888680","Desobstrução","15 a 30 dias","923"],["202640850678","Cavalete","até 7 dias","923"],["202640305277","Vazamento","até 7 dias","923"],["2026106656814","Hidro","7 a 15 dias","923"],["2026104567535","Vazamento","15 a 30 dias","923"],["2026106513280","Vazamento","7 a 15 dias","923"],["202637883943","Desobstrução","15 a 30 dias","923"],["2026104918424","Hidro","15 a 30 dias","929"],["2026106962044","Cavalete","até 7 dias","929"],["202638367160","Cavalete","15 a 30 dias","923"],["202639935855","Desobstrução","7 a 15 dias","923"],["2026107076759","Hidro","até 7 dias","923"],["2026106530515","Hidro","7 a 15 dias","929"],["202640425242","Cavalete","até 7 dias","923"],["2026106379489","Desobstrução","7 a 15 dias","929"],["202640728659","Desobstrução","até 7 dias","929"],["202639627798","Vazamento","7 a 15 dias","929"],["202639180671","Esgoto","7 a 15 dias","929"],["202637505360","Cavalete","15 a 30 dias","923"],["202637777128","Esgoto","15 a 30 dias","923"],["202639026036","Vazamento","7 a 15 dias","929"],["2026105527906","Hidro","15 a 30 dias","929"],["202640862779","Cavalete","até 7 dias","923"],["2026106832740","Cavalete","7 a 15 dias","929"],["2026105728965","Vazamento","7 a 15 dias","929"],["202640819485","Vazamento","até 7 dias","929"],["202639141502","Desobstrução","7 a 15 dias","923"],["202640882573","Desobstrução","até 7 dias","923"],["202639078869","Desobstrução","7 a 15 dias","923"],["202637800163","Desobstrução","15 a 30 dias","923"],["2026107358265","Hidro","até 7 dias","929"],["202639485959","Esgoto","7 a 15 dias","929"],["202639025844","Desobstrução","7 a 15 dias","929"],["202639618045","Esgoto","7 a 15 dias","929"],["202640470458","Desobstrução","até 7 dias","929"],["202639614369","Esgoto","7 a 15 dias","929"],["202639137689","Vazamento","7 a 15 dias","923"],["2026105361919","Desobstrução","15 a 30 dias","923"],["202639627111","Cavalete","7 a 15 dias","923"],["202640074164","Cavalete","até 7 dias","929"],["2026105686631","Vazamento","7 a 15 dias","923"],["2026105884986","Vazamento","7 a 15 dias","929"],["2026105339012","Vazamento","15 a 30 dias","929"],["2026106464712","Hidro","7 a 15 dias","923"],["2026104671485","Cavalete","15 a 30 dias","923"],["2026104818955","Hidro","15 a 30 dias","923"],["2026106422151","Hidro","7 a 15 dias","923"],["2026105769198","Vazamento","7 a 15 dias","923"],["2026106589189","Hidro","7 a 15 dias","923"],["2026106623368","Hidro","7 a 15 dias","923"],["2026107261321","Embu Guaçu","até 7 dias","299"],["2026107410421","Embu Guaçu","até 7 dias","299"],["2026107382571","Embu Guaçu","até 7 dias","299"],["202639023514","Cavalete","7 a 15 dias","923"],["202637608554","Vazamento","15 a 30 dias","929"],["202640325983","Cavalete","até 7 dias","923"],["202639500394","Vazamento","7 a 15 dias","923"],["202639219114","Hidro","7 a 15 dias","923"],["202638925433","Desobstrução","7 a 15 dias","923"],["202639292335","Desobstrução","7 a 15 dias","923"],["202639420009","Vazamento","7 a 15 dias","929"],["202637483142","Cavalete","15 a 30 dias","923"],["2026106167687","Cavalete","7 a 15 dias","923"],["2026105290822","Cavalete","15 a 30 dias","923"],["202639113269","Vazamento","7 a 15 dias","929"],["2026105163086","Vazamento","15 a 30 dias","923"],["202638508769","Vazamento","15 a 30 dias","929"],["202638202622","Cavalete","15 a 30 dias","929"],["202640315918","Vazamento","até 7 dias","923"],["202638203163","Cavalete","15 a 30 dias","929"],["2026107182901","Vazamento","até 7 dias","929"],["2026107619384","Cavalete","até 7 dias","923"],["202639232984","Esgoto","7 a 15 dias","923"],["202639727467","Cavalete","7 a 15 dias","923"],["2026107155650","Hidro","até 7 dias","929"],["202638320889","Esgoto","15 a 30 dias","929"],["2026106245864","Desobstrução","7 a 15 dias","923"],["202640359656","Vazamento","até 7 dias","929"],["202638790571","Desobstrução","15 a 30 dias","923"],["2026107384017","Cavalete","até 7 dias","923"],["202639731715","Vazamento","7 a 15 dias","923"],["2026107266670","Vazamento","até 7 dias","923"],["2026107233360","Cavalete","até 7 dias","923"],["202640016940","Cavalete","até 7 dias","923"],["2026106990774","Vazamento","até 7 dias","923"],["202640050006","Cavalete","até 7 dias","929"],["2026105191939","Cavalete","15 a 30 dias","923"],["202638221594","Desobstrução","15 a 30 dias","929"],["202640054186","Vazamento","até 7 dias","923"],["202638006086","Desobstrução","15 a 30 dias","929"],["2026104842438","Cavalete","15 a 30 dias","923"],["202640469575","Vazamento","até 7 dias","929"],["2026105995391","Desobstrução","7 a 15 dias","923"],["2026106638593","Desobstrução","7 a 15 dias","929"],["202639840182","Hidro","7 a 15 dias","923"],["2026106167773","Hidro","7 a 15 dias","929"],["2026107609493","Hidro","até 7 dias","929"],["202640455452","Esgoto","até 7 dias","929"],["202637884914","Desobstrução","15 a 30 dias","929"],["2026104954760","Desobstrução","15 a 30 dias","929"],["2026106949036","Vazamento","até 7 dias","929"],["202640282539","Cavalete","até 7 dias","923"],["2026107609416","Hidro","até 7 dias","923"],["202638220669","Desobstrução","15 a 30 dias","923"],["2026106254843","Desobstrução","7 a 15 dias","923"],["2026105008440","Hidro","15 a 30 dias","923"],["2026106650362","Hidro","7 a 15 dias","923"],["202639938851","Esgoto","até 7 dias","923"],["202639078838","Desobstrução","7 a 15 dias","923"],["2026105667164","Hidro","7 a 15 dias","929"],["202639230342","Vazamento","7 a 15 dias","929"],["2026105842176","Hidro","7 a 15 dias","929"],["2026106993340","Vazamento","até 7 dias","929"],["202638090898","Desobstrução","15 a 30 dias","929"],["202638702285","Desobstrução","15 a 30 dias","923"],["202639064111","Vazamento","7 a 15 dias","923"],["202639948854","Desobstrução","7 a 15 dias","923"],["202637140473","Cavalete","15 a 30 dias","929"],["202696526227","Desobstrução","+31 dias","929"],["202640847112","Vazamento","até 7 dias","923"],["202639554976","Vazamento","7 a 15 dias","923"],["202639356419","Vazamento","7 a 15 dias","923"],["2026105165783","Vazamento","15 a 30 dias","923"],["202639510971","Desobstrução","7 a 15 dias","923"],["2026105961277","Cavalete","7 a 15 dias","923"],["2026105288614","Hidro","15 a 30 dias","923"],["202640869096","Desobstrução","até 7 dias","923"],["202637846947","Vazamento","15 a 30 dias","923"],["202639244951","Desobstrução","7 a 15 dias","929"],["202639947185","Desobstrução","7 a 15 dias","923"],["2026107408086","Embu Guaçu","até 7 dias","299"],["202640319029","Embu Guaçu","até 7 dias","299"],["2026105531067","Cavalete","15 a 30 dias","929"],["202638364805","Cavalete","15 a 30 dias","929"],["202639526381","Vazamento","7 a 15 dias","929"],["202639627107","Desobstrução","7 a 15 dias","929"],["2026106387595","Hidro","7 a 15 dias","923"],["2026105817413","Vazamento","7 a 15 dias","929"],["2026106993798","Vazamento","até 7 dias","923"],["2026105856771","Hidro","7 a 15 dias","929"],["2026107309931","Desobstrução","até 7 dias","923"],["202637560882","Vazamento","15 a 30 dias","929"],["202639729088","Desobstrução","7 a 15 dias","929"],["2026106345751","Vazamento","7 a 15 dias","923"],["2026106643159","Desobstrução","7 a 15 dias","929"],["202638465008","Cavalete","15 a 30 dias","929"],["202638961576","Desobstrução","7 a 15 dias","923"],["202639170165","Desobstrução","7 a 15 dias","929"],["202638874869","Cavalete","7 a 15 dias","923"],["202640437887","Cavalete","até 7 dias","923"],["2026106920480","Vazamento","até 7 dias","929"],["2026107362726","Cavalete","até 7 dias","923"],["202637778770","Desobstrução","15 a 30 dias","929"],["2026107556384","Desobstrução","até 7 dias","929"],["2026106191809","Embu Guaçu","7 a 15 dias","299"],["2026105510925","Hidro","15 a 30 dias","923"],["202638819878","Esgoto","7 a 15 dias","923"],["202639078754","Desobstrução","7 a 15 dias","923"],["2026105171435","Hidro","15 a 30 dias","929"],["202639256571","Vazamento","7 a 15 dias","929"],["202639781044","Vazamento","7 a 15 dias","923"],["202639615051","Esgoto","7 a 15 dias","929"],["2026107653647","Cavalete","até 7 dias","929"],["202640899240","Cavalete","até 7 dias","929"],["202639614230","Esgoto","7 a 15 dias","929"],["2026105567596","Hidro","15 a 30 dias","929"],["202640841271","Desobstrução","até 7 dias","929"],["202637602318","Desobstrução","15 a 30 dias","923"],["2026106969412","Desobstrução","até 7 dias","929"],["202638403631","Desobstrução","15 a 30 dias","929"],["2026107335296","Vazamento","até 7 dias","923"],["2026105028293","Cavalete","15 a 30 dias","923"],["202640360021","Vazamento","até 7 dias","923"],["202639130751","Esgoto","7 a 15 dias","923"],["202639050821","Vazamento","7 a 15 dias","923"],["202640438319","Vazamento","até 7 dias","923"],["2026104958111","Hidro","15 a 30 dias","929"],["202640063475","Hidro","até 7 dias","923"],["202639824761","Esgoto","7 a 15 dias","929"],["202638527877","Vazamento","15 a 30 dias","923"],["202637652576","Desobstrução","15 a 30 dias","923"],["202638794316","Cavalete","7 a 15 dias","929"],["2026106952452","Vazamento","até 7 dias","923"],["202638731036","Vazamento","15 a 30 dias","929"],["2026106916931","Vazamento","até 7 dias","923"],["2026107333785","Vazamento","até 7 dias","923"],["202640067994","Vazamento","até 7 dias","929"],["2026104802465","Hidro","15 a 30 dias","923"],["202637839241","Cavalete","15 a 30 dias","923"],["2026105652831","Desobstrução","7 a 15 dias","923"],["202640900245","Desobstrução","até 7 dias","923"],["202639623247","Desobstrução","7 a 15 dias","923"],["202640427397","Desobstrução","até 7 dias","929"],["2026106524668","Vazamento","7 a 15 dias","923"],["202639123160","Vazamento","7 a 15 dias","923"],["2026105878692","Vazamento","7 a 15 dias","923"],["2026105514284","Hidro","15 a 30 dias","929"],["2026105697057","Vazamento","7 a 15 dias","929"],["202639614117","Esgoto","7 a 15 dias","929"],["202640860994","Vazamento","até 7 dias","929"],["202638924254","Embu Guaçu","7 a 15 dias","299"],["202640849959","Desobstrução","até 7 dias","929"]],"resumo":{"porCat":{"Esgoto":53,"Vistorias":30,"Desobstrução":157,"Embu Guaçu":39,"Vazamento":229,"Hidro":88,"Cavalete":136},"comCat":{"Esgoto":6,"Vistorias":30,"Desobstrução":13,"Embu Guaçu":10,"Vazamento":11,"Hidro":4,"Cavalete":37},"porFaixa":{"+31 dias":29,"15 a 30 dias":194,"7 a 15 dias":282,"até 7 dias":227},"com":111,"sem":621,"novas":187,"comNovas":null},"fonte":"aba ONTEM da planilha"},{"data":"2026-10-14","total":666,"novas":45,"executadas":111,"slim":[["202639072696","Desobstrução","7 a 15 dias","929"],["202637663334","Vazamento","15 a 30 dias","923"],["2026107606548","Desobstrução","até 7 dias","923"],["2026107225680","Vazamento","até 7 dias","923"],["2026107274198","Vazamento","até 7 dias","923"],["202639556474","Vazamento","7 a 15 dias","929"],["202636892241","Cavalete","15 a 30 dias","923"],["202639060730","Desobstrução","7 a 15 dias","923"],["202638236368","Desobstrução","15 a 30 dias","923"],["202640137484","Vazamento","7 a 15 dias","929"],["2026107015839","Vazamento","7 a 15 dias","923"],["2026107191592","Vazamento","até 7 dias","923"],["202639614011","Desobstrução","7 a 15 dias","923"],["202639096706","Desobstrução","7 a 15 dias","923"],["2026107402480","Vazamento","até 7 dias","923"],["202637384016","Vazamento","15 a 30 dias","923"],["202640986409","Desobstrução","até 7 dias","923"],["2026107666397","Desobstrução","até 7 dias","929"],["202638521276","Vazamento","15 a 30 dias","923"],["202639573811","Embu Guaçu","até 7 dias","299"],["202640433263","Vazamento","até 7 dias","923"],["2026105667388","Hidro","15 a 30 dias","923"],["2026107581206","Hidro","até 7 dias","923"],["2026106805979","Vazamento","7 a 15 dias","923"],["202637488374","Esgoto","15 a 30 dias","929"],["2026105777865","Hidro","7 a 15 dias","929"],["202640459607","Vazamento","até 7 dias","923"],["202640014802","Desobstrução","7 a 15 dias","929"],["202639492352","Embu Guaçu","7 a 15 dias","299"],["202639938901","Desobstrução","7 a 15 dias","929"],["2026104790606","Hidro","15 a 30 dias","923"],["202640323587","Vazamento","até 7 dias","929"],["202639082952","Desobstrução","7 a 15 dias","923"],["202634447552","Vazamento","+31 dias","923"],["2026105518716","Vazamento","15 a 30 dias","929"],["2026105650541","Hidro","15 a 30 dias","929"],["2026106713492","Desobstrução","7 a 15 dias","929"],["2026106882420","Desobstrução","7 a 15 dias","929"],["202640820151","Cavalete","até 7 dias","929"],["202621691427","Embu Guaçu","+31 dias","299"],["2026105573110","Embu Guaçu","15 a 30 dias","299"],["202638791696","Embu Guaçu","15 a 30 dias","299"],["202639260310","Vazamento","7 a 15 dias","923"],["202637845740","Hidro","15 a 30 dias","929"],["2026106870348","Vazamento","7 a 15 dias","929"],["202637559430","Cavalete","15 a 30 dias","923"],["202640137257","Desobstrução","7 a 15 dias","929"],["202640466269","Hidro","até 7 dias","929"],["202640990264","Desobstrução","até 7 dias","923"],["2026107348997","Vazamento","até 7 dias","929"],["202640990624","Vazamento","até 7 dias","923"],["202639095007","Vazamento","7 a 15 dias","923"],["2026104695921","Hidro","15 a 30 dias","923"],["2026107339548","Vazamento","até 7 dias","929"],["202640819703","Esgoto","até 7 dias","923"],["2026107749800","Vazamento","até 7 dias","923"],["2026106744885","Hidro","7 a 15 dias","929"],["202639619796","Esgoto","7 a 15 dias","929"],["202638222804","Embu Guaçu","15 a 30 dias","299"],["202640986470","Desobstrução","até 7 dias","923"],["2026106991072","Hidro","7 a 15 dias","923"],["2026105560375","Embu Guaçu","15 a 30 dias","299"],["202637112920","Embu Guaçu","15 a 30 dias","299"],["2026107190373","Vazamento","até 7 dias","923"],["2026105477682","Vazamento","15 a 30 dias","923"],["202638327621","Desobstrução","15 a 30 dias","923"],["202636389059","Esgoto","+31 dias","929"],["2026107613486","Vazamento","até 7 dias","929"],["202638937916","Hidro","15 a 30 dias","929"],["2026107545558","Vazamento","até 7 dias","929"],["202640444800","Esgoto","até 7 dias","929"],["202640284725","Esgoto","até 7 dias","923"],["2026106097444","Desobstrução","7 a 15 dias","929"],["202638471957","Desobstrução","15 a 30 dias","923"],["2026105434126","Desobstrução","15 a 30 dias","923"],["202640059771","Vazamento","7 a 15 dias","923"],["2026107363928","Hidro","até 7 dias","923"],["2026106113054","Vazamento","7 a 15 dias","923"],["202637838467","Vazamento","15 a 30 dias","923"],["2026107272405","Cavalete","até 7 dias","929"],["202638958690","Desobstrução","15 a 30 dias","929"],["2026105745163","Hidro","7 a 15 dias","923"],["202639952303","Vazamento","7 a 15 dias","923"],["202639832585","Cavalete","7 a 15 dias","923"],["202638209806","Esgoto","15 a 30 dias","929"],["202611378562","Desobstrução","+31 dias","923"],["202639113477","Esgoto","7 a 15 dias","923"],["202637064993","Vazamento","15 a 30 dias","923"],["2026104805877","Cavalete","15 a 30 dias","923"],["2026107200804","Vazamento","até 7 dias","923"],["202640477222","Vazamento","até 7 dias","923"],["2026107317296","Hidro","até 7 dias","923"],["202639147534","Vazamento","7 a 15 dias","923"],["202639844874","Cavalete","7 a 15 dias","923"],["2026105421489","Desobstrução","15 a 30 dias","923"],["202640981032","Cavalete","até 7 dias","923"],["202640727603","Vazamento","até 7 dias","923"],["202638936188","Desobstrução","15 a 30 dias","929"],["2026107738352","Desobstrução","até 7 dias","929"],["2026105637686","Cavalete","15 a 30 dias","929"],["202638322870","Vazamento","15 a 30 dias","929"],["202638220449","Vazamento","15 a 30 dias","929"],["202688559434","Desobstrução","+31 dias","923"],["202639947283","Desobstrução","7 a 15 dias","929"],["2026106093101","Vazamento","7 a 15 dias","929"],["202640143293","Vazamento","7 a 15 dias","929"],["2026107735523","Vazamento","até 7 dias","929"],["202640726911","Vazamento","até 7 dias","929"],["2026105689724","Vazamento","15 a 30 dias","929"],["2026105812906","Vazamento","7 a 15 dias","929"],["2026104756362","Desobstrução","15 a 30 dias","923"],["2026105282648","Vazamento","15 a 30 dias","923"],["2026105532078","Desobstrução","15 a 30 dias","923"],["2026107660525","Vazamento","até 7 dias","923"],["2026104718494","Vazamento","15 a 30 dias","923"],["202640905499","Desobstrução","até 7 dias","923"],["202638803973","Desobstrução","15 a 30 dias","929"],["202638186867","Desobstrução","15 a 30 dias","929"],["202639133637","Cavalete","7 a 15 dias","929"],["202639234893","Desobstrução","7 a 15 dias","929"],["202639817925","Embu Guaçu","7 a 15 dias","299"],["202640976339","Cavalete","até 7 dias","923"],["2026105567661","Vazamento","15 a 30 dias","923"],["2026104757882","Hidro","15 a 30 dias","923"],["2026107400856","Vazamento","até 7 dias","923"],["20265081537","Embu Guaçu","+31 dias","299"],["202639468059","Esgoto","7 a 15 dias","923"],["202640985860","Hidro","até 7 dias","923"],["202638224351","Cavalete","15 a 30 dias","929"],["202639292997","Desobstrução","7 a 15 dias","923"],["202640983334","Desobstrução","até 7 dias","929"],["2026105151954","Vazamento","15 a 30 dias","929"],["2026105605028","Hidro","15 a 30 dias","923"],["202639830433","Hidro","7 a 15 dias","923"],["2026107628202","Vazamento","até 7 dias","923"],["202639098966","Desobstrução","7 a 15 dias","923"],["202639634994","Vazamento","7 a 15 dias","929"],["202640450129","Vazamento","até 7 dias","923"],["2026105655172","Hidro","15 a 30 dias","923"],["202639540014","Vazamento","7 a 15 dias","929"],["2026104647394","Vazamento","15 a 30 dias","929"],["202639468399","Embu Guaçu","7 a 15 dias","299"],["202640550660","Desobstrução","até 7 dias","929"],["202639502556","Desobstrução","7 a 15 dias","929"],["2026107376279","Embu Guaçu","até 7 dias","299"],["202638098734","Vazamento","15 a 30 dias","929"],["202639481559","Esgoto","7 a 15 dias","929"],["2026107491130","Desobstrução","até 7 dias","923"],["2026106351930","Vazamento","7 a 15 dias","929"],["2026105408316","Cavalete","15 a 30 dias","923"],["202640293704","Vazamento","até 7 dias","929"],["2026105759156","Cavalete","7 a 15 dias","923"],["202640830659","Vazamento","até 7 dias","923"],["2026107765326","Cavalete","até 7 dias","923"],["2026107261781","Hidro","até 7 dias","923"],["2026105936323","Vazamento","7 a 15 dias","923"],["202640985273","Hidro","até 7 dias","923"],["202639079842","Cavalete","7 a 15 dias","923"],["2026104851617","Hidro","15 a 30 dias","923"],["202639827575","Vazamento","7 a 15 dias","923"],["202640843067","Cavalete","até 7 dias","923"],["2026102638819","Vazamento","+31 dias","923"],["202637773737","Desobstrução","15 a 30 dias","929"],["2026106369028","Vazamento","7 a 15 dias","929"],["2026105556304","Cavalete","15 a 30 dias","923"],["2026107192257","Vazamento","até 7 dias","929"],["2026107369442","Vazamento","até 7 dias","923"],["202640727041","Desobstrução","até 7 dias","923"],["202640727138","Esgoto","até 7 dias","929"],["202639120409","Vazamento","7 a 15 dias","929"],["2026103304698","Hidro","+31 dias","929"],["202637839637","Cavalete","7 a 15 dias","929"],["202640013091","Vazamento","7 a 15 dias","929"],["202639454028","Desobstrução","7 a 15 dias","923"],["2026106994663","Vazamento","7 a 15 dias","929"],["202640989984","Desobstrução","até 7 dias","929"],["202639597662","Vazamento","7 a 15 dias","923"],["202638095647","Hidro","15 a 30 dias","929"],["2026105698474","Vazamento","15 a 30 dias","923"],["202640497380","Cavalete","até 7 dias","923"],["202638321660","Cavalete","15 a 30 dias","923"],["2026106188701","Vazamento","7 a 15 dias","929"],["20264862103","Esgoto","+31 dias","923"],["202639809991","Desobstrução","7 a 15 dias","923"],["2026107468056","Vazamento","até 7 dias","923"],["2026107357847","Cavalete","até 7 dias","923"],["2026105364622","Hidro","15 a 30 dias","923"],["2026106287532","Hidro","7 a 15 dias","923"],["202638815222","Esgoto","15 a 30 dias","929"],["202638236718","Esgoto","15 a 30 dias","929"],["2026106789475","Vazamento","7 a 15 dias","923"],["202639943968","Cavalete","7 a 15 dias","923"],["2026106291343","Cavalete","7 a 15 dias","929"],["202638508145","Esgoto","15 a 30 dias","929"],["202637075142","Embu Guaçu","15 a 30 dias","299"],["202639848865","Cavalete","7 a 15 dias","923"],["202639619328","Vazamento","7 a 15 dias","929"],["202637773034","Desobstrução","15 a 30 dias","923"],["202640484266","Esgoto","até 7 dias","929"],["2026104994918","Vazamento","15 a 30 dias","929"],["202640129466","Desobstrução","7 a 15 dias","923"],["2026105646604","Vazamento","15 a 30 dias","923"],["2026106699596","Vazamento","7 a 15 dias","923"],["2026103477500","Hidro","+31 dias","923"],["202639922965","Cavalete","7 a 15 dias","923"],["202636338578","Vazamento","+31 dias","923"],["2026106157259","Hidro","7 a 15 dias","923"],["202693557436","Desobstrução","+31 dias","923"],["2026106282531","Cavalete","7 a 15 dias","923"],["202639121660","Vazamento","7 a 15 dias","929"],["2026105542826","Vazamento","15 a 30 dias","929"],["2026107368807","Hidro","até 7 dias","923"],["202637882278","Vazamento","15 a 30 dias","923"],["2026107309276","Cavalete","até 7 dias","923"],["2026106447791","Vazamento","7 a 15 dias","923"],["2026105169148","Vazamento","15 a 30 dias","923"],["2026104648707","Hidro","15 a 30 dias","923"],["2026107191944","Vazamento","até 7 dias","929"],["2026105518482","Vazamento","15 a 30 dias","923"],["202640844414","Cavalete","até 7 dias","923"],["2026106867024","Vazamento","7 a 15 dias","929"],["202639482406","Esgoto","7 a 15 dias","929"],["2026105526368","Cavalete","15 a 30 dias","923"],["202639084449","Cavalete","7 a 15 dias","923"],["2026105441200","Embu Guaçu","15 a 30 dias","299"],["202684795167","Embu Guaçu","+31 dias","299"],["2026105371688","Vazamento","15 a 30 dias","929"],["2026105119963","Vazamento","15 a 30 dias","929"],["2026104864010","Desobstrução","15 a 30 dias","929"],["202638185448","Desobstrução","15 a 30 dias","929"],["2026107599412","Embu Guaçu","até 7 dias","299"],["2026107350142","Vazamento","até 7 dias","929"],["2026106414722","Cavalete","7 a 15 dias","923"],["2026107751845","Desobstrução","até 7 dias","923"],["2026105891937","Vazamento","7 a 15 dias","923"],["202637881616","Embu Guaçu","15 a 30 dias","299"],["202640585717","Cavalete","até 7 dias","929"],["2026107338040","Vazamento","até 7 dias","923"],["2026105659638","Hidro","15 a 30 dias","923"],["202696033259","Desobstrução","+31 dias","923"],["2026105344146","Vazamento","15 a 30 dias","929"],["202639094206","Vazamento","7 a 15 dias","929"],["2026107217099","Vazamento","até 7 dias","929"],["2026105753916","Vazamento","7 a 15 dias","923"],["2026107649167","Desobstrução","até 7 dias","923"],["2026106278147","Vazamento","7 a 15 dias","923"],["202640977433","Cavalete","até 7 dias","923"],["2026107191073","Vazamento","até 7 dias","929"],["202640987790","Desobstrução","até 7 dias","923"],["2026106696481","Vazamento","7 a 15 dias","929"],["202638083774","Cavalete","15 a 30 dias","923"],["2026106942339","Desobstrução","7 a 15 dias","929"],["202639291780","Esgoto","7 a 15 dias","923"],["2026107339066","Vazamento","até 7 dias","929"],["202640008081","Cavalete","7 a 15 dias","923"],["2026104986541","Desobstrução","15 a 30 dias","929"],["202640877510","Vazamento","até 7 dias","929"],["2026107333042","Vazamento","até 7 dias","923"],["2026104655610","Hidro","15 a 30 dias","923"],["2026106599625","Vazamento","7 a 15 dias","923"],["202639224542","Cavalete","7 a 15 dias","923"],["2026105280408","Hidro","15 a 30 dias","923"],["202639593193","Desobstrução","7 a 15 dias","929"],["202640331080","Desobstrução","até 7 dias","923"],["2026106904648","Vazamento","7 a 15 dias","929"],["2026104455693","Embu Guaçu","15 a 30 dias","299"],["2026106453995","Desobstrução","7 a 15 dias","929"],["202638191585","Esgoto","15 a 30 dias","923"],["202638601937","Cavalete","15 a 30 dias","923"],["2026106343742","Hidro","7 a 15 dias","923"],["202640059330","Cavalete","7 a 15 dias","929"],["202639137580","Vazamento","7 a 15 dias","923"],["202640868813","Desobstrução","até 7 dias","923"],["2026106288912","Vazamento","7 a 15 dias","923"],["202640069718","Vazamento","7 a 15 dias","929"],["202639783356","Cavalete","7 a 15 dias","929"],["202637568560","Vazamento","15 a 30 dias","929"],["2026107321528","Vazamento","até 7 dias","929"],["202639292416","Vazamento","7 a 15 dias","923"],["2026107325431","Vazamento","até 7 dias","929"],["2026104666510","Hidro","15 a 30 dias","923"],["202639614407","Esgoto","7 a 15 dias","929"],["202639616431","Esgoto","7 a 15 dias","929"],["202640983607","Esgoto","até 7 dias","923"],["202639122854","Cavalete","7 a 15 dias","923"],["2026106043201","Cavalete","7 a 15 dias","923"],["202638814072","Cavalete","15 a 30 dias","923"],["202640820094","Cavalete","até 7 dias","929"],["2026105638484","Vazamento","15 a 30 dias","929"],["2026105969399","Desobstrução","7 a 15 dias","923"],["2026106531219","Cavalete","7 a 15 dias","923"],["202637587534","Vazamento","15 a 30 dias","923"],["202639186211","Cavalete","7 a 15 dias","929"],["202639466310","Vazamento","7 a 15 dias","929"],["2026106451222","Cavalete","7 a 15 dias","923"],["2026106286822","Vazamento","7 a 15 dias","923"],["202639556921","Vazamento","7 a 15 dias","923"],["202640851206","Vazamento","até 7 dias","923"],["2026104196110","Vazamento","15 a 30 dias","923"],["202640834030","Esgoto","até 7 dias","923"],["202640054505","Esgoto","7 a 15 dias","923"],["202640326184","Desobstrução","até 7 dias","923"],["202640987725","Vazamento","até 7 dias","923"],["2026105658530","Desobstrução","15 a 30 dias","923"],["2026106900026","Vazamento","7 a 15 dias","929"],["202638687906","Desobstrução","15 a 30 dias","929"],["202639042011","Esgoto","7 a 15 dias","929"],["202638087298","Desobstrução","15 a 30 dias","923"],["2026106947703","Vazamento","7 a 15 dias","923"],["2026107662500","Hidro","até 7 dias","929"],["202637777983","Desobstrução","15 a 30 dias","929"],["202638164360","Cavalete","15 a 30 dias","923"],["2026107664326","Desobstrução","até 7 dias","923"],["2026106518623","Cavalete","7 a 15 dias","923"],["2026105199112","Vazamento","15 a 30 dias","923"],["202640314999","Cavalete","até 7 dias","923"],["202640293102","Vazamento","até 7 dias","923"],["202615428826","Vazamento","+31 dias","929"],["2026107386524","Vazamento","até 7 dias","923"],["202637771232","Desobstrução","15 a 30 dias","923"],["202638520254","Cavalete","15 a 30 dias","923"],["202638961489","Desobstrução","15 a 30 dias","929"],["202638965793","Vazamento","15 a 30 dias","929"],["202640743470","Cavalete","até 7 dias","929"],["202638313950","Vazamento","15 a 30 dias","923"],["202640990443","Vazamento","até 7 dias","929"],["2026107710393","Hidro","até 7 dias","929"],["2026106793447","Desobstrução","7 a 15 dias","929"],["2026105666614","Embu Guaçu","15 a 30 dias","299"],["2026105959164","Embu Guaçu","7 a 15 dias","299"],["202640296878","Vazamento","até 7 dias","929"],["202638795716","Desobstrução","15 a 30 dias","929"],["2026107446798","Desobstrução","até 7 dias","923"],["2026106057668","Vazamento","7 a 15 dias","923"],["202638932653","Vazamento","15 a 30 dias","923"],["2026107001484","Vazamento","7 a 15 dias","929"],["2026106550713","Cavalete","7 a 15 dias","923"],["202637764466","Desobstrução","15 a 30 dias","929"],["202639247423","Desobstrução","7 a 15 dias","923"],["2026106800322","Vazamento","7 a 15 dias","929"],["202639105070","Desobstrução","7 a 15 dias","923"],["2026102815760","Desobstrução","+31 dias","923"],["202637071122","Cavalete","15 a 30 dias","923"],["2026104435990","Vazamento","15 a 30 dias","929"],["2026105000377","Vazamento","15 a 30 dias","923"],["202639943331","Cavalete","até 7 dias","923"],["202637605582","Vazamento","15 a 30 dias","923"],["202640897684","Cavalete","até 7 dias","929"],["202640121944","Desobstrução","7 a 15 dias","929"],["202640141714","Vazamento","7 a 15 dias","923"],["202638708951","Desobstrução","15 a 30 dias","929"],["2026105453179","Hidro","15 a 30 dias","923"],["202639619865","Esgoto","7 a 15 dias","929"],["2026107400794","Hidro","até 7 dias","923"],["202640293822","Esgoto","até 7 dias","923"],["202639521475","Vazamento","7 a 15 dias","929"],["202640301931","Desobstrução","até 7 dias","929"],["202638921408","Desobstrução","15 a 30 dias","923"],["2026106913745","Vazamento","7 a 15 dias","929"],["2026107174378","Desobstrução","até 7 dias","929"],["2026107337225","Vazamento","até 7 dias","929"],["2026104620840","Cavalete","15 a 30 dias","929"],["2026106145810","Hidro","7 a 15 dias","923"],["2026106667855","Desobstrução","7 a 15 dias","929"],["202639623472","Desobstrução","7 a 15 dias","929"],["202638862936","Desobstrução","15 a 30 dias","923"],["2026106949190","Hidro","7 a 15 dias","923"],["2026107360101","Cavalete","até 7 dias","923"],["202638916895","Desobstrução","15 a 30 dias","923"],["2026105793721","Vazamento","7 a 15 dias","923"],["2026106246871","Vazamento","7 a 15 dias","923"],["2026107336575","Vazamento","até 7 dias","929"],["2026104755597","Vazamento","15 a 30 dias","929"],["2026106304644","Vazamento","7 a 15 dias","923"],["2026104960642","Hidro","15 a 30 dias","923"],["2026106413892","Hidro","7 a 15 dias","923"],["2026106967192","Vazamento","7 a 15 dias","923"],["2026106098772","Vazamento","7 a 15 dias","929"],["2026105860244","Cavalete","7 a 15 dias","923"],["2026106874777","Vazamento","7 a 15 dias","929"],["2026105135784","Cavalete","15 a 30 dias","923"],["202640982675","Desobstrução","até 7 dias","923"],["202640886140","Vazamento","até 7 dias","923"],["202638603121","Desobstrução","15 a 30 dias","929"],["202637842960","Cavalete","15 a 30 dias","929"],["2026105665648","Vazamento","15 a 30 dias","923"],["202636895470","Cavalete","15 a 30 dias","923"],["202639479518","Vazamento","7 a 15 dias","929"],["202639184465","Desobstrução","7 a 15 dias","923"],["2026107401578","Desobstrução","até 7 dias","929"],["2026105687059","Desobstrução","15 a 30 dias","923"],["2026105683496","Hidro","15 a 30 dias","929"],["202640102858","Vazamento","7 a 15 dias","923"],["2026107669089","Desobstrução","até 7 dias","929"],["202640980088","Vazamento","até 7 dias","929"],["2026106423737","Vazamento","7 a 15 dias","923"],["2026105012118","Hidro","15 a 30 dias","923"],["2026106598591","Desobstrução","7 a 15 dias","929"],["2026106138647","Vazamento","7 a 15 dias","929"],["2026107374515","Vazamento","até 7 dias","923"],["202638717796","Vazamento","15 a 30 dias","929"],["202640288591","Cavalete","até 7 dias","923"],["202640463340","Cavalete","até 7 dias","923"],["202640984853","Desobstrução","até 7 dias","929"],["202639219889","Esgoto","7 a 15 dias","929"],["202640462365","Esgoto","até 7 dias","923"],["2026107361649","Hidro","até 7 dias","923"],["202640987293","Hidro","até 7 dias","929"],["202639118314","Esgoto","7 a 15 dias","929"],["202638193346","Vazamento","15 a 30 dias","929"],["2026105668632","Hidro","15 a 30 dias","929"],["202639173769","Vazamento","7 a 15 dias","923"],["202638737423","Esgoto","15 a 30 dias","929"],["202637550174","Desobstrução","15 a 30 dias","929"],["202640985872","Desobstrução","até 7 dias","923"],["2026104004686","Vazamento","+31 dias","923"],["2026106808669","Vazamento","7 a 15 dias","923"],["2026107351765","Vazamento","até 7 dias","929"],["2026105542257","Vazamento","15 a 30 dias","923"],["202639557962","Cavalete","7 a 15 dias","923"],["2026107099947","Cavalete","até 7 dias","923"],["202639029744","Desobstrução","7 a 15 dias","923"],["202639057299","Embu Guaçu","7 a 15 dias","299"],["202639839628","Embu Guaçu","7 a 15 dias","299"],["202638529214","Desobstrução","15 a 30 dias","923"],["2026107340613","Vazamento","até 7 dias","929"],["202637983580","Desobstrução","15 a 30 dias","929"],["202639140739","Esgoto","7 a 15 dias","923"],["202640330455","Vazamento","até 7 dias","923"],["2026104983095","Hidro","15 a 30 dias","923"],["2026103551275","Vazamento","+31 dias","929"],["202637601318","Embu Guaçu","15 a 30 dias","299"],["2026107210509","Vazamento","até 7 dias","929"],["2026106011062","Desobstrução","7 a 15 dias","923"],["202638689183","Embu Guaçu","15 a 30 dias","299"],["202640477895","Cavalete","até 7 dias","929"],["2026106576977","Embu Guaçu","7 a 15 dias","299"],["202639782749","Esgoto","7 a 15 dias","929"],["2026104563704","Cavalete","15 a 30 dias","929"],["202637849591","Desobstrução","15 a 30 dias","923"],["2026106656814","Hidro","7 a 15 dias","923"],["2026104567535","Vazamento","15 a 30 dias","923"],["2026106962044","Cavalete","7 a 15 dias","929"],["202638367160","Cavalete","15 a 30 dias","923"],["202639935855","Desobstrução","7 a 15 dias","923"],["2026107076759","Hidro","até 7 dias","923"],["2026103810440","Cavalete","+31 dias","923"],["202639627798","Vazamento","7 a 15 dias","929"],["202637505360","Cavalete","15 a 30 dias","923"],["2026105527906","Hidro","15 a 30 dias","929"],["2026105728965","Vazamento","15 a 30 dias","929"],["202640819485","Vazamento","até 7 dias","929"],["202639078869","Desobstrução","7 a 15 dias","923"],["2026107358265","Hidro","até 7 dias","929"],["202639025844","Desobstrução","7 a 15 dias","929"],["2026107689776","Cavalete","até 7 dias","929"],["202640470458","Desobstrução","até 7 dias","929"],["202639614190","Esgoto","7 a 15 dias","929"],["202639527957","Vazamento","7 a 15 dias","929"],["202639129411","Vazamento","7 a 15 dias","923"],["202639072864","Vazamento","7 a 15 dias","923"],["2026107467795","Vazamento","até 7 dias","929"],["2026105384721","Hidro","15 a 30 dias","929"],["202638600726","Vazamento","15 a 30 dias","929"],["2026107570952","Hidro","até 7 dias","923"],["2026107020936","Cavalete","7 a 15 dias","929"],["202638364524","Vazamento","15 a 30 dias","923"],["202640830592","Embu Guaçu","até 7 dias","299"],["2026106452439","Vazamento","7 a 15 dias","929"],["202640987342","Vazamento","até 7 dias","923"],["202639597312","Vazamento","7 a 15 dias","923"],["202638055877","Hidro","15 a 30 dias","929"],["2026106258741","Cavalete","7 a 15 dias","923"],["202637505413","Cavalete","15 a 30 dias","923"],["2026106177782","Desobstrução","7 a 15 dias","929"],["2026106245722","Cavalete","7 a 15 dias","929"],["2026106010530","Desobstrução","7 a 15 dias","929"],["2026104670189","Vazamento","15 a 30 dias","929"],["202636067255","Vazamento","+31 dias","929"],["202640976188","Desobstrução","até 7 dias","929"],["202640435247","Vazamento","até 7 dias","929"],["202639622008","Vazamento","7 a 15 dias","923"],["2026107635738","Embu Guaçu","até 7 dias","299"],["202640316692","Cavalete","até 7 dias","929"],["2026106857647","Cavalete","7 a 15 dias","929"],["202640490086","Desobstrução","até 7 dias","923"],["202640822352","Embu Guaçu","até 7 dias","299"],["2026107188936","Vazamento","até 7 dias","929"],["202639906124","Cavalete","até 7 dias","929"],["202636913902","Embu Guaçu","15 a 30 dias","299"],["2026104888680","Desobstrução","15 a 30 dias","923"],["2026106513280","Vazamento","7 a 15 dias","923"],["202637883943","Desobstrução","15 a 30 dias","923"],["2026104918424","Hidro","15 a 30 dias","929"],["202639180671","Esgoto","7 a 15 dias","929"],["202639026036","Vazamento","7 a 15 dias","929"],["2026106832740","Cavalete","7 a 15 dias","929"],["202639141502","Desobstrução","7 a 15 dias","923"],["202637800163","Desobstrução","15 a 30 dias","923"],["202639485959","Esgoto","7 a 15 dias","929"],["202639618045","Esgoto","7 a 15 dias","929"],["202639614369","Esgoto","7 a 15 dias","929"],["202639137689","Vazamento","7 a 15 dias","923"],["2026105361919","Desobstrução","15 a 30 dias","923"],["202639627111","Cavalete","7 a 15 dias","923"],["202640074164","Cavalete","7 a 15 dias","929"],["2026105686631","Vazamento","15 a 30 dias","923"],["2026105884986","Vazamento","7 a 15 dias","929"],["2026105339012","Vazamento","15 a 30 dias","929"],["2026106464712","Hidro","7 a 15 dias","923"],["2026104818955","Hidro","15 a 30 dias","923"],["2026106422151","Hidro","7 a 15 dias","923"],["2026105769198","Vazamento","7 a 15 dias","923"],["2026106589189","Hidro","7 a 15 dias","923"],["2026106623368","Hidro","7 a 15 dias","923"],["2026107261321","Embu Guaçu","até 7 dias","299"],["2026107382571","Embu Guaçu","até 7 dias","299"],["202639023514","Cavalete","7 a 15 dias","923"],["202637608554","Vazamento","15 a 30 dias","929"],["202640325983","Cavalete","até 7 dias","923"],["202639500394","Vazamento","7 a 15 dias","923"],["202640982955","Esgoto","até 7 dias","929"],["202639219114","Hidro","7 a 15 dias","923"],["202638925433","Desobstrução","15 a 30 dias","923"],["202639292335","Desobstrução","7 a 15 dias","923"],["202639420009","Vazamento","7 a 15 dias","929"],["2026106167687","Cavalete","7 a 15 dias","923"],["2026105290822","Cavalete","15 a 30 dias","923"],["202639113269","Vazamento","7 a 15 dias","929"],["2026105163086","Vazamento","15 a 30 dias","923"],["202638508769","Vazamento","15 a 30 dias","929"],["202638202622","Cavalete","15 a 30 dias","929"],["202640315918","Vazamento","até 7 dias","923"],["202638203163","Cavalete","15 a 30 dias","929"],["2026107182901","Vazamento","até 7 dias","929"],["202639232984","Esgoto","7 a 15 dias","923"],["202639727467","Cavalete","7 a 15 dias","923"],["202638320889","Esgoto","15 a 30 dias","929"],["202683930077","Desobstrução","+31 dias","929"],["202638702285","Desobstrução","15 a 30 dias","923"],["202639064111","Vazamento","7 a 15 dias","923"],["2026107745146","Hidro","até 7 dias","923"],["202637260535","Vazamento","15 a 30 dias","929"],["2026106245864","Desobstrução","7 a 15 dias","923"],["202639948854","Desobstrução","7 a 15 dias","923"],["202640359656","Vazamento","até 7 dias","929"],["202638790571","Desobstrução","15 a 30 dias","923"],["202639554976","Vazamento","7 a 15 dias","923"],["202639356419","Vazamento","7 a 15 dias","923"],["202637253130","Esgoto","15 a 30 dias","923"],["2026107680457","Desobstrução","até 7 dias","923"],["202637110337","Desobstrução","15 a 30 dias","923"],["202639731715","Vazamento","7 a 15 dias","923"],["2026105165783","Vazamento","15 a 30 dias","923"],["202639510971","Desobstrução","7 a 15 dias","923"],["2026105961277","Cavalete","7 a 15 dias","923"],["2026105288614","Hidro","15 a 30 dias","923"],["2026107233360","Cavalete","até 7 dias","923"],["202640869096","Desobstrução","até 7 dias","923"],["202637846947","Vazamento","15 a 30 dias","923"],["202640016940","Cavalete","7 a 15 dias","923"],["2026107756168","Desobstrução","até 7 dias","929"],["202639244951","Desobstrução","7 a 15 dias","929"],["2026106990774","Vazamento","7 a 15 dias","923"],["2026107408086","Embu Guaçu","até 7 dias","299"],["202632302237","Embu Guaçu","+31 dias","299"],["202640319029","Embu Guaçu","até 7 dias","299"],["202640050006","Cavalete","7 a 15 dias","929"],["2026105531067","Cavalete","15 a 30 dias","929"],["202638364805","Vazamento","15 a 30 dias","929"],["2026105191939","Cavalete","15 a 30 dias","923"],["202639526381","Vazamento","7 a 15 dias","929"],["202638221594","Desobstrução","15 a 30 dias","929"],["202640054186","Vazamento","7 a 15 dias","923"],["202639627107","Desobstrução","7 a 15 dias","929"],["202638006086","Desobstrução","15 a 30 dias","929"],["2026104842438","Cavalete","15 a 30 dias","923"],["202640469575","Vazamento","até 7 dias","929"],["2026105995391","Desobstrução","7 a 15 dias","923"],["2026106387595","Hidro","7 a 15 dias","923"],["2026105817413","Vazamento","7 a 15 dias","929"],["2026106638593","Desobstrução","7 a 15 dias","929"],["202639840182","Hidro","7 a 15 dias","923"],["2026107738128","Hidro","até 7 dias","923"],["2026106993798","Vazamento","7 a 15 dias","923"],["2026107762406","Hidro","até 7 dias","929"],["2026105856771","Hidro","7 a 15 dias","929"],["2026107309931","Desobstrução","até 7 dias","923"],["202637560882","Vazamento","15 a 30 dias","929"],["202639729088","Desobstrução","7 a 15 dias","929"],["2026106345751","Vazamento","7 a 15 dias","923"],["2026106643159","Desobstrução","7 a 15 dias","929"],["2026104000159","Cavalete","+31 dias","923"],["202638465008","Cavalete","15 a 30 dias","929"],["2026106167773","Hidro","7 a 15 dias","929"],["202638961576","Desobstrução","15 a 30 dias","923"],["2026107609493","Hidro","até 7 dias","929"],["202639170165","Desobstrução","7 a 15 dias","929"],["202638874869","Cavalete","15 a 30 dias","923"],["202640455452","Esgoto","até 7 dias","929"],["2026106920480","Vazamento","7 a 15 dias","929"],["202637884914","Desobstrução","15 a 30 dias","929"],["2026107362726","Cavalete","até 7 dias","923"],["2026104954760","Desobstrução","15 a 30 dias","929"],["2026106949036","Vazamento","7 a 15 dias","929"],["2026107556384","Desobstrução","até 7 dias","929"],["2026106191809","Embu Guaçu","7 a 15 dias","299"],["202640282539","Cavalete","até 7 dias","923"],["2026105510925","Hidro","15 a 30 dias","923"],["2026107609416","Hidro","até 7 dias","923"],["202638220669","Desobstrução","15 a 30 dias","923"],["2026106254843","Desobstrução","7 a 15 dias","923"],["2026105008440","Hidro","15 a 30 dias","923"],["2026106650362","Hidro","7 a 15 dias","923"],["202639938851","Esgoto","7 a 15 dias","923"],["202638819878","Esgoto","15 a 30 dias","923"],["202639078754","Desobstrução","7 a 15 dias","923"],["202639078838","Desobstrução","7 a 15 dias","923"],["2026105171435","Hidro","15 a 30 dias","929"],["202639256571","Vazamento","7 a 15 dias","929"],["2026105667164","Hidro","15 a 30 dias","929"],["202639230342","Vazamento","7 a 15 dias","929"],["202639781044","Vazamento","7 a 15 dias","923"],["2026105842176","Hidro","7 a 15 dias","929"],["2026106993340","Vazamento","7 a 15 dias","929"],["202638090898","Desobstrução","15 a 30 dias","929"],["202639615051","Esgoto","7 a 15 dias","929"],["202639614230","Esgoto","7 a 15 dias","929"],["2026105567596","Hidro","15 a 30 dias","929"],["202640841271","Desobstrução","até 7 dias","929"],["202637602318","Desobstrução","15 a 30 dias","923"],["2026106969412","Desobstrução","7 a 15 dias","929"],["202638403631","Desobstrução","15 a 30 dias","929"],["2026107335296","Vazamento","até 7 dias","923"],["2026105028293","Cavalete","15 a 30 dias","923"],["202640360021","Vazamento","até 7 dias","923"],["202639130751","Esgoto","7 a 15 dias","923"],["202639050821","Vazamento","7 a 15 dias","923"],["202640438319","Vazamento","até 7 dias","923"],["2026104958111","Hidro","15 a 30 dias","929"],["202694224085","Embu Guaçu","+31 dias","299"],["202640063475","Hidro","7 a 15 dias","923"],["202639824761","Esgoto","7 a 15 dias","929"],["202638527877","Vazamento","15 a 30 dias","923"],["202637652576","Desobstrução","15 a 30 dias","923"],["202638794316","Cavalete","7 a 15 dias","929"],["2026106952452","Vazamento","7 a 15 dias","923"],["202638731036","Vazamento","15 a 30 dias","929"],["2026106916931","Vazamento","7 a 15 dias","923"],["2026107333785","Vazamento","até 7 dias","923"],["202640067994","Vazamento","7 a 15 dias","929"],["2026104802465","Hidro","15 a 30 dias","923"],["202637839241","Cavalete","15 a 30 dias","923"],["2026105652831","Desobstrução","15 a 30 dias","923"],["202640900245","Desobstrução","até 7 dias","923"],["202639623247","Desobstrução","7 a 15 dias","923"],["202640427397","Desobstrução","até 7 dias","929"],["2026107752087","Cavalete","até 7 dias","923"],["202639123160","Cavalete","7 a 15 dias","923"],["2026105878692","Vazamento","7 a 15 dias","923"],["2026105514284","Hidro","15 a 30 dias","929"],["2026105697057","Vazamento","15 a 30 dias","929"],["202640818290","Esgoto","até 7 dias","929"],["202633110111","Esgoto","+31 dias","923"],["202638924254","Embu Guaçu","15 a 30 dias","299"],["202640849959","Desobstrução","até 7 dias","929"]],"enviadoEm":1792000000000,"fonte":"Detalhamento_por_fornecimento-2026-10-14.xlsx"}],"linhas":{},"tratBase":{},"trat":{}};
+let S=null,timerSalvar=null;
+const vazio=()=>({versao:1,config:{atcs:["923","929","299"],inicio:null},dias:[],linhas:{},tratBase:{},trat:{}});
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function idb(){return new Promise((res,rej)=>{try{const r=indexedDB.open("painel-pendencias-dados",1);r.onupgradeneeded=()=>r.result.createObjectStore("d");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}catch(e){rej(e);}});}
+async function idbGet(k){const d=await idb();return await new Promise((res,rej)=>{const q=d.transaction("d").objectStore("d").get(k);q.onsuccess=()=>res(q.result??null);q.onerror=()=>rej(q.error);});}
+async function idbSet(k,v){const d=await idb();return await new Promise((res,rej)=>{const t=d.transaction("d","readwrite");t.objectStore("d").put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error);});}
+function normalizar(o){const s=Object.assign(vazio(),o||{});s.config=Object.assign(vazio().config,s.config||{});s.config.atcs=(s.config.atcs||[]).map(String);s.dias=s.dias||[];s.linhas=s.linhas||{};s.tratBase=s.tratBase||{};s.trat=s.trat||{};return s;}
+function mesclar(disco,meu){
+  const r=normalizar(JSON.parse(JSON.stringify(disco)));
+  for(const [os,t] of Object.entries(meu.trat||{})){const d=r.trat[os];if(!d||(t.em||0)>(d.em||0))r.trat[os]=t;}
+  const porData={};for(const d of r.dias)porData[d.data]=d;
+  for(const d of meu.dias||[]){const x=porData[d.data];
+    if(!x||(d.enviadoEm||0)>(x.enviadoEm||0)){porData[d.data]=d;if(meu.linhas[d.data])r.linhas[d.data]=meu.linhas[d.data];else if(x&&(d.enviadoEm||0)>(x.enviadoEm||0))delete r.linhas[d.data];}
+    else if(x&&d.resumo&&!x.resumo)x.resumo=d.resumo;}
+  r.dias=Object.values(porData);
+  if((meu.config.em||0)>(r.config.em||0))r.config=meu.config;
+  r.tratBase=Object.assign({},meu.tratBase||{},r.tratBase);
+  podar(r);return r;
+}
+function podar(s){
+  const ord=s.dias.slice().sort((a,b)=>a.data<b.data?1:-1);
+  const ult=ord.filter(d=>s.linhas[d.data]).sort((a,b)=>(b.enviadoEm||0)-(a.enviadoEm||0))[0];
+  const comL=ord.filter(d=>s.linhas[d.data]&&d!==ult);for(const d of comL.slice(2))delete s.linhas[d.data];
+  ord.filter(d=>d.slim&&d.slim.length).slice(6).forEach(d=>{d.slim=[];});
+}
+function setConn(estado,tit,sub){$("connDot").className="dot "+estado;$("connTit").textContent=tit;$("connSub").textContent=sub||"";}
+function statusGuardado(){const h=S&&S.dias.filter(d=>S.linhas[d.data]).sort((a,b)=>a.data<b.data?1:-1)[0];
+  setConn("on","Dados guardados neste computador",(h?"base atual: "+fmtData(h.data)+" · ":"")+"salvo às "+new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}));}
+async function salvar(){
+  if(!S)return;podar(S);
+  try{await idbSet("estado",JSON.parse(JSON.stringify(S)));statusGuardado();}
+  catch(e){try{localStorage.setItem("painel-estado",JSON.stringify(S));statusGuardado();}
+    catch(_){setConn("off","Não consegui guardar os dados neste computador","baixe o Excel e a cópia de segurança antes de fechar");}}
+}
+function agendarSalvar(){clearTimeout(timerSalvar);timerSalvar=setTimeout(salvar,400);}
+async function carregarLocal(){
+  let o=null;try{o=await idbGet("estado");}catch(e){}
+  if(!o){try{o=JSON.parse(localStorage.getItem("painel-estado")||"null");}catch(e){}}
+  S=normalizar(o||JSON.parse(JSON.stringify(SEMENTE)));
+  if(!o)setConn("warn","Primeiro uso neste computador","já vem com o histórico; é só subir o Detalhamento do dia");else statusGuardado();
+}
+
+/* ================= estado derivado ================= */
+let hoje=null,ontem=null,linhas=[],filtro="Todas",editando=false,pendRender=false,aberto=new Set(),upload=null;
+const trat=os=>{const d=S&&S.trat[os];if(d&&typeof d.texto==="string")return d.texto;return (S&&S.tratBase[os])||"";};
+function aplicar(){
+  if(!S){render();return;}
+  const ord=S.dias.slice().sort((a,b)=>a.data<b.data?1:-1);
+  // mostra a última base que foi subida (mesmo que seja de uma data anterior)
+  hoje=ord.filter(d=>S.linhas[d.data]).sort((a,b)=>(b.enviadoEm||0)-(a.enviadoEm||0))[0]||null;
+  linhas=hoje?S.linhas[hoje.data]:[];
+  ontem=hoje?(ord.find(d=>d.data<hoje.data&&((d.slim&&d.slim.length)||d.resumo))||null):null;
+  sugestoes();render();
+}
+const endK=r=>U(clean(String(r[I.end]).replace(/\.0{6,}/,"")));
+function derivar(){
+  const oc={},fc={},ec={};
+  for(const r of linhas){const k=key(r[I.os]);oc[k]=(oc[k]||0)+1;const f=key(r[I.forn]);if(f)fc[f]=(fc[f]||0)+1;const e=endK(r);if(e)ec[e]=(ec[e]||0)+1;}
+  const setO=new Set((ontem&&ontem.slim||[]).map(s=>s[0]));
+  const cz=hoje&&hoje.cruz;const sCT=new Set(cz?cz.contTrat:[]),sC=new Set(cz?cz.cont:[]);
+  // grupos: liga linhas com a mesma OS, o mesmo fornecimento ou o mesmo endereço
+  const pai=linhas.map((_,i)=>i);const raiz=i=>{while(pai[i]!==i){pai[i]=pai[pai[i]];i=pai[i];}return i;};
+  const uni=(a,b)=>{a=raiz(a);b=raiz(b);if(a!==b)pai[b]=a;};
+  const prim={};linhas.forEach((r,i)=>{for(const k of ["o"+key(r[I.os]),"f"+key(r[I.forn]),"e"+endK(r)]){if(k.length<2)continue;if(k in prim)uni(prim[k],i);else prim[k]=i;}});
+  const tam={};linhas.forEach((_,i)=>{const g=raiz(i);tam[g]=(tam[g]||0)+1;});
+  return linhas.map((r,i)=>{const os=key(r[I.os]),t=trat(os),g=raiz(i);return {r,i,os,t,polo:poloDe(r),cat:catFrom(catBase(r),t),nova:ontem?!setO.has(os):false,
+    dupOS:oc[os]>1,dupF:fc[key(r[I.forn])]>1,dupE:ec[endK(r)]>1,grp:tam[g]>1?g:null,grpN:tam[g],
+    rede:cz?(sCT.has(os)?"tratada":sC.has(os)?"semtrat":"nova"):null};});
+}
+function resumoDia(d){
+  if(!d)return null;if(d.resumo)return d.resumo;
+  const res={porCat:{},comCat:{},porFaixa:{},com:0,sem:0,novas:d.novas||0};
+  for(const [os,cb,fx] of (d.slim||[])){const t=trat(os),c=catFrom(cb,t);res.porCat[c]=(res.porCat[c]||0)+1;res.porFaixa[fx]=(res.porFaixa[fx]||0)+1;if(clean(t)){res.com++;res.comCat[c]=(res.comCat[c]||0)+1;}else res.sem++;}
+  return res;
+}
+function porPolo(D){
+  const atcs=S.config.atcs.slice();const LOn=ontem&&S.linhas[ontem.data];const temO=!!(LOn||(ontem&&ontem.slim&&ontem.slim.length&&ontem.slim[0].length>3));
+  const contaO=a=>LOn?LOn.filter(r=>poloDe(r)===a).length:ontem.slim.filter(s=>String(s[3])===a).length;
+  const lista=atcs.map(a=>{const L=D.filter(x=>x.polo===a);return {a,h:L.length,c:L.filter(x=>clean(x.t)).length,o:temO?contaO(a):null,
+    f:Object.fromEntries(FAIXAS.map(([k])=>[k,L.filter(x=>x.r[I.faixa]===k).length]))};});
+  return {lista,temO};
+}
+function resumoDe(D){
+  const res={porCat:{},comCat:{},porFaixa:{},com:0,sem:0,novas:0,comNovas:0};
+  for(const x of D){res.porCat[x.cat]=(res.porCat[x.cat]||0)+1;const fx=x.r[I.faixa];res.porFaixa[fx]=(res.porFaixa[fx]||0)+1;const c=!!clean(x.t);
+    if(c){res.com++;res.comCat[x.cat]=(res.comCat[x.cat]||0)+1;}else res.sem++;if(x.nova){res.novas++;if(c)res.comNovas++;}}
+  return res;
+}
+
+/* ================= telas ================= */
+function barra(a,b){const p=b?a*100/b:0;return `<div class="row" style="gap:8px;flex-wrap:nowrap"><div class="bar"><i style="width:${p.toFixed(1)}%"></i></div><span class="num" style="width:38px;text-align:right">${Math.round(p)}%</span></div>`;}
+function render(){
+  if(!S||!hoje){
+    $("sub").textContent=!S?"Conecte o arquivo de dados da equipe para começar.":"Nenhuma base salva ainda. Clique em “Atualizar com os arquivos do dia”.";
+    $("kpis").innerHTML="";$("cruzBox").innerHTML="";$("tbFaixa").innerHTML="";$("tbServ").innerHTML="";$("poloCards").innerHTML="";$("atencao").innerHTML="";$("chart").innerHTML="";$("tbHist").innerHTML="";$("chips").innerHTML="";
+    $("lista").innerHTML='<div class="empty">Sem OS para mostrar ainda. Suba o Detalhamento do dia.</div>';$("blocos").hidden=true;$("kpis").hidden=true;if(S)renderHist();return;}
+  $("blocos").hidden=false;$("kpis").hidden=false;
+  const D=derivar(),H=resumoDe(D),O=resumoDia(ontem);
+  $("sub").innerHTML=`Base de <b>${dm(hoje.data)}</b> · ${nf(linhas.length)} OS · polos ${esc(S.config.atcs.join(", "))}`+(ontem?` · comparando com ${dm(ontem.data)}`:"");
+  const tO=ontem?(ontem.total||0):null;
+  const dif=tO==null?null:D.length-tO,d31=O?(H.porFaixa["+31 dias"]||0)-(O.porFaixa["+31 dias"]||0):null;
+  const dB=n=>n==null?`<span class="note">–</span>`:`<span class="delta ${n>0?"up":n<0?"down":""}">${n>0?"▲":n<0?"▼":"="} ${nf(Math.abs(n))}</span>`;
+  const k=[
+    {l:"Pendências hoje",v:nf(D.length),s:`base de ${dm(hoje.data)} · ver todas`,ic:IC.hoje,hl:true,go:{}},
+    {l:"Variação",v:dif==null?"–":sinal(dif),s:tO==null?"sem base anterior":`ontem ${nf(tO)} · ${nf(hoje.executadas??0)} saíram`,ic:IC.dif,t:dif>0?"var(--red)":"var(--green)",ts:dif>0?"var(--red-soft)":"var(--green-soft)"},
+    {l:"Novas hoje",v:nf(H.novas),s:"não estavam ontem",ic:IC.ontem,go:{cat:"Novas"},t:"var(--accent)",ts:"var(--accent-soft)"},
+    {l:"Com tratativa",v:nf(H.com),s:pct(H.com,D.length)+" do total",ic:IC.com,go:{trat:"com"},t:"var(--green)",ts:"var(--green-soft)"},
+    {l:"Sem tratativa",v:nf(H.sem),s:pct(H.sem,D.length)+" do total",ic:IC.sem,go:{trat:"sem"},t:"var(--orange)",ts:"var(--orange-soft)"},
+    {l:"Mais de 31 dias",v:nf(H.porFaixa["+31 dias"]||0),s:"vs ontem",ic:IC.atraso,go:{faixa:"+31 dias"},t:"var(--red)",ts:"var(--red-soft)",b:d31}];
+  $("kpis").innerHTML=k.map(x=>`<div class="kpi${x.hl?" hl":""}"${x.go?` data-go='${JSON.stringify(x.go)}' title="Ver estas OS"`:""} style="--tone:${x.t||""};--tone-soft:${x.ts||""}"><div class="top"><span class="lbl">${x.l}</span><span class="ic">${x.ic}</span></div><b>${x.v}</b><small>${x.b!=null?dB(x.b):""}${esc(x.s)}</small></div>`).join("");
+  const FXC={"+31 dias":"#C2362B","15 a 30 dias":"#E07B24","7 a 15 dias":"#E8B53D","até 7 dias":"#2FA36B"};
+  // ---- serviços
+  const cats=CATS.concat(H.porCat.Outros?["Outros"]:[]);const smax=Math.max(1,...cats.map(c=>H.porCat[c]||0));
+  let sr=`<div class="r hd"><span>Serviço</span><span></span><span>Hoje</span><span>vs ontem</span><span>% trat.</span></div>`;const tot={o:0,h:0,c:0};
+  for(const c of cats.slice().sort((a,b)=>(H.porCat[b]||0)-(H.porCat[a]||0))){const h=H.porCat[c]||0,cc=H.comCat[c]||0,o=O?(O.porCat[c]||0):null;tot.h+=h;tot.c+=cc;tot.o+=o||0;
+    sr+=`<div class="r" data-go='${JSON.stringify({cat:c})}' title="Ver as OS de ${c}: ${cc} com tratativa, ${h-cc} sem"><span class="nm"><i style="--c:${CORES[c]||"#999"}"></i>${c}</span><div class="br" style="width:${Math.max(4,h*100/smax).toFixed(1)}%"><i style="width:${pct(cc,h)};background:#2FA36B"></i><i style="flex:1;background:#F3C46B"></i></div><span class="n">${nf(h)}</span><span class="d">${dB(o==null?null:h-o)}</span><span class="p">${pct(cc,h)}</span></div>`;}
+  sr+=`<div class="r tt"><span class="nm">Total</span><span class="note">${nf(tot.c)} com tratativa · ${nf(tot.h-tot.c)} sem</span><span class="n">${nf(tot.h)}</span><span class="d">${dB(O?tot.h-tot.o:null)}</span><span class="p">${pct(tot.c,tot.h)}</span></div>`;
+  $("tbServ").innerHTML=`<div class="sv2">${sr}</div>`;
+  // ---- tempo de atraso (barras)
+  {const fmax=Math.max(1,...FAIXAS.map(([k2])=>H.porFaixa[k2]||0));
+   const big=FAIXAS.map(([k2])=>(H.porFaixa[k2]||0)?`<i data-go='${JSON.stringify({faixa:k2})}' title="${k2}: ver OS" style="width:${((H.porFaixa[k2]||0)*100/D.length).toFixed(1)}%;background:${FXC[k2]}"></i>`:"").join("");
+   let fr="";for(const [k2,l] of FAIXAS){const h=H.porFaixa[k2]||0,o=O?(O.porFaixa[k2]||0):null;
+     fr+=`<div class="fr2" data-go='${JSON.stringify({faixa:k2})}' title="Ver as OS de ${l}"><div class="fh"><span class="fl2"><i style="--c:${FXC[k2]}"></i>${l}</span><span class="fn">${nf(h)}</span></div><div class="fbar"><i style="width:${(h*100/fmax).toFixed(1)}%;background:${FXC[k2]}"></i></div><div class="fm"><span>${pct(h,D.length)} do total${o==null?"":" · ontem "+nf(o)}</span>${dB(o==null?null:h-o)}</div></div>`;}
+   $("tbFaixa").innerHTML=`<div class="seg big">${big}</div><div class="frs">${fr}</div>`;
+   $("faixaNota").textContent=`${nf(H.porFaixa["+31 dias"]||0)} OS com mais de 31 dias`;}
+  // ---- polos
+  const PO=porPolo(D);
+  $("poloCards").innerHTML=PO.lista.map(p=>{const pc=p.h?Math.round(p.c*100/p.h):0;
+    const seg=FAIXAS.map(([k2])=>p.f[k2]?`<i style="width:${(p.f[k2]*100/p.h).toFixed(1)}%;background:${FXC[k2]}" title="${k2}: ${p.f[k2]}"></i>`:"").join("");
+    return `<div class="pcard" data-go='${JSON.stringify({polo:p.a})}' title="Ver as OS de ${esc(poloNome(p.a))}"><div class="ph"><span class="pn">${esc(poloNome(p.a))}</span><span class="atc">ATC ${esc(p.a)}</span></div>
+      <div class="pv"><b>${nf(p.h)}</b>${dB(p.o==null?null:p.h-p.o)}<span class="note">${p.o==null?"":"ontem "+nf(p.o)}</span></div>
+      <div><div class="meta"><span>Com tratativa</span><span><b style="color:var(--green)">${nf(p.c)}</b> · ${pc}%</span></div><div class="prog"><i style="width:${pc}%"></i></div></div>
+      <div><div class="meta" style="margin-bottom:5px"><span>Tempo de atraso</span><span data-go='${JSON.stringify({polo:p.a,faixa:"+31 dias"})}' class="go">${nf(p.f["+31 dias"]||0)} com +31 dias ›</span></div><div class="seg">${seg}</div></div></div>`;}).join("");
+  // ---- pontos de atenção
+  {const velhas=D.filter(x=>!clean(x.t)).sort((a,b)=>Number(b.r[I.dias])-Number(a.r[I.dias])).slice(0,3);
+   const nGr=new Set(D.filter(x=>x.grp!=null).map(x=>x.grp)).size,nDup=D.filter(x=>x.grp!=null).length;
+   const it=(c,go,t,sub,v)=>`<div class="ai" style="--c:${c}" data-go='${JSON.stringify(go)}' title="Ver estas OS"><span class="t">${t}<small>${sub}</small></span><b>${v}</b></div>`;
+   let a=it("#C2362B",{faixa:"+31 dias",trat:"sem"},"+31 dias sem tratativa","as mais urgentes",nf(D.filter(x=>x.r[I.faixa]==="+31 dias"&&!clean(x.t)).length));
+   a+=it("#0B6E99",{cat:"Novas"},"OS novas hoje",`${nf(H.comNovas)} já com tratativa`,nf(H.novas));
+   a+=it("#8B5CF6",{cat:"Duplicidades"},"Duplicidades",`${nf(nDup)} OS em ${nf(nGr)} grupos`,nf(nGr));
+   if(velhas.length)a+=`<div class="lbl">Mais antigas sem tratativa</div>`+velhas.map(x=>`<div class="vrow" data-go='${JSON.stringify({busca:String(x.r[I.os])})}' title="Abrir esta OS"><span class="vd">${esc(x.r[I.dias])}<small>dias</small></span><span class="va"><b>${esc(String(x.r[I.end]).replace(/\.0{6,}/,"").split(" / ")[0])}</b><small>${esc(x.r[I.tss])} · ${esc(poloNome(x.polo))}</small></span></div>`).join("");
+   $("atencao").innerHTML=`<div class="at">${a}</div>`;}
+  // ---- cruzamento com a rede
+  {const cz=hoje.cruz;
+   if(!cz){$("cruzNota").textContent="o que a equipe tratou, o que saiu e o que entrou";$("cruzBox").innerHTML=`<div class="note">Para cruzar com o trabalho da equipe, clique em <b>Atualizar com os arquivos do dia</b> e escolha também a <b>planilha da rede</b> no campo 2.</div>`;}
+   else{const nT=cz.contTrat.length,nS=cz.cont.length-nT,nN=cz.novas.length,nO=cz.saidas.length,nOt=cz.saidas.filter(x=>x[1]).length;
+     $("cruzNota").textContent=`comparado com ${cz.arquivo} (${nf(cz.total)} OS)`;
+     const t=(c,n,tit,sub,go)=>`<div class="ctile" style="--c:${c}" data-go='${JSON.stringify(go)}' title="Ver estas OS"><span class="t">${tit}</span><b>${nf(n)}</b><small>${sub}</small><span class="go">ver OS ›</span></div>`;
+     $("cruzBox").innerHTML=`<div class="cruz">${t("#23824F",nT,"Já tratadas, continuam na base","já têm tratativa da equipe: não precisa refazer",{cat:"Já tratadas (rede)"})}${t("#D9711C",nS,"Continuam sem tratativa","estavam na planilha e ninguém tratou ainda",{cat:"Continuam sem tratativa (rede)"})}${t("#0B6E99",nN,"Entraram hoje","não estavam na planilha da rede",{cat:"Entraram hoje (rede)"})}${t("#6B7785",nO,"Saíram da base",`${nf(nOt)} tinham tratativa · ${nf(nO-nOt)} sem`,{cat:"Saíram (rede)"})}</div>`;}}
+  renderHist();renderChips(D);if(!$("v-os").hidden)renderLista(D);
+}
+function renderHist(){
+  const ini=S.config.inicio;const asc=S.dias.filter(d=>d.total!=null).sort((a,b)=>a.data<b.data?-1:1);
+  const pts=(ini?[{lab:"Início",total:ini}]:[]).concat(asc.map(d=>({lab:dm(d.data),total:d.total})));
+  const atual=asc.length?asc[asc.length-1].total:null;
+  $("reducao").innerHTML=ini&&atual!=null?(()=>{const red=ini-atual;return `Início ${nf(ini)} → hoje ${nf(atual)} · <b>${red>=0?"−":"+"}${nf(Math.abs(red))}</b> (${pct(Math.abs(red),ini)} ${red>=0?"a menos":"a mais"})`;})():"";
+  if(!pts.length){$("chart").innerHTML="";$("tbHist").innerHTML="";return;}
+  const W=Math.max(860,pts.length*110),Hh=380,pl=44,pr=12,pt=30,pb=34,max=Math.max(...pts.map(p=>p.total||0))*1.12||1,bw=(W-pl-pr)/pts.length,y=v=>pt+(Hh-pt-pb)*(1-v/max);
+  let g="";const stp=Math.max(50,Math.ceil(max/4/100)*100);for(let v=0;v<=max;v+=stp){const yy=y(v);g+=`<line x1="${pl}" x2="${W-pr}" y1="${yy}" y2="${yy}" stroke="#E6ECF1" stroke-dasharray="${v===0?"0":"3 4"}"/><text x="${pl-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="#7A8994">${nf(v)}</text>`;}
+  pts.forEach((p,i)=>{const x=pl+i*bw+bw*.18,w=bw*.64,last=i===pts.length-1;g+=`<rect x="${x}" y="${y(p.total)}" width="${w}" height="${Hh-pb-y(p.total)}" rx="6" fill="${last?"url(#gUlt)":(ini&&i===0)?"#B7C3CC":"url(#gBar)"}"/><text x="${x+w/2}" y="${y(p.total)-8}" text-anchor="middle" font-size="15" font-weight="700" fill="${last?"#0B6E99":"#14212B"}">${nf(p.total)}</text><text x="${x+w/2}" y="${Hh-10}" text-anchor="middle" font-size="13" fill="#5E6E7B" font-weight="${last?"700":"400"}">${p.lab}</text>`;});
+  $("chart").innerHTML=`<div class="scroll"><svg viewBox="0 0 ${W} ${Hh}" style="min-width:560px" role="img" aria-label="Pendências por dia"><defs><linearGradient id="gBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9FD3EA"/><stop offset="1" stop-color="#CFE9F4"/></linearGradient><linearGradient id="gUlt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16A0D8"/><stop offset="1" stop-color="#0B5F86"/></linearGradient></defs>${g}</svg></div>`;
+  let t=`<thead><tr><th>Data</th><th class="r">Pendências</th><th class="r">Variação</th><th class="r">Novas</th><th class="r">Saíram</th><th>Origem</th></tr></thead><tbody>`;
+  let prev=ini||null;if(ini)t+=`<tr><td>Início</td><td class="r">${nf(ini)}</td><td class="r">–</td><td class="r">–</td><td class="r">–</td><td class="note">valor inicial do painel</td></tr>`;
+  for(const d of asc){t+=`<tr><td>${dm(d.data)}</td><td class="r">${nf(d.total)}</td><td class="r ${prev==null?"":cls(d.total-prev)}">${prev==null?"–":sinal(d.total-prev)}</td><td class="r">${d.novas==null?"–":nf(d.novas)}</td><td class="r">${d.executadas==null?"–":nf(d.executadas)}</td><td class="note">${esc(d.fonte||"")}${d.enviadoPor?" · "+esc(d.enviadoPor):""}</td></tr>`;prev=d.total;}
+  $("tbHist").innerHTML=t+"</tbody>";
+}
+function renderChips(D){
+  const c={Todas:D.length};for(const x of D)c[x.cat]=(c[x.cat]||0)+1;
+  c.Novas=D.filter(x=>x.nova).length;c.Duplicidades=D.filter(x=>x.grp!=null).length;
+  const nomes=["Todas"].concat(CATS,c.Outros?["Outros"]:[],["Novas","Duplicidades"]);
+  $("chips").innerHTML=nomes.map(n=>`<button type="button" class="chip${n==="Duplicidades"&&c[n]?" warn":""}" data-f="${esc(n)}" aria-pressed="${filtro===n}">${n!=="Todas"&&n!=="Duplicidades"?`<span class="cdot" style="--c:${CORES[n]||"#999"};margin-right:2px"></span>`:""}${esc(n)} <span class="c">${nf(c[n]||0)}</span></button>`).join("");
+}
+const fmtData=s=>/^\d{4}-\d{2}-\d{2}/.test(s)?s.slice(8,10)+"/"+s.slice(5,7)+"/"+s.slice(0,4):s;
+function filtrados(D){
+  const q=U($("busca").value).trim(),ft=$("fTrat").value,pf=$("polo").value,fx=$("faixa").value;
+  let V=D.filter(x=>!pf||x.polo===pf).filter(x=>!fx||x.r[I.faixa]===fx)
+    .filter(x=>filtro==="Todas"||(filtro==="Novas"?x.nova:filtro==="Duplicidades"?x.grp!=null:filtro==="Já tratadas (rede)"?x.rede==="tratada":filtro==="Continuam sem tratativa (rede)"?x.rede==="semtrat":filtro==="Entraram hoje (rede)"?x.rede==="nova":x.cat===filtro));
+  if(ft==="sem")V=V.filter(x=>!clean(x.t));else if(ft==="com")V=V.filter(x=>!!clean(x.t));
+  if(q)V=V.filter(x=>U([x.r[I.end],x.r[I.os],x.r[I.forn],x.r[I.pde],x.t,x.r[I.tss]].join(" ")).includes(q));
+  if(filtro==="Duplicidades")return V.sort((a,b)=>(b.grpN-a.grpN)||(a.grp-b.grp)||(Number(b.r[I.dias])-Number(a.r[I.dias])));
+  return V.sort((a,b)=>(b.dupOS-a.dupOS)||(Number(b.r[I.dias])-Number(a.r[I.dias]))||(a.r[I.end]<b.r[I.end]?-1:1));
+}
+function filtrosAtivos(){
+  const a=[];if(filtro!=="Todas")a.push(filtro);if($("polo").value)a.push(poloNome($("polo").value));if($("faixa").value)a.push($("faixa").value);
+  if($("fTrat").value)a.push($("fTrat").value==="sem"?"Sem tratativa":"Com tratativa");if($("busca").value.trim())a.push(`busca: “${$("busca").value.trim()}”`);
+  $("ativos").hidden=!a.length;$("ativos").innerHTML=a.length?`Mostrando: ${a.map(t=>`<span class="fa">${esc(t)}</span>`).join("")} <button type="button" id="limpar">Limpar filtros</button>`:"";
+}
+function irPara(o){
+  o=o||{};filtro=o.cat||"Todas";$("polo").value=o.polo||"";$("faixa").value=o.faixa||"";$("fTrat").value=o.trat||"";$("busca").value=o.busca||"";
+  aberto.clear();aba("os");renderChips(derivar());renderLista();window.scrollTo({top:0,behavior:"smooth"});
+}
+function descGrupo(L){
+  const f=new Set(L.map(x=>key(x.r[I.forn]))),e=new Set(L.map(x=>endK(x.r))),o=new Set(L.map(x=>x.os));
+  const end=String(L[0].r[I.end]).replace(/\.0{6,}/,"");
+  if(o.size<L.length&&o.size===1)return `mesma OS ${esc(L[0].r[I.os])} repetida`;
+  if(f.size===1)return `mesmo fornecimento ${esc(L[0].r[I.forn])} · ${esc(end)}`;
+  if(e.size===1)return `mesmo endereço · ${esc(end)}`;
+  return `fornecimento e endereço ligados · ${esc(end)}`;
+}
+function renderLista(D){
+  if(!hoje)return;if(editando){pendRender=true;return;}
+  D=D||derivar();
+  if(filtro==="Saíram (rede)"){filtrosAtivos();const cz=hoje.cruz;const q=U($("busca").value).trim(),pf=$("polo").value,ft=$("fTrat").value;
+    let L=(cz?cz.saidas:[]).filter(x=>(!pf||x[6]===pf)&&(!q||U(x.join(" ")).includes(q))&&(ft!=="sem"||!x[1])&&(ft!=="com"||!!x[1]));
+    if(!L.length){$("lista").innerHTML='<div class="empty">Nenhuma OS saiu da base desde a planilha da rede.</div>';$("rodape").textContent="";return;}
+    let h=`<table><thead><tr><th>OS / Fornecimento</th><th>Tratativa que a equipe registrou</th><th>Endereço</th><th>Serviço (TSS)</th><th class="r">Dias</th><th>Faixa</th><th>Polo</th></tr></thead><tbody>`;
+    for(const x of L)h+=`<tr><td class="mono"><b>${esc(x[8]||x[0])}</b><br><span class="note">${esc(x[7])}</span></td><td>${x[1]?`<b style="color:var(--green)">${esc(x[1])}</b>`:'<span class="note">sem tratativa</span>'}</td><td class="addr">${esc(x[2])}</td><td class="tss">${esc(x[3])}</td><td class="r"><span class="dias">${esc(x[4])}</span></td><td><span class="pill ${faixaCls(x[5])}">${esc(x[5])}</span></td><td>${esc(poloNome(x[6]))}</td></tr>`;
+    $("lista").innerHTML=h+"</tbody></table>";$("rodape").textContent=`${nf(L.length)} OS saíram da base desde a planilha da rede (${cz.arquivo}). ${nf(L.filter(x=>x[1]).length)} delas tinham tratativa.`;return;}
+  const V=filtrados(D);
+  if(!V.length){$("lista").innerHTML='<div class="empty">Nenhuma OS com esse filtro.</div>';$("rodape").textContent="";return;}
+  const ro="";filtrosAtivos();let gAtual=null,gNum=0;
+  const grupos={};if(filtro==="Duplicidades")for(const x of V)(grupos[x.grp]=grupos[x.grp]||[]).push(x);
+  let h=`<table><thead><tr><th></th><th>Fornecimento / OS</th><th>Tratativa (Status)</th><th>Endereço</th><th>Serviço (TSS)</th><th>Situação</th><th class="r">Dias</th><th>Faixa</th><th>MNE</th></tr></thead><tbody>`;
+  for(const x of V){const r=x.r,op=aberto.has(x.i),d=S.trat[x.os];
+    if(filtro==="Duplicidades"&&x.grp!==gAtual){gAtual=x.grp;gNum++;const L=grupos[x.grp];h+=`<tr class="grp"><td colspan="9"><b>Grupo ${gNum}</b> ${L.length} OS · <span class="gm">${descGrupo(L)}</span></td></tr>`;}
+    const tg=(x.dupOS?'<span class="tag dos">OS REPETIDA</span>':"")+(x.dupF?'<span class="tag df">FORNEC. REPETIDO</span>':"")+(x.dupE&&!x.dupF&&!x.dupOS?'<span class="tag de">MESMO ENDEREÇO</span>':"")+(x.nova?'<span class="tag nova">NOVA</span>':"")+(x.rede==="tratada"?'<span class="tag rede">JÁ TRATADA ONTEM</span>':"")+(["Todas","Novas","Duplicidades"].includes(filtro)?`<span class="tag cat" style="--c:${CORES[x.cat]||"#999"}">${esc(x.cat)}</span>`:"")+(poloNome(x.polo)!==x.cat?`<span class="tag pol">${esc(poloNome(x.polo))}</span>`:"");
+    const end=String(r[I.end]).replace(/\.0{6,}/,"");const ep=end.split(" / ");
+    h+=`<tr class="${x.dupOS?"dupOS":x.dupF?"dupF":x.dupE?"dupE":""}"><td><button class="more" type="button" data-i="${x.i}" aria-expanded="${op}" aria-label="Detalhes">${op?"▾":"▸"}</button></td><td class="mono"><b>${esc(r[I.forn])}</b><br><span class="note">PDE ${esc(r[I.pde])}</span><br><span class="note">OS ${esc(r[I.os])}</span></td><td><input class="trat${clean(x.t)?"":" vazio"}" list="sugestoes" data-os="${esc(x.os)}" value="${esc(x.t)}" title="${esc(x.t)}" placeholder="sem tratativa: clique para escrever" aria-label="Tratativa da OS ${esc(r[I.os])}"${ro}>${tg?"<div>"+tg+"</div>":""}</td><td class="addr">${esc(ep[0])}${ep[1]?`<small>${esc(ep.slice(1).join(" / "))} · ${esc(r[I.mun])}</small>`:`<small>${esc(r[I.mun])}</small>`}</td><td class="tss">${esc(r[I.tss])}</td><td class="sit">${situ(r[I.st])}</td><td class="r"><span class="dias">${esc(r[I.dias])}</span></td><td><span class="pill ${faixaCls(r[I.faixa])}">${esc(r[I.faixa])}</span></td><td class="mne">${esc(r[I.mne])}</td></tr>`;
+    if(op)h+=`<tr class="det"><td></td><td colspan="8"><dl><dt>Nota OS</dt><dd>${esc(r[I.nota])||"–"}</dd><dt>Nota de baixa</dt><dd>${esc(r[I.baixa])||"–"}</dd><dt>Abertura</dt><dd>${esc(fmtData(r[I.data]))} · Iniciativa ${esc(r[I.inic])} · Qtd OS ${esc(r[I.qtd])} · ${esc(r[I.mun])} · ATC ${esc(r[I.atc])}</dd><dt>Tratativa</dt><dd>${d&&d.em?`alterada por ${esc(d.por||"alguém")} em ${new Date(d.em).toLocaleString("pt-BR")}`:"vinda da planilha"}</dd></dl></td></tr>`;}
+  $("lista").innerHTML=h+"</tbody></table>";
+  $("rodape").textContent=`${nf(V.length)} de ${nf(D.length)} OS. A tratativa fica gravada pela OS, então acompanha a OS mesmo quando a base do dia muda de ordem.`;
+}
+function sugestoes(){if(!S)return;const c={};for(const t of Object.values(S.tratBase).concat(Object.values(S.trat).map(d=>d.texto||""))){const s=clean(t);if(s&&s.length<40)c[s]=(c[s]||0)+1;}
+  $("sugestoes").innerHTML=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,25).map(([s])=>`<option value="${esc(s)}"></option>`).join("");}
+
+/* ================= eventos ================= */
+function aba(n){$("t-painel").setAttribute("aria-selected",n==="painel");$("t-os").setAttribute("aria-selected",n==="os");$("v-painel").hidden=n!=="painel";$("v-os").hidden=n!=="os";if(n==="os")renderLista();lsSet("aba",n);}
+$("t-painel").onclick=()=>aba("painel");$("t-os").onclick=()=>aba("os");
+$("chips").addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(!b)return;filtro=b.dataset.f;renderChips(derivar());renderLista();});
+let tb;$("busca").addEventListener("input",()=>{clearTimeout(tb);tb=setTimeout(()=>renderLista(),180);});
+$("faixa").addEventListener("change",()=>renderLista());
+$("fTrat").addEventListener("change",()=>renderLista());
+$("ativos").addEventListener("click",e=>{if(e.target.id==="limpar")irPara({});});
+$("v-painel").addEventListener("click",e=>{const el=e.target.closest("[data-go]");if(!el)return;try{irPara(JSON.parse(el.dataset.go));}catch(_){}});
+$("polo").addEventListener("change",()=>renderLista());
+$("lista").addEventListener("click",e=>{const b=e.target.closest(".more");if(!b)return;const i=Number(b.dataset.i);aberto.has(i)?aberto.delete(i):aberto.add(i);renderLista();});
+$("lista").addEventListener("focusin",e=>{if(e.target.classList.contains("trat"))editando=true;});
+$("lista").addEventListener("focusout",e=>{if(!e.target.classList.contains("trat"))return;editando=false;if(pendRender){pendRender=false;setTimeout(()=>{if(!editando)render();},60);}});
+$("lista").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.classList.contains("trat"))e.target.blur();});
+$("lista").addEventListener("change",e=>{
+  const el=e.target;if(!el.classList.contains("trat")||!S)return;
+  const os=el.dataset.os,txt=clean(el.value);if(txt===clean(trat(os)))return;
+  S.trat[os]={texto:txt,em:Date.now(),por:clean($("nome").value)||"sem nome"};
+  el.classList.toggle("vazio",!txt);el.classList.add("ok");setTimeout(()=>el.classList.remove("ok"),1500);
+  msg(`Tratativa da OS ${os} gravada.`);agendarSalvar();pendRender=true;
+});
+$("btnAjuda").onclick=()=>{$("intro").hidden=!$("intro").hidden;if(!$("intro").hidden)$("intro").scrollIntoView({block:"nearest"});};
+$("btnFecharAjuda").onclick=()=>{$("intro").hidden=true;};
+$("btnBackup").onclick=()=>{if(!S)return;podar(S);baixarBlob(new Blob([JSON.stringify(S)],{type:"application/json"}),`painel-copia-${hojeLocal()}.json`);msg("Cópia de segurança baixada. Para usar em outro computador, use Restaurar cópia de segurança.");};
+
+/* ================= importação com dois campos ================= */
+const impArq={det:null,rede:null};
+$("btnSubir").onclick=()=>{$("imp").hidden=!$("imp").hidden;if(!$("imp").hidden){$("intro").hidden=true;$("imp").scrollIntoView({block:"nearest"});}};
+$("impFechar").onclick=()=>{$("imp").hidden=true;};
+$("btnRestaurar").onclick=()=>$("arquivo").click();
+function marcaSlot(id,f){const lb=$(id).closest(".slot");lb.classList.toggle("ok",!!f);$(id==="fDet"?"nDet":"nRede").textContent=f?"✔ "+f.name:"Clique para escolher o arquivo";$("impOk").disabled=!impArq.det;}
+$("fDet").addEventListener("change",e=>{impArq.det=e.target.files[0]||null;marcaSlot("fDet",impArq.det);});
+$("fRede").addEventListener("change",e=>{impArq.rede=e.target.files[0]||null;marcaSlot("fRede",impArq.rede);});
+$("impOk").onclick=async()=>{
+  if(!impArq.det||!S)return;$("impOk").disabled=true;msg("Lendo os arquivos…");const avisos=[];pendRede=null;let det=null;
+  try{
+    if(impArq.rede){const wb=await abrirXlsx(await impArq.rede.arrayBuffer());
+      if(wb.nomes.some(n=>U(n)==="GERAL"))avisos.push(await importarRede(wb,impArq.rede.name));
+      else avisos.push(`o arquivo ${impArq.rede.name} não parece ser a planilha da rede (não tem a aba GERAL)`);}
+    if(/\.csv$/i.test(impArq.det.name))det={aoa:lerCsv(await impArq.det.text()),nome:impArq.det.name};
+    else{const wb=await abrirXlsx(await impArq.det.arrayBuffer());
+      if(wb.nomes.some(n=>U(n)==="GERAL")&&wb.nomes.some(n=>U(n)==="PAINEL")){msg("No campo 1 vai o Detalhamento do sistema. Esse arquivo parece ser a planilha da rede: coloque ele no campo 2.");$("impOk").disabled=false;return;}
+      det={aoa:await wb.ler(wb.nomes[0]),nome:impArq.det.name};}
+  }catch(err){msg("Não consegui ler um dos arquivos. Confira se são .xlsx.");$("impOk").disabled=false;return;}
+  aplicar();preparar(det.aoa,det.nome,avisos);
+  impArq.det=impArq.rede=null;$("fDet").value="";$("fRede").value="";marcaSlot("fDet",null);marcaSlot("fRede",null);$("imp").hidden=true;
+};
+/* ================= subir arquivo do dia ================= */
+$("arquivo").addEventListener("change",async e=>{
+  const fs=[...e.target.files];e.target.value="";if(!fs.length||!S)return;
+  msg("Lendo "+(fs.length>1?fs.length+" arquivos":"o arquivo")+"…");
+  let det=null;const avisos=[];
+  for(const f of fs){
+    try{
+      if(/\.json$/i.test(f.name)){S=mesclar(JSON.parse(await f.text()),S);avisos.push("cópia de segurança importada");continue;}
+      if(/\.csv$/i.test(f.name)){det={aoa:lerCsv(await f.text()),nome:f.name};continue;}
+      const wb=await abrirXlsx(await f.arrayBuffer());
+      const rede=wb.nomes.some(n=>U(n)==="PAINEL")&&wb.nomes.some(n=>U(n)==="GERAL");
+      if(rede)avisos.push(await importarRede(wb,f.name));
+      else det={aoa:await wb.ler(wb.nomes[0]),nome:f.name};
+    }catch(err){avisos.push(`não consegui ler ${f.name}`);}
+  }
+  aplicar();agendarSalvar();
+  if(det)preparar(det.aoa,det.nome,avisos);else msg(avisos.join(" · ")||"Nenhum Detalhamento encontrado nos arquivos escolhidos.");
+});
+let pendRede=null;
+function cabecalho(aoa){const hi=aoa.findIndex(r=>r&&r.some(c=>U(c).trim()==="FORNECIMENTO")&&r.some(c=>U(c).trim()==="OS"));return hi;}
+async function importarRede(wb,nome){
+  const g=await wb.ler(wb.nomes.find(n=>U(n)==="GERAL"));const hi=cabecalho(g||[]);if(hi<0)return `a planilha ${nome} não tem a aba GERAL no formato esperado`;
+  const hdr=g[hi].map(c=>U(clean(c)));const iT=hdr.indexOf("STATUS"),iOS=hdr.indexOf("OS");
+  let n=0;const linhasRede=g.slice(hi+1).filter(r=>r&&r.some(c=>c!==""&&c!=null));
+  {const ix=nm=>hdr.indexOf(nm);const iE=ix("ENDERECO OS"),iS=ix("SERVICO (TSS)"),iD=ix("DIAS PENDENTE"),iF=ix("FAIXA"),iA=ix("ATC"),iFo=ix("FORNECIMENTO");
+   const vistos=new Set();pendRede={nome,rows:[]};
+   for(const r of linhasRede){const k=key(r[iOS]);if(!k||vistos.has(k))continue;vistos.add(k);
+     pendRede.rows.push([k,clean(r[iT]),clean(String(r[iE]??"").replace(/\.0{6,}/,"")),clean(r[iS]),r[iD]===""?"":Number(r[iD]),clean(r[iF]),String(r[iA]??"").replace(/^0+/,""),txtCel(r[iFo]),txtCel(r[iOS])]);}}
+  for(const r of linhasRede){const k=key(r[iOS]);const t=clean(r[iT]);if(!k||!t)continue;if(t!==clean(trat(k))){S.trat[k]={texto:t,em:Date.now(),por:"planilha da rede"};n++;}}
+  // histórico do PAINEL
+  let nh=0;const pa=await wb.ler(wb.nomes.find(n=>U(n)==="PAINEL"));let dataRede=null;
+  if(pa){
+    for(const row of pa)for(const c of row||[]){const m=String(c).match(/Base de (\d{2})\/(\d{2})\/(\d{4})/);if(m)dataRede=`${m[3]}-${m[2]}-${m[1]}`;}
+    let r0=-1,c0=-1;pa.forEach((row,ri)=>(row||[]).forEach((c,ci)=>{if(U(c).trim()==="PENDENCIAS"&&r0<0){r0=ri;c0=ci;}}));
+    if(r0>=0){const hoj=hojeLocal();
+      for(let ri=r0+1;ri<pa.length;ri++){const row=pa[ri]||[];const dv=row[c0-1],tv=row[c0];if(dv===""||dv==null)break;
+        if(U(dv).trim()==="INICIO"){if(S.config.inicio==null&&typeof tv==="number"){S.config.inicio=tv;S.config.em=Date.now();}continue;}
+        let d=null;if(typeof dv==="number")d=excelData(dv);else{const m=String(dv).match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?/);if(m){const y=m[3]||hoj.slice(0,4);d=`${y}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;}}
+        if(!d||d>hoj||typeof tv!=="number")continue;
+        if(!S.dias.find(x=>x.data===d)){S.dias.push({data:d,total:tv,novas:typeof row[c0+2]==="number"?row[c0+2]:null,executadas:typeof row[c0+3]==="number"?row[c0+3]:null,fonte:"planilha da rede"});nh++;}
+        }
+    }
+  }
+  // base da planilha vira "ontem" se este computador ainda não tem nenhuma base completa
+  const temBase=S.dias.some(d=>(S.linhas[d.data])||(d.slim&&d.slim.length));
+  let nb="";
+  if(!temBase){
+    const idx=COLS.map(c=>c==="Status"?hdr.lastIndexOf("STATUS"):hdr.indexOf(U(c)));
+    if(idx.every(i=>i>=0)){
+      const rows=linhasRede.map(r=>idx.map((j,k)=>k===I.data?excelData(r[j]):txtCel(r[j])));
+      const d=dataRede||(S.dias.length?S.dias.slice().sort((a,b)=>a.data<b.data?1:-1)[0].data:null)||(()=>{const x=new Date();x.setDate(x.getDate()-1);return new Date(x.getTime()-x.getTimezoneOffset()*60000).toISOString().slice(0,10);})();
+      const old=S.dias.find(x=>x.data===d)||{};
+      S.dias=S.dias.filter(x=>x.data!==d).concat([Object.assign({},old,{data:d,total:rows.length,slim:rows.map(r=>[key(r[I.os]),catBase(r),r[I.faixa],poloDe(r)]),enviadoEm:Date.now(),fonte:nome})]);
+      S.linhas[d]=rows;nb=` · base de ${dm(d)} da planilha guardada como comparação`;
+    }
+  }
+  return `${nome}: ${n} Status trazidos da planilha da rede`+(nh?` · ${nh} dias de histórico`:"")+nb;
+}
+function excelData(v){if(typeof v==="number"&&v>20000&&v<80000){const d=new Date(Date.UTC(1899,11,30)+Math.round(v)*86400000);return d.toISOString().slice(0,10);}
+  const s=clean(v);const m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);return m?`${m[3]}-${m[2]}-${m[1]}`:s.slice(0,10);}
+function txtCel(v){if(typeof v==="number")return Number.isInteger(v)?String(v):String(v);return clean(v);}
+function hojeLocal(){const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);}
+function preparar(aoa,nome,avisos){
+  const hi=cabecalho(aoa||[]);
+  if(hi<0){msg("Não achei o cabeçalho (Fornecimento … OS) na primeira aba do arquivo.");return;}
+  const hdr=aoa[hi].map(c=>U(clean(c)));const idx=COLS.map(n=>hdr.indexOf(U(n)));
+  const falta=COLS.filter((n,i)=>idx[i]<0);if(falta.length){msg("Faltam colunas no arquivo: "+falta.join(", ")+".");return;}
+  const todos=aoa.slice(hi+1).filter(r=>r&&r.some(c=>c!==""&&c!=null));
+  const rows=todos.map(r=>idx.map((j,k)=>k===I.data?excelData(r[j]):txtCel(r[j]))).filter(r=>S.config.atcs.includes(String(r[I.atc]).replace(/^0+/,"")));
+  const semOS=rows.filter(r=>!key(r[I.os])).length,cient=rows.filter(r=>/e\+/i.test(r[I.os])||/e\+/i.test(r[I.forn])).length;
+  const oc={};rows.forEach(r=>{const k=key(r[I.os]);oc[k]=(oc[k]||0)+1;});const rep=Object.values(oc).filter(n=>n>1).length;
+  const fc={};rows.forEach(r=>{const k=key(r[I.forn]);if(k)fc[k]=(fc[k]||0)+1;});const fr=Object.values(fc).filter(n=>n>1).length;
+  const md=nome.match(/(\d{4})-(\d{2})-(\d{2})/);const dt=md?`${md[1]}-${md[2]}-${md[3]}`:hojeLocal();
+  upload={rows,nome};
+  const ref=S.dias.filter(d=>d.data<dt&&d.slim&&d.slim.length).sort((a,b)=>a.data<b.data?1:-1)[0];
+  const setR=new Set(ref?ref.slim.map(s=>s[0]):[]),setN=new Set(rows.map(r=>key(r[I.os])));
+  const ck=[[rows.length?"good":"bad",nf(rows.length),`OS dos polos ${S.config.atcs.join(", ")} (de ${nf(todos.length)} linhas no arquivo)`],
+    [cient||semOS?"bad":"good",nf(cient+semOS),cient||semOS?"OS ou fornecimento sem número completo (ex.: 2,02E+16). Baixe o arquivo de novo antes de salvar.":"OS e fornecimentos com número completo"],
+    [rep?"bad":"good",nf(rep),"OS repetidas no arquivo"],[fr?"warn":"good",nf(fr),"fornecimentos com mais de uma OS (ficam em amarelo)"]];
+  if(ref)ck.push(["",nf([...setN].filter(k=>!setR.has(k)).length),`novas em relação à base de ${dm(ref.data)}`],["",nf([...setR].filter(k=>!setN.has(k)).length),`saíram desde ${dm(ref.data)}`]);
+  $("upChecks").innerHTML=ck.map(([c,v,t])=>`<div class="check ${c}"><b>${v}</b><span>${esc(t)}</span></div>`).join("");
+  $("upArquivo").textContent=nome;$("upData").value=dt;atualizaAviso();$("upSalvar").disabled=!rows.length;
+  const grave=ck.some(c=>c[0]==="bad");
+  if(grave){$("upload").hidden=false;msg((avisos||[]).join(" · "));$("upload").scrollIntoView({block:"nearest"});return;}
+  upload.extra=[fr?`${nf(fr)} fornecimentos repetidos (em amarelo)`:"",...(avisos||[])].filter(Boolean);
+  $("upSalvar").onclick();
+}
+function atualizaAviso(){const dt=$("upData").value;const ex=S&&S.dias.find(d=>d.data===dt);
+  $("upAviso").textContent=ex?`Já existe uma base de ${dm(dt)}. Salvar substitui essa base; as tratativas não são apagadas.`:`Ao salvar, a base de ${dm(dt)} vira a atual e a anterior passa a ser a comparação de “ontem”.`;}
+$("upData").addEventListener("change",atualizaAviso);
+$("upCancelar").onclick=()=>{upload=null;$("upload").hidden=true;};
+$("upSalvar").onclick=()=>{
+  if(!upload||!S)return;const dt=$("upData").value;if(!/^\d{4}-\d{2}-\d{2}$/.test(dt)){msg("Escolha a data da base.");return;}
+  const rows=upload.rows,extra=upload.extra||[];
+  const prev=S.dias.filter(d=>d.data<dt&&d.slim&&d.slim.length).sort((a,b)=>a.data<b.data?1:-1)[0];
+  if(prev&&!prev.resumo)prev.resumo=resumoDia(prev);
+  const setP=new Set(prev?prev.slim.map(s=>s[0]):[]),setN=new Set(rows.map(r=>key(r[I.os])));
+  const meta={data:dt,total:rows.length,novas:prev?[...setN].filter(k=>!setP.has(k)).length:null,executadas:prev?[...setP].filter(k=>!setN.has(k)).length:null,
+    slim:rows.map(r=>[key(r[I.os]),catBase(r),r[I.faixa],poloDe(r)]),enviadoEm:Date.now(),enviadoPor:clean($("nome").value)||"",fonte:upload.nome};
+  if(pendRede){const rk=new Map(pendRede.rows.map(x=>[x[0],x]));const cont=[],contTrat=[],novasR=[];
+    for(const k of setN){if(rk.has(k)){cont.push(k);if(rk.get(k)[1])contTrat.push(k);}else novasR.push(k);}
+    const saidas=pendRede.rows.filter(x=>!setN.has(x[0]));
+    meta.cruz={arquivo:pendRede.nome,total:rk.size,cont,contTrat,novas:novasR,saidas,em:Date.now()};pendRede=null;}
+  else{const ant=S.dias.find(d=>d.data===dt);if(ant&&ant.cruz)meta.cruz=ant.cruz;}
+  S.dias=S.dias.filter(d=>d.data!==dt).concat([meta]);S.linhas[dt]=rows;
+  if(S.config.inicio==null){S.config.inicio=rows.length;S.config.em=Date.now();}
+  podar(S);upload=null;$("upload").hidden=true;$("intro").hidden=true;aplicar();salvar();
+  const czm=meta.cruz&&meta.cruz.em>Date.now()-60000?` · cruzado com a planilha da rede: ${nf(meta.cruz.contTrat.length)} já tratadas continuam, ${nf(meta.cruz.saidas.length)} saíram`:"";
+  msg(`Painel atualizado com a base de ${dm(dt)}: ${nf(rows.length)} OS`+czm+(!czm&&meta.novas!=null?` · ${nf(meta.novas)} novas · ${nf(meta.executadas)} saíram`:"")+(extra.length?" · "+extra.join(" · "):"")+". Para a rede, clique em Baixar Excel.");
+  aba("painel");window.scrollTo({top:0,behavior:"smooth"});
+};
+
+/* ================= Excel ================= */
+function cellRef(ref){const m=ref.match(/^([A-Z]+)(\d+)$/);let c=0;for(const ch of m[1])c=c*26+ch.charCodeAt(0)-64;return [Number(m[2])-1,c-1];}
+function folha(name,o){const cells=new Map();const put=(ref,v,s)=>{const [r,c]=cellRef(ref);cells.set(r+","+c,{v,s});};return Object.assign({name,cells,put},o||{});}
+$("baixar").onclick=()=>{
+  if(!hoje){msg("Ainda não há base carregada para exportar.");return;}
+  const D=derivar(),H=resumoDe(D),O=resumoDia(ontem),PO=porPolo(D);
+  const L=novoLivro(),st=L.st;
+  const NAVY="16365C",TXT="1F2937",CINZ="F3F6FA",VERDE="1E8449",AMBAR="B7791F",VERM="C00000",AZ="DDEBF7";
+  const sHead=st({f:{b:true,sz:12,c:"FFFFFF"},fill:NAVY,h:"left",v:"center"});
+  const sBody=st({f:{sz:11,c:TXT}}),sDate=st({f:{sz:11,c:TXT},nf:"dd/mm/yyyy"});
+  const sBodyR=st({f:{sz:11,c:TXT},fill:"F8CFCB"}),sDateR=st({f:{sz:11,c:TXT},fill:"F8CFCB",nf:"dd/mm/yyyy"});
+  const sBodyV=st({f:{sz:11,c:TXT},fill:"E9DFFC"}),sDateV=st({f:{sz:11,c:TXT},fill:"E9DFFC",nf:"dd/mm/yyyy"});
+  const sBodyA=st({f:{sz:11,c:TXT},fill:"FCE5A8"}),sDateA=st({f:{sz:11,c:TXT},fill:"FCE5A8",nf:"dd/mm/yyyy"});
+  const HEAD=["Fornecimento","PDE","Status","Endereço OS","Serviço (Família)","Serviço (TSS)","Status","Município","Regional","ATC","ATP","Data Abertura","Dias Pendente","Faixa","MNE","Nota OS","Nota de Baixa","Iniciativa","Qtd OS","OS","Serviço","Polo","Alerta","Cruzamento com a rede"];
+  const W=[20,11.1,53.6,74.2,18,42.6,24.9,12.8,10,6.2,6.1,14.5,14.8,10.6,41.1,56.8,41.4,10.2,21.5,16.5,15,14,22,26];
+  const dt=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?new Date(+v.slice(0,4),+v.slice(5,7)-1,+v.slice(8,10)):v;
+  const COR_XL={"Vazamento":["C9E0F8","2A7FD4"],"Esgoto":["DDD1F7","7A4FD6"],"Desobstrução":["C4EBE0","0F9D8A"],"Cavalete":["FBD7B5","E07B24"],"Embu Guaçu":["F4C6DA","C2417A"],"Hidro":["C3E6F3","3A9BC4"],"Vistorias":["DDE1E5","6B7785"],"Outros":["F2F2F2","A0AAB3"]};
+  const sCat=(cat,data)=>st({f:{sz:11,c:TXT},fill:(COR_XL[cat]||COR_XL.Outros)[0],...(data?{nf:"dd/mm/yyyy"}:{})});
+  const sCatB=cat=>st({f:{b:true,sz:11,c:"FFFFFF"},fill:(COR_XL[cat]||COR_XL.Outros)[1]});
+  const sAl={r:st({f:{b:true,sz:11,c:"FFFFFF"},fill:"C2362B"}),a:st({f:{b:true,sz:11,c:"1F2937"},fill:"F2B544"}),v:st({f:{b:true,sz:11,c:"FFFFFF"},fill:"8B5CF6"})};
+  function abaDados(nome,lista,tab){
+    const f=folha(nome,{widths:W,heights:{0:20.25},freeze:"A2",tab});
+    HEAD.forEach((h,c)=>f.cells.set("0,"+c,{v:h,s:sHead}));
+    lista.forEach((x,i)=>{const r=x.r,row=i+1;const cat=x.cat||catFrom(catBase(r),x.t||"");const sb=sCat(cat),sd=sCat(cat,true);
+      const vals=[r[I.forn],r[I.pde],x.t,r[I.end],r[I.fam],r[I.tss],r[I.st],r[I.mun],r[I.reg],r[I.atc],r[I.atp],dt(r[I.data]),Number(r[I.dias])||r[I.dias],r[I.faixa],r[I.mne],r[I.nota],r[I.baixa],r[I.inic],Number(r[I.qtd])||r[I.qtd],r[I.os],cat,poloNome(x.polo),x.dupOS?"OS REPETIDA":x.dupF?"FORNECIMENTO REPETIDO":x.dupE?"MESMO ENDEREÇO":"",x.rede==="tratada"?"JÁ TRATADA ONTEM":x.rede==="semtrat"?"SEM TRATATIVA ONTEM":x.rede==="nova"?"ENTROU HOJE":""];
+      const al=x.dupOS?sAl.r:x.dupF?sAl.a:x.dupE?sAl.v:sb;
+      vals.forEach((v,c)=>f.cells.set(row+","+c,{v,s:c===11?sd:c===20?sCatB(cat):c===22?al:sb}));});
+    f.filter=`A1:${colName(HEAD.length-1)}${Math.max(2,lista.length+1)}`;
+    return f;}
+  const ord=L2=>L2.slice().sort((a,b)=>(Number(b.r[I.dias])-Number(a.r[I.dias])));
+  // ---- PAINEL (mesmo layout da planilha da rede)
+  const P=folha("PAINEL",{grid:false,widths:[8,1.6,21.2,20.5,21.9,14.6,13,11.9,14.4,18.4,11,13,13,1.6],heights:{0:34,3:40,6:40},
+    merges:["C1:M1","D3:E3","F3:G3","H3:I3","J3:K3","L3:M3","D4:E4","F4:G4","H4:I4","J4:K4","L4:M4","C5:M5","C6:D6","E6:F6","G6:I6","J6:M6","C7:D7","E7:F7","G7:I7","J7:M7"]});
+  const lab=st({f:{b:true,sz:9,c:"595959"},fill:CINZ,h:"center",v:"center"});
+  const big=c=>st({f:{b:true,sz:28,c},fill:CINZ,h:"center",v:"center",nf:"#,##0"});
+  const navy14=st({f:{b:true,sz:14,c:"FFFFFF"},fill:NAVY,h:"center",v:"center"});
+  const th=st({f:{b:true,sz:12,c:"FFFFFF"},fill:NAVY,h:"center",v:"center"}),thL=st({f:{b:true,sz:12,c:"FFFFFF"},fill:NAVY,h:"left",v:"center"});
+  const nrm=st({f:{sz:12,c:TXT},h:"center"}),bold14=st({f:{b:true,sz:14,c:TXT},h:"center"});
+  const dif=n=>st({f:{b:true,sz:12,c:n>0?VERM:VERDE},h:"center"});
+  const tot=c=>st({f:{b:true,sz:12,c},fill:AZ,h:"center"}),totL=st({f:{b:true,sz:12,c:NAVY},fill:AZ,h:"left"});
+  P.put("C1","PAINEL DE PENDÊNCIAS - DATABRICKS",st({f:{b:true,sz:20,c:"FFFFFF"},fill:NAVY,h:"center",v:"center"}));
+  for(const c of "DEFGHIJKLM")P.put(c+"1","",st({fill:NAVY}));
+  P.put("C2",`Base de ${fmtData(hoje.data)}`+(ontem?` · comparando com ${fmtData(ontem.data)}`:"")+` · polos ${S.config.atcs.map(a=>poloNome(a)+" "+a).join(", ")}`,st({f:{i:true,sz:10,c:"595959"}}));
+  const tO=ontem?ontem.total:null;
+  [["C3","HOJE"],["D3","ONTEM"],["F3","DIFERENÇA"],["H3","COM TRATATIVA"],["J3","SEM TRATATIVA"],["L3","MAIS DE 31 DIAS"]].forEach(([r,t])=>P.put(r,t,lab));
+  for(const c of "EGIKM")P.put(c+"3","",lab);
+  P.put("C4",D.length,big(NAVY));P.put("D4",tO??"",big(TXT));P.put("F4",tO==null?"":D.length-tO,big(tO!=null&&D.length-tO>0?VERM:VERDE));
+  P.put("H4",H.com,big(VERDE));P.put("J4",H.sem,big(AMBAR));P.put("L4",H.porFaixa["+31 dias"]||0,big(VERM));
+  for(const c of "EGIKM")P.put(c+"4","",big(TXT));
+  P.put("C5","EVOLUÇÃO DESDE O INÍCIO",navy14);for(const c of "DEFGHIJKLM")P.put(c+"5","",navy14);
+  [["C6","INÍCIO"],["E6","HOJE"],["G6","REDUÇÃO DESDE O INÍCIO"],["J6","% REDUZIDO"]].forEach(([r,t])=>P.put(r,t,lab));for(const c of "DFHIKLM")P.put(c+"6","",lab);
+  const ini=S.config.inicio||null;
+  P.put("C7",ini??"",big(NAVY));P.put("E7",D.length,big(NAVY));P.put("G7",ini==null?"":D.length-ini,big("2E7D32"));
+  P.put("J7",ini?(ini-D.length)/ini:"",st({f:{b:true,sz:28,c:"2E7D32"},fill:CINZ,h:"center",v:"center",nf:"0%"}));for(const c of "DFHIKLM")P.put(c+"7","",big(TXT));
+  // por tempo de atraso
+  ["POR TEMPO DE ATRASO","Ontem","Hoje","Diferença"].forEach((t,i)=>P.put("EFGH"[i]+"9",t,i?th:thL));
+  const fx=[["+31 dias","+31 dias","FDECEA",VERM],["15 a 30 dias","15 a 30 dias","FDF0E3","C55A11"],["7 a 15 dias","7 a 15 dias","FFF8DC",AMBAR],["até 7 dias","Até 7 dias","E8F5E9",VERDE]];
+  let so=0,sh=0;fx.forEach(([k,l,bg,c],i)=>{const r=10+i,o=O?(O.porFaixa[k]||0):"",h=H.porFaixa[k]||0;so+=o||0;sh+=h;
+    P.put("E"+r,l,st({f:{b:true,sz:12,c},fill:bg}));P.put("F"+r,o,nrm);P.put("G"+r,h,bold14);P.put("H"+r,O?h-o:"",dif(O?h-o:0));});
+  P.put("E14","TOTAL",totL);P.put("F14",O?so:"",tot(NAVY));P.put("G14",sh,tot(NAVY));P.put("H14",O?sh-so:"",tot(O&&sh-so>0?VERM:VERDE));
+  // por polo (ao lado)
+  ["POR POLO","Ontem","Hoje","Diferença"].forEach((t,i)=>P.put("JKLM"[i]+"9",t,i?th:thL));
+  let po=0,ph=0;PO.lista.forEach((p,i)=>{const r=10+i;po+=p.o||0;ph+=p.h;P.put("J"+r,poloNome(p.a)+" ("+p.a+")",st({f:{b:true,sz:12,c:NAVY}}));P.put("K"+r,p.o??"",nrm);P.put("L"+r,p.h,bold14);P.put("M"+r,p.o==null?"":p.h-p.o,dif(p.o==null?0:p.h-p.o));});
+  P.put("J14","TOTAL",totL);P.put("K14",PO.temO?po:"",tot(NAVY));P.put("L14",ph,tot(NAVY));P.put("M14",PO.temO?ph-po:"",tot(PO.temO&&ph-po>0?VERM:VERDE));
+  // por serviço
+  ["POR SERVIÇO","Ontem","Hoje","Diferença","Com tratativa","Sem tratativa","% com tratativa"].forEach((t,i)=>P.put("DEFGHIJ"[i]+"16",t,i?th:thL));
+  const pctS=st({f:{sz:12,c:TXT},h:"center",nf:"0%"});
+  const cats=["Vazamento","Esgoto","Desobstrução","Cavalete","Embu Guaçu","Hidro","Vistorias"];let to=0,th2=0,tc=0;
+  cats.forEach((c,i)=>{const r=17+i,o=O?(O.porCat[c]||0):"",h=H.porCat[c]||0,cc=H.comCat[c]||0;to+=o||0;th2+=h;tc+=cc;
+    P.put("D"+r,c,st({f:{b:true,sz:12,c:"FFFFFF"},fill:COR_XL[c][1]}));P.put("E"+r,o,nrm);P.put("F"+r,h,bold14);P.put("G"+r,O?h-o:"",dif(O?h-o:0));
+    P.put("H"+r,cc,st({f:{b:true,sz:12,c:VERDE},h:"center"}));P.put("I"+r,h-cc,st({f:{b:true,sz:12,c:AMBAR},h:"center"}));P.put("J"+r,h?cc/h:0,pctS);});
+  const rn=st({f:{b:true,sz:12,c:VERM},h:"center"});
+  P.put("D24"," NOVAS ",st({f:{b:true,sz:12,c:VERM}}));P.put("E24",O?(O.novas||0):"",rn);P.put("F24",H.novas,rn);P.put("G24",O?H.novas-(O.novas||0):"",dif(O?H.novas-(O.novas||0):0));
+  P.put("H24",H.comNovas,st({f:{b:true,sz:12,c:VERDE},h:"center"}));P.put("I24",H.novas-H.comNovas,st({f:{b:true,sz:12,c:AMBAR},h:"center"}));P.put("J24",H.novas?H.comNovas/H.novas:0,pctS);
+  P.put("D25","Total Geral",totL);P.put("E25",O?to:"",tot(NAVY));P.put("F25",th2,tot(NAVY));P.put("G25",O?th2-to:"",tot(O&&th2-to>0?VERM:VERDE));P.put("H25",tc,tot(VERDE));P.put("I25",th2-tc,tot(NAVY));P.put("J25",th2?tc/th2:0,st({f:{b:true,sz:12,c:NAVY},fill:AZ,h:"center",nf:"0%"}));
+  // histórico
+  ["Data","Pendências","Variação","Novas","Executadas"].forEach((t,i)=>P.put("EFGHI"[i]+"27",t,th));
+  const asc=S.dias.filter(d=>d.total!=null).sort((a,b)=>a.data<b.data?-1:1);let r=28,prev=null;
+  const hc=st({f:{sz:12,c:TXT},h:"center",bd:"D9D9D9"});
+  if(ini){P.put("E"+r,"Início",hc);P.put("F"+r,ini,hc);P.put("G"+r,"",hc);P.put("H"+r,"",hc);P.put("I"+r,"",hc);prev=ini;r++;}
+  for(const d of asc){P.put("E"+r,dm(d.data),hc);P.put("F"+r,d.total,hc);P.put("G"+r,prev==null?"":d.total-prev,st({f:{b:true,sz:12,c:prev!=null&&d.total-prev>0?VERM:VERDE},h:"center",bd:"D9D9D9"}));
+    P.put("H"+r,d.novas??"",hc);P.put("I"+r,d.executadas??"",hc);prev=d.total;r++;}
+  // ---- abas de dados
+  const sheets=[abaDados("GERAL",ord(D)),P];
+  for(const [c,n] of [["Cavalete","Cavalete"],["Vazamento","Vazamento"],["Esgoto","Esgoto"],["Desobstrução","Desobstrução"],["Embu Guaçu","Embu_Guaçu"],["Hidro","Hidro"],["Vistorias","Vistorias"]])sheets.push(abaDados(n,ord(D.filter(x=>x.cat===c)),COR_XL[c][1]));
+  {const dup=D.filter(x=>x.grp!=null).sort((a,b)=>(b.grpN-a.grpN)||(a.grp-b.grp));if(dup.length)sheets.push(abaDados("Duplicidades",dup,"8B5CF6"));}
+  if(hoje.cruz&&hoje.cruz.saidas.length){const f=folha("Saíram",{widths:[18,20,50,60,40,10,12,14],heights:{0:20.25},freeze:"A2",tab:"6B7785"});
+    ["OS","Fornecimento","Tratativa registrada","Endereço OS","Serviço (TSS)","Dias Pendente","Faixa","Polo"].forEach((h,c)=>f.cells.set("0,"+c,{v:h,s:sHead}));
+    hoje.cruz.saidas.forEach((x,i)=>[x[8]||x[0],x[7],x[1],x[2],x[3],x[4],x[5],poloNome(x[6])].forEach((v,c)=>f.cells.set((i+1)+","+c,{v,s:sBody})));
+    f.filter=`A1:H${hoje.cruz.saidas.length+1}`;sheets.push(f);}
+  // ONTEM (base anterior completa, quando disponível)
+  if(ontem&&S.linhas[ontem.data]){const LO=S.linhas[ontem.data].map((r,i)=>({r,i,t:trat(key(r[I.os])),polo:poloDe(r),dupOS:false,dupF:false}));sheets.push(abaDados("ONTEM",LO));}
+  else if(ontem){const f=folha("ONTEM",{widths:[90]});f.put("A1",`A base completa de ${fmtData(ontem.data)} não está guardada no painel (só o resumo). A partir da próxima base que subir, esta aba vem completa.`,st({f:{i:true,c:"595959"}}));sheets.push(f);}
+  baixarBlob(gerarXlsx(L,sheets),`DATABRICKS - PAINEL ${dm(hoje.data).replace("/","-")}.xlsx`);msg("Excel gerado no formato da planilha da rede.");
+};
+
+/* ================= início ================= */
+(async function(){
+  $("nome").value=lsGet("nome")||"";$("nome").addEventListener("change",()=>lsSet("nome",clean($("nome").value)));
+  if(lsGet("aba")==="os")aba("os");
+  if(typeof DecompressionStream==="undefined")msg("Este navegador é antigo para ler o .xlsx. Use o Edge ou o Chrome atualizados.");
+  await carregarLocal();aplicar();
+  if(!hoje)$("intro").hidden=false;
+})();
+})();
+</script>
+</body>
+</html>
