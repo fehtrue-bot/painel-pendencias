@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
       return res.status(200).json({ estado, em: meta.em, por: meta.por, editor: a.editor, nome: a.nome || "" });
     }
     if (req.method === "POST") {
-      if (!a.editor) return res.status(403).json({ erro: "Só os analistas podem atualizar o painel." });
+      if (!a.editor) return res.status(403).json({ erro: "Só a equipe pode atualizar o painel." });
       const b = await lerCorpo(req);
       if (!b.estado || !Array.isArray(b.estado.dias)) return res.status(400).json({ erro: "Painel inválido." });
       const txt = JSON.stringify(b.estado);
