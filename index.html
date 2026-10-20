@@ -323,7 +323,7 @@ body{font-size:15px}
 @media (max-width:640px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.sv2 .r{grid-template-columns:110px minmax(0,1fr) 44px 60px}.sv2 .p,.sv2 .hd span:last-child{display:none}}
 
 /* ===== online ===== */
-body.leitor #btnSubir,body.leitor #btnBackup,body.leitor #imp,body.leitor #upload,body.leitor label[for=nome],body.leitor #nome,body.editor label[for=nome],body.editor #nome{display:none!important}
+body.leitor #btnSubir,body.leitor #btnBackup,body.leitor #btnAjuda,body.leitor #intro,body.leitor:not(.bloq):not(.quer-analista) #btnAnalista,body.leitor #imp,body.leitor #upload,body.leitor label[for=nome],body.leitor #nome,body.editor label[for=nome],body.editor #nome{display:none!important}
 body.leitor input.trat{pointer-events:none;background:transparent!important;border-color:transparent!important;box-shadow:none!important;padding-left:0}
 body.leitor input.trat.vazio::placeholder{color:transparent}
 body.bloq #v-painel,body.bloq #v-os,body.bloq .tabs,body.bloq .actions,body.bloq #btnBackup,body.bloq #btnAjuda{display:none!important}
@@ -1106,6 +1106,7 @@ $("baixar").onclick=()=>{
 /* ================= online: todos veem o mesmo painel ================= */
 const NUVEM=/^https?:$/.test(location.protocol)&&!/^(localhost|127\.)/.test(location.hostname)||/[?&]nuvem=1/.test(location.search);
 const AC={k:"",nome:"",senha:""};let remotoEm=0,remotoPor="",editor=false,ocupado=false;
+if(/[?&]analista/.test(location.search))document.body.classList.add("quer-analista");
 function lerAcesso(){try{const u=new URL(location.href);const k=u.searchParams.get("k");if(k){lsSet("chave",k);}}catch(e){}
   AC.k=lsGet("chave")||"";try{const a=JSON.parse(lsGet("analista")||"null");if(a){AC.nome=a.nome;AC.senha=a.senha;}}catch(e){}}
 const hdr=()=>({"x-chave":encodeURIComponent(AC.k),"x-nome":encodeURIComponent(AC.nome),"x-senha":encodeURIComponent(AC.senha)});
