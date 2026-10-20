@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/((?!api/|carteira).+)",
+      "source": "/((?!api/).+)",
       "destination": "/index.html"
     }
   ]
