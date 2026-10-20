@@ -1038,7 +1038,7 @@ $("baixar").onclick=()=>{
     return f;}
   const ord=L2=>L2.slice().sort((a,b)=>(Number(b.r[I.dias])-Number(a.r[I.dias])));
   // ---- PAINEL enxuto (cabe num print de celular)
-  const P=folha("PAINEL",{grid:false,widths:[2,24,13,13,13,2],heights:{0:30,1:16,3:16,4:36,5:14},merges:["B1:E1","B2:E2"]});
+  const P=folha("PAINEL",{grid:false,widths:[2,22,11,11,11,12,2],heights:{0:30,1:16,3:16,4:36,5:14,7:16,8:36,9:14},merges:["B1:F1","B2:F2","E4:F4","E5:F5","E6:F6"]});
   const sp=st({fill:"FFFFFF"});
   const titulo=st({f:{b:true,sz:15,c:"FFFFFF"},fill:NAVY,h:"center",v:"center"});
   const subt=st({f:{sz:9,c:"595959"},h:"center",v:"center"});
@@ -1050,21 +1050,24 @@ $("baixar").onclick=()=>{
   const dif=n=>st({f:{b:true,sz:11,c:n>0?VERM:n<0?VERDE:"7F7F7F"},h:"center",bd:"E3E8EE"});
   const totL=st({f:{b:true,sz:11,c:NAVY},fill:AZ,h:"left",bd:"C9D7E6"}),tot=c=>st({f:{b:true,sz:11,c},fill:AZ,h:"center",bd:"C9D7E6"});
   const sgn=n=>n==null||n===""?"":(n>0?"+":"")+n;
-  P.put("B1",`PENDÊNCIAS - DATABRICKS · ${dm(hoje.data)}`,titulo);for(const c of "CDE")P.put(c+"1","",titulo);
+  P.put("B1",`PENDÊNCIAS - DATABRICKS · ${dm(hoje.data)}`,titulo);for(const c of "CDEF")P.put(c+"1","",titulo);
   P.put("B2",ontem?`comparado com ${fmtData(ontem.data)}`:`base de ${fmtData(hoje.data)}`,subt);
   const tO=ontem?ontem.total:null,dT=tO==null?null:D.length-tO;
   [["B","HOJE",D.length,NAVY,"pendências"],["C","ONTEM",tO??"",TXT,ontem?dm(ontem.data):""],["D","DIFERENÇA",dT==null?"":dT,dT>0?VERM:VERDE,dT==null?"":dT>0?"aumentou":"diminuiu"],["E","+31 DIAS",H.porFaixa["+31 dias"]||0,VERM,"mais urgentes"]]
-    .forEach(([c,l,v,cor,s])=>{P.put(c+"4",l,kl);P.put(c+"5",typeof v==="number"&&c==="D"?sgn(v):v,kv(cor));P.put(c+"6",s,ks);});
-  let r=8;
-  const bloco=(titulo,linhas,cab)=>{[titulo].concat(cab||["Ontem","Hoje","Dif."]).forEach((t,i)=>P.put("BCDE"[i]+r,t,i?th:thL));P.heights[r-1]=20;r++;
-    let so=0,sh=0;for(const [nome,o,hh,estilo] of linhas){so+=o||0;sh+=hh;P.put("B"+r,nome,estilo);P.put("C"+r,o??"",linha);P.put("D"+r,hh,linhaB);P.put("E"+r,o==null||o===""?"":sgn(hh-o),dif(o==null||o===""?0:hh-o));P.heights[r-1]=18;r++;}
-    const temO=linhas.some(x=>x[1]!=null&&x[1]!=="");P.put("B"+r,"TOTAL",totL);P.put("C"+r,temO?so:"",tot(NAVY));P.put("D"+r,sh,tot(NAVY));P.put("E"+r,temO?sgn(sh-so):"",tot(temO&&sh-so>0?VERM:VERDE));P.heights[r-1]=18;r+=2;};
+    .forEach(([c,l,v,cor,s])=>{P.put(c+"4",l,kl);P.put(c+"5",typeof v==="number"&&c==="D"?sgn(v):v,kv(cor));P.put(c+"6",s,ks);if(c==="E"){P.put("F4","",kl);P.put("F5","",kv(cor));P.put("F6","",ks);}});
+  P.merges.push("E8:F8","E9:F9","E10:F10");
+  [["B","SAÍRAM",hoje.executadas??"",VERDE,"desde ontem"],["C","ENTRARAM",H.novas,"2A7FD4","novas hoje"],["D","COM TRATATIVA",H.com,VERDE,D.length?Math.round(H.com*100/D.length)+"% do total":""],["E","SEM TRATATIVA",H.sem,AMBAR,D.length?Math.round(H.sem*100/D.length)+"% do total":""]]
+    .forEach(([c,l,v,cor,s])=>{P.put(c+"8",l,kl);P.put(c+"9",v,kv(cor));P.put(c+"10",s,ks);if(c==="E"){P.put("F8","",kl);P.put("F9","",kv(cor));P.put("F10","",ks);}});
+  let r=12;
+  const sTrat=st({f:{b:true,sz:11,c:VERDE},h:"center",bd:"E3E8EE"});
+  const bloco=(titulo,linhas)=>{[titulo,"Ontem","Hoje","Dif.","Com tratativa"].forEach((t,i)=>P.put("BCDEF"[i]+r,t,i?th:thL));P.heights[r-1]=20;r++;
+    let so=0,sh=0,sc=0;for(const [nome,o,hh,estilo,cc] of linhas){so+=o||0;sh+=hh;sc+=cc||0;P.put("B"+r,nome,estilo);P.put("C"+r,o??"",linha);P.put("D"+r,hh,linhaB);P.put("E"+r,o==null||o===""?"":sgn(hh-o),dif(o==null||o===""?0:hh-o));P.put("F"+r,cc??"",sTrat);P.heights[r-1]=18;r++;}
+    const temO=linhas.some(x=>x[1]!=null&&x[1]!=="");P.put("B"+r,"TOTAL",totL);P.put("C"+r,temO?so:"",tot(NAVY));P.put("D"+r,sh,tot(NAVY));P.put("E"+r,temO?sgn(sh-so):"",tot(temO&&sh-so>0?VERM:VERDE));P.put("F"+r,sc,tot(VERDE));P.heights[r-1]=18;r+=2;};
   const cats=["Vazamento","Esgoto","Desobstrução","Cavalete","Embu Guaçu","Hidro","Vistorias"];
-  bloco("POR SERVIÇO",cats.map(c=>[c,O?(O.porCat[c]||0):"",H.porCat[c]||0,st({f:{b:true,sz:11,c:"FFFFFF"},fill:COR_XL[c][1],bd:"FFFFFF"})]));
-  bloco("POR POLO",PO.lista.map(p=>[poloNome(p.a),p.o??"",p.h,st({f:{b:true,sz:11,c:NAVY},bd:"E3E8EE"})]));
+  bloco("POR SERVIÇO",cats.map(c=>[c,O?(O.porCat[c]||0):"",H.porCat[c]||0,st({f:{b:true,sz:11,c:"FFFFFF"},fill:COR_XL[c][1],bd:"FFFFFF"}),H.comCat[c]||0]));
+  bloco("POR POLO",PO.lista.map(p=>[poloNome(p.a),p.o??"",p.h,st({f:{b:true,sz:11,c:NAVY},bd:"E3E8EE"}),p.c]));
   const fx=[["+31 dias","+31 dias",VERM,"FDECEA"],["15 a 30 dias","15 a 30 dias","C55A11","FDF0E3"],["7 a 15 dias","7 a 15 dias",AMBAR,"FFF8DC"],["até 7 dias","Até 7 dias",VERDE,"E8F5E9"]];
-  bloco("TEMPO DE ATRASO",fx.map(([k,l,c,bg])=>[l,O?(O.porFaixa[k]||0):"",H.porFaixa[k]||0,st({f:{b:true,sz:11,c},fill:bg,bd:"E3E8EE"})]));
-  P.put("B"+r,`Com tratativa: ${nf(H.com)} · Sem tratativa: ${nf(H.sem)} · Novas hoje: ${nf(H.novas)}`,st({f:{sz:9,c:"595959"}}));P.merges.push(`B${r}:E${r}`);
+  bloco("TEMPO DE ATRASO",fx.map(([k,l,c,bg])=>[l,O?(O.porFaixa[k]||0):"",H.porFaixa[k]||0,st({f:{b:true,sz:11,c},fill:bg,bd:"E3E8EE"}),D.filter(x=>x.r[I.faixa]===k&&clean(x.t)).length]));
   // ---- abas de dados
   const sheets=[abaDados("GERAL",ord(D)),P];
   for(const [c,n] of [["Cavalete","Cavalete"],["Vazamento","Vazamento"],["Esgoto","Esgoto"],["Desobstrução","Desobstrução"],["Embu Guaçu","Embu_Guaçu"],["Hidro","Hidro"],["Vistorias","Vistorias"]])sheets.push(abaDados(n,ord(D.filter(x=>x.cat===c)),COR_XL[c][1]));
