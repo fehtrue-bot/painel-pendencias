@@ -375,6 +375,7 @@ body.leitor .quem{background:var(--sunk);color:var(--muted)}
     <div id="cfgLink" hidden>
       <div class="lbl">Link para os superiores (só visualização)</div>
       <div class="row"><input type="text" id="linkLeitura" readonly style="flex:1 1 320px"><button type="button" id="btnCopiar" class="primary">Copiar link</button></div>
+      <form id="fLink" class="cfgf" style="margin-top:8px"><label>Final do link<input type="text" id="fimLink" placeholder="ex.: coordenacao-sul" style="width:240px"></label><button type="submit">Trocar o final do link</button></form>
       <div class="note">Mande este link para quem só vai ver o painel. Os analistas usam o mesmo link e clicam em <b>Entrar como analista</b>.</div>
     </div>
   </section>
@@ -1108,6 +1109,7 @@ const NUVEM=/^https?:$/.test(location.protocol)&&!/^(localhost|127\.)/.test(loca
 const AC={k:"",nome:"",senha:""};let remotoEm=0,remotoPor="",editor=false,ocupado=false;
 if(/[?&]analista/.test(location.search))document.body.classList.add("quer-analista");
 function lerAcesso(){try{const u=new URL(location.href);const k=u.searchParams.get("k");if(k){lsSet("chave",k);}}catch(e){}
+  try{const seg=decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g,""));if(seg&&!/[?&]k=/.test(location.search)&&/^[a-z0-9-]{6,60}$/i.test(seg)&&seg!=="index.html"){lsSet("chave",seg);}}catch(e){}
   AC.k=lsGet("chave")||"";try{const a=JSON.parse(lsGet("analista")||"null");if(a){AC.nome=a.nome;AC.senha=a.senha;}}catch(e){}}
 const hdr=()=>({"x-chave":encodeURIComponent(AC.k),"x-nome":encodeURIComponent(AC.nome),"x-senha":encodeURIComponent(AC.senha)});
 async function api(metodo,corpo,q,rota){const o={method:metodo,headers:hdr(),cache:"no-store"};if(corpo){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(corpo);}
@@ -1147,11 +1149,13 @@ $("fLogin").addEventListener("submit",async e=>{e.preventDefault();AC.nome=$("lN
     lsSet("analista",JSON.stringify({nome:AC.nome,senha:AC.senha}));$("lSenha").value="";$("login").hidden=true;await entrarNuvem();msg("Você entrou como analista. Pode subir os arquivos do dia.");}
   catch(err){AC.senha="";$("lMsg").textContent=err.status===401?"Nome ou senha incorretos.":"Não consegui entrar: "+err.message;}});
 
-function mostrarLink(chave){const l=location.origin+"/?k="+chave;$("linkLeitura").value=l;$("cfgLink").hidden=false;if(chave){lsSet("chave",chave);AC.k=chave;}}
+function mostrarLink(chave){const l=location.origin+"/"+chave;$("fimLink").value=chave||"";$("linkLeitura").value=l;$("cfgLink").hidden=false;if(chave){lsSet("chave",chave);AC.k=chave;}}
 async function abrirConfig(primeira){$("config").hidden=false;$("cfgTit").textContent=primeira?"Configurar o painel online":"Senhas e link";
   $("cfgNota").textContent=primeira?"Primeira vez: defina a senha de cada analista (pelo menos a sua). Os superiores vão abrir pelo link, sem senha.":"Para trocar a senha de alguém, digite a nova no campo dele. Campo vazio mantém a senha atual.";
   if(!primeira){try{const j=await api("GET",null,"","acesso");if(j.leitura)mostrarLink(j.leitura);}catch(e){}}}
 $("btnConfig").onclick=()=>abrirConfig(false);
+$("fLink").addEventListener("submit",async e=>{e.preventDefault();const c=$("fimLink").value.trim();if(!c)return;
+  try{const j=await api("POST",{chave:c},"","acesso");mostrarLink(j.leitura);msg("Link trocado. O link antigo deixa de funcionar; mande o novo para os coordenadores.");}catch(err){msg("Não consegui trocar: "+err.message);}});
 $("cfgFechar").onclick=()=>{$("config").hidden=true;};
 $("btnCopiar").onclick=async()=>{const i=$("linkLeitura");i.select();try{await navigator.clipboard.writeText(i.value);}catch(e){document.execCommand&&document.execCommand("copy");}msg("Link copiado. É só colar na mensagem para os superiores.");};
 $("fCfg").addEventListener("submit",async e=>{e.preventDefault();const senhas={};document.querySelectorAll("#fCfg input").forEach(i=>{if(i.value.trim())senhas[i.dataset.n]=i.value.trim();});

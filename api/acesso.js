@@ -11,8 +11,13 @@ module.exports = async (req, res) => {
     if (a.cfg.configurado && !a.editor) return res.status(403).json({ erro: "As senhas já foram definidas. Entre como analista para mudar." });
     const b = await lerCorpo(req);
     const senhas = b.senhas || {};
-    if (!a.cfg.configurado && !Object.values(senhas).some((x) => String(x || "").trim().length >= 4)) return res.status(400).json({ erro: "Defina pelo menos uma senha com 4 letras ou mais." });
-    const cfg = await gravarConfig(senhas, !!b.novaChave);
+    let chave = "";
+    if (b.chave) {
+      chave = String(b.chave).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+      if (chave.length < 6 || ["api", "index", "analista"].includes(chave)) return res.status(400).json({ erro: "O final do link precisa ter pelo menos 6 letras ou números." });
+    }
+    if (!chave && !a.cfg.configurado && !Object.values(senhas).some((x) => String(x || "").trim().length >= 4)) return res.status(400).json({ erro: "Defina pelo menos uma senha com 4 letras ou mais." });
+    const cfg = await gravarConfig(senhas, !!b.novaChave, chave);
     res.status(200).json({ ok: true, leitura: cfg.leitura, analistas: Object.values(cfg.analistas).map((x) => x.nome) });
   } catch (e) { erro(res, e); }
 };

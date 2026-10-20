@@ -38,14 +38,15 @@ async function lerConfig() {
   cfg.configurado = Object.keys(cfg.analistas).length > 0;
   return cfg;
 }
-async function gravarConfig(senhas, novaChave) {
+async function gravarConfig(senhas, novaChave, chave) {
   const atual = JSON.parse((await cmd("GET", "painel:acesso")) || "null") || { analistas: {}, leitura: "" };
   for (const [nome, senha] of Object.entries(senhas || {})) {
     if (!String(senha || "").trim()) continue;
     const sal = crypto.randomBytes(8).toString("hex");
     atual.analistas[norm(nome)] = { nome: nome.trim(), sal, hash: hashSenha(String(senha).trim(), sal) };
   }
-  if (!atual.leitura || novaChave) atual.leitura = "v" + crypto.randomBytes(6).toString("hex");
+  if (chave) atual.leitura = chave;
+  else if (!atual.leitura || novaChave) atual.leitura = "v" + crypto.randomBytes(6).toString("hex");
   await cmd("SET", "painel:acesso", JSON.stringify(atual));
   return atual;
 }
