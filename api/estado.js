@@ -7,8 +7,8 @@ const PARTE = 400000;
 module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
   try {
-    const a = acesso(req);
-    if (!a.leitor) return res.status(401).json({ erro: a.tentouSenha ? "Nome ou senha incorretos." : "Acesso restrito. Use o link enviado pela equipe." });
+    const a = await acesso(req);
+    if (!a.leitor) return res.status(401).json({ erro: a.tentouSenha ? "Nome ou senha incorretos." : "Acesso restrito. Use o link enviado pela equipe.", configurado: a.configurado });
     if (req.method === "GET") {
       const meta = JSON.parse((await cmd("GET", "painel:meta")) || "null");
       if ((req.query || {}).so === "em") return res.status(200).json({ em: meta ? meta.em : 0, por: meta ? meta.por : "", editor: a.editor, nome: a.nome || "" });

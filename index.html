@@ -329,7 +329,8 @@ body.leitor input.trat.vazio::placeholder{color:transparent}
 body.bloq #v-painel,body.bloq #v-os,body.bloq .tabs,body.bloq .actions,body.bloq #btnBackup,body.bloq #btnAjuda{display:none!important}
 .quem{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;border-radius:999px;padding:4px 10px;background:var(--accent-soft);color:var(--accent)}
 body.leitor .quem{background:var(--sunk);color:var(--muted)}
-#login form{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+#login form,.cfgf{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.cfgf label{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:13px}.cfgf input{width:170px}
 #login select{font:600 14px var(--f-body);padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
 </style>
 </head>
@@ -352,7 +353,7 @@ body.leitor .quem{background:var(--sunk);color:var(--muted)}
     <label class="note" for="nome">Seu nome</label>
     <input type="text" id="nome" placeholder="ex.: Fernanda">
     <button type="button" id="btnAjuda">Como usar</button>
-    <span class="quem" id="quem" hidden></span><button type="button" id="btnAnalista">Entrar como analista</button><button type="button" id="btnSairAn" hidden>Sair</button>
+    <span class="quem" id="quem" hidden></span><button type="button" id="btnAnalista">Entrar como analista</button><button type="button" id="btnConfig" hidden>Senhas e link</button><button type="button" id="btnSairAn" hidden>Sair</button>
     <button type="button" id="btnBackup" title="Baixa um arquivo com o histórico e as tratativas, para levar a outro computador">Cópia de segurança</button>
   </div>
   <div class="status" id="msg" role="status" aria-live="polite"></div>
@@ -361,6 +362,21 @@ body.leitor .quem{background:var(--sunk);color:var(--muted)}
     <form id="fLogin"><label class="lbl" for="lNome">Nome</label><select id="lNome"><option>Fernanda</option><option>Adriano</option><option>Rolison</option></select>
       <label class="lbl" for="lSenha">Senha</label><input type="password" id="lSenha" autocomplete="current-password" style="width:180px"><button class="primary" type="submit">Entrar</button></form>
     <div class="note" id="lMsg">Só os analistas colocam os arquivos e escrevem as tratativas. Quem abre pelo link vê o painel pronto.</div>
+  </section>
+  <section class="panel intro" id="config" hidden>
+    <div class="panel-h"><h2 id="cfgTit">Configurar o painel online</h2><button type="button" id="cfgFechar">Fechar</button></div>
+    <div class="note" id="cfgNota">Defina a senha de cada analista. Só quem tem senha sobe arquivos e escreve tratativas. Os superiores abrem pelo link, sem senha.</div>
+    <form id="fCfg" class="cfgf">
+      <label>Fernanda<input type="password" data-n="Fernanda" autocomplete="new-password" placeholder="senha"></label>
+      <label>Adriano<input type="password" data-n="Adriano" autocomplete="new-password" placeholder="senha"></label>
+      <label>Rolison<input type="password" data-n="Rolison" autocomplete="new-password" placeholder="senha"></label>
+      <button class="primary" type="submit">Salvar senhas</button>
+    </form>
+    <div id="cfgLink" hidden>
+      <div class="lbl">Link para os superiores (só visualização)</div>
+      <div class="row"><input type="text" id="linkLeitura" readonly style="flex:1 1 320px"><button type="button" id="btnCopiar" class="primary">Copiar link</button></div>
+      <div class="note">Mande este link para quem só vai ver o painel. Os analistas usam o mesmo link e clicam em <b>Entrar como analista</b>.</div>
+    </div>
   </section>
   <section class="panel intro" id="bloqueio" hidden>
     <h2>Acesso restrito</h2>
@@ -1093,12 +1109,12 @@ const AC={k:"",nome:"",senha:""};let remotoEm=0,remotoPor="",editor=false,ocupad
 function lerAcesso(){try{const u=new URL(location.href);const k=u.searchParams.get("k");if(k){lsSet("chave",k);}}catch(e){}
   AC.k=lsGet("chave")||"";try{const a=JSON.parse(lsGet("analista")||"null");if(a){AC.nome=a.nome;AC.senha=a.senha;}}catch(e){}}
 const hdr=()=>({"x-chave":encodeURIComponent(AC.k),"x-nome":encodeURIComponent(AC.nome),"x-senha":encodeURIComponent(AC.senha)});
-async function api(metodo,corpo,q){const o={method:metodo,headers:hdr(),cache:"no-store"};if(corpo){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(corpo);}
-  const r=await fetch("/api/estado"+(q||""),o);let j={};try{j=await r.json();}catch(e){}
-  if(!r.ok){const e=new Error(j.erro||("erro "+r.status));e.status=r.status;throw e;}return j;}
+async function api(metodo,corpo,q,rota){const o={method:metodo,headers:hdr(),cache:"no-store"};if(corpo){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(corpo);}
+  const r=await fetch("/api/"+(rota||"estado")+(q||""),o);let j={};try{j=await r.json();}catch(e){}
+  if(!r.ok){const e=new Error(j.erro||("erro "+r.status));e.status=r.status;e.dados=j;throw e;}return j;}
 const horaTxt=t=>t?new Date(t).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
 function modo(){document.body.classList.toggle("editor",editor);document.body.classList.toggle("leitor",!editor);
-  $("btnAnalista").hidden=editor;$("btnSairAn").hidden=!editor;const q=$("quem");q.hidden=false;q.textContent=editor?"Analista: "+AC.nome:"Modo visualização";
+  $("btnAnalista").hidden=editor;$("btnSairAn").hidden=!editor;$("btnConfig").hidden=!editor;const q=$("quem");q.hidden=false;q.textContent=editor?"Analista: "+AC.nome:"Modo visualização";
   if(editor){$("nome").value=AC.nome;lsSet("nome",AC.nome);}}
 function statusNuvem(){setConn("on",editor?"Painel online · você pode atualizar":"Painel online",(remotoEm?"atualizado por "+(remotoPor||"equipe")+" em "+horaTxt(remotoEm):"ainda sem atualização"));}
 async function baixarNuvem(){const j=await api("GET");editor=!!j.editor;if(j.nome)AC.nome=j.nome;remotoEm=j.em||0;remotoPor=j.por||"";
@@ -1115,6 +1131,7 @@ async function entrarNuvem(){
     if(!S){await carregarLocal();if(editor){await salvar();}}
   }catch(e){
     if(e.status===401){
+      if(e.dados&&e.dados.configurado===false){document.body.classList.add("bloq","leitor");abrirConfig(true);setConn("warn","Painel online ainda sem senhas","defina as senhas dos analistas para começar");S=null;aplicar();return;}
       if(AC.senha){lsSet("analista","");AC.nome="";AC.senha="";$("login").hidden=false;$("lMsg").textContent=e.message;}
       document.body.classList.add("bloq","leitor");$("bloqueio").hidden=!!AC.senha;setConn("off","Acesso restrito","use o link enviado pela equipe");S=null;
     }else{await carregarLocal();setConn("off","Sem conexão com o painel online",e.message+" · mostrando a última versão guardada neste computador");modo();}}
@@ -1128,6 +1145,20 @@ $("fLogin").addEventListener("submit",async e=>{e.preventDefault();AC.nome=$("lN
   try{const j=await api("GET",null,"?so=em");if(!j.editor)throw Object.assign(new Error("Nome ou senha incorretos."),{status:401});
     lsSet("analista",JSON.stringify({nome:AC.nome,senha:AC.senha}));$("lSenha").value="";$("login").hidden=true;await entrarNuvem();msg("Você entrou como analista. Pode subir os arquivos do dia.");}
   catch(err){AC.senha="";$("lMsg").textContent=err.status===401?"Nome ou senha incorretos.":"Não consegui entrar: "+err.message;}});
+
+function mostrarLink(chave){const l=location.origin+"/?k="+chave;$("linkLeitura").value=l;$("cfgLink").hidden=false;if(chave){lsSet("chave",chave);AC.k=chave;}}
+async function abrirConfig(primeira){$("config").hidden=false;$("cfgTit").textContent=primeira?"Configurar o painel online":"Senhas e link";
+  $("cfgNota").textContent=primeira?"Primeira vez: defina a senha de cada analista (pelo menos a sua). Os superiores vão abrir pelo link, sem senha.":"Para trocar a senha de alguém, digite a nova no campo dele. Campo vazio mantém a senha atual.";
+  if(!primeira){try{const j=await api("GET",null,"","acesso");if(j.leitura)mostrarLink(j.leitura);}catch(e){}}}
+$("btnConfig").onclick=()=>abrirConfig(false);
+$("cfgFechar").onclick=()=>{$("config").hidden=true;};
+$("btnCopiar").onclick=async()=>{const i=$("linkLeitura");i.select();try{await navigator.clipboard.writeText(i.value);}catch(e){document.execCommand&&document.execCommand("copy");}msg("Link copiado. É só colar na mensagem para os superiores.");};
+$("fCfg").addEventListener("submit",async e=>{e.preventDefault();const senhas={};document.querySelectorAll("#fCfg input").forEach(i=>{if(i.value.trim())senhas[i.dataset.n]=i.value.trim();});
+  if(!Object.keys(senhas).length){msg("Digite pelo menos uma senha.");return;}
+  try{const primeira=!editor;const j=await api("POST",{senhas},"","acesso");document.querySelectorAll("#fCfg input").forEach(i=>i.value="");mostrarLink(j.leitura);
+    if(primeira){const quem=senhas.Fernanda?"Fernanda":Object.keys(senhas)[0];AC.nome=quem;AC.senha=senhas[quem];lsSet("analista",JSON.stringify({nome:AC.nome,senha:AC.senha}));await entrarNuvem();$("config").hidden=false;mostrarLink(j.leitura);}
+    msg("Senhas salvas. Copie o link abaixo para mandar aos superiores.");}
+  catch(err){msg("Não consegui salvar as senhas: "+err.message);}});
 setInterval(async()=>{if(!NUVEM||document.hidden||editando||ocupado||document.body.classList.contains("bloq"))return;
   try{const j=await api("GET",null,"?so=em");if(j.em&&j.em!==remotoEm){ocupado=true;await baixarNuvem();aplicar();msg("Painel atualizado por "+(remotoPor||"equipe")+".");ocupado=false;}}catch(e){ocupado=false;}},45000);
 

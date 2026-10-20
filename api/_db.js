@@ -21,25 +21,43 @@ async function pipe(cmds) {
 }
 const cmd = async (...c) => (await pipe([c]))[0];
 
+const crypto = require("crypto");
 const norm = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toUpperCase();
-// SENHAS no Vercel: "Fernanda:senha1;Adriano:senha2;Rolison:senha3"
-function analistas() {
-  const out = {};
+const hashSenha = (senha, sal) => crypto.scryptSync(String(senha), sal, 32).toString("hex");
+const iguais = (a, b) => { const x = Buffer.from(String(a)), y = Buffer.from(String(b)); return x.length === y.length && crypto.timingSafeEqual(x, y); };
+
+// As senhas e a chave do link ficam no próprio banco (configuradas pelo painel na primeira vez).
+// Se existirem as variáveis SENHAS / LEITURA no Vercel, elas valem também.
+async function lerConfig() {
+  const cfg = JSON.parse((await cmd("GET", "painel:acesso")) || "null") || { analistas: {}, leitura: "" };
   for (const par of String(process.env.SENHAS || "").split(/[;\n]/)) {
     const i = par.indexOf(":");
-    if (i > 0) out[norm(par.slice(0, i))] = { nome: par.slice(0, i).trim(), senha: par.slice(i + 1).trim() };
+    if (i > 0) { const nome = par.slice(0, i).trim(), sal = "env"; cfg.analistas[norm(nome)] = { nome, sal, hash: hashSenha(par.slice(i + 1).trim(), sal) }; }
   }
-  return out;
+  if (process.env.LEITURA) cfg.leitura = String(process.env.LEITURA).trim();
+  cfg.configurado = Object.keys(cfg.analistas).length > 0;
+  return cfg;
 }
-function acesso(req) {
+async function gravarConfig(senhas, novaChave) {
+  const atual = JSON.parse((await cmd("GET", "painel:acesso")) || "null") || { analistas: {}, leitura: "" };
+  for (const [nome, senha] of Object.entries(senhas || {})) {
+    if (!String(senha || "").trim()) continue;
+    const sal = crypto.randomBytes(8).toString("hex");
+    atual.analistas[norm(nome)] = { nome: nome.trim(), sal, hash: hashSenha(String(senha).trim(), sal) };
+  }
+  if (!atual.leitura || novaChave) atual.leitura = "v" + crypto.randomBytes(6).toString("hex");
+  await cmd("SET", "painel:acesso", JSON.stringify(atual));
+  return atual;
+}
+async function acesso(req) {
   const h = req.headers || {};
   const dec = (v) => { try { return decodeURIComponent(v || ""); } catch (e) { return v || ""; } };
   const nome = dec(h["x-nome"]), senha = dec(h["x-senha"]), chave = dec(h["x-chave"]);
-  const a = analistas()[norm(nome)];
-  if (a && senha && senha === a.senha) return { editor: true, leitor: true, nome: a.nome };
-  const leitura = String(process.env.LEITURA || "").trim();
-  if (leitura && chave === leitura) return { editor: false, leitor: true };
-  return { editor: false, leitor: false, tentouSenha: !!senha };
+  const cfg = await lerConfig();
+  const a = cfg.analistas[norm(nome)];
+  if (a && senha && iguais(hashSenha(senha, a.sal), a.hash)) return { editor: true, leitor: true, nome: a.nome, cfg };
+  if (cfg.leitura && chave && iguais(chave, cfg.leitura)) return { editor: false, leitor: true, cfg };
+  return { editor: false, leitor: false, tentouSenha: !!senha, configurado: cfg.configurado, cfg };
 }
 
 async function lerCorpo(req) {
@@ -52,4 +70,4 @@ async function lerCorpo(req) {
 }
 function erro(res, e) { res.status(e.status || 500).json({ erro: e.message || "Erro inesperado." }); }
 
-module.exports = { pipe, cmd, acesso, lerCorpo, erro };
+module.exports = { pipe, cmd, acesso, lerCorpo, erro, gravarConfig };
