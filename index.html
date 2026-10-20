@@ -321,6 +321,16 @@ body{font-size:15px}
 .chart svg text{font-family:var(--f-body)}
 @media (max-width:1150px){.s4,.s8{grid-column:span 12}.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:640px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.sv2 .r{grid-template-columns:110px minmax(0,1fr) 44px 60px}.sv2 .p,.sv2 .hd span:last-child{display:none}}
+
+/* ===== online ===== */
+body.leitor #btnSubir,body.leitor #btnBackup,body.leitor #imp,body.leitor #upload,body.leitor label[for=nome],body.leitor #nome,body.editor label[for=nome],body.editor #nome{display:none!important}
+body.leitor input.trat{pointer-events:none;background:transparent!important;border-color:transparent!important;box-shadow:none!important;padding-left:0}
+body.leitor input.trat.vazio::placeholder{color:transparent}
+body.bloq #v-painel,body.bloq #v-os,body.bloq .tabs,body.bloq .actions,body.bloq #btnBackup,body.bloq #btnAjuda{display:none!important}
+.quem{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;border-radius:999px;padding:4px 10px;background:var(--accent-soft);color:var(--accent)}
+body.leitor .quem{background:var(--sunk);color:var(--muted)}
+#login form{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+#login select{font:600 14px var(--f-body);padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
 </style>
 </head>
 <body>
@@ -342,9 +352,20 @@ body{font-size:15px}
     <label class="note" for="nome">Seu nome</label>
     <input type="text" id="nome" placeholder="ex.: Fernanda">
     <button type="button" id="btnAjuda">Como usar</button>
+    <span class="quem" id="quem" hidden></span><button type="button" id="btnAnalista">Entrar como analista</button><button type="button" id="btnSairAn" hidden>Sair</button>
     <button type="button" id="btnBackup" title="Baixa um arquivo com o histórico e as tratativas, para levar a outro computador">Cópia de segurança</button>
   </div>
   <div class="status" id="msg" role="status" aria-live="polite"></div>
+  <section class="panel intro" id="login" hidden>
+    <div class="panel-h"><h2>Entrar como analista</h2><button type="button" id="loginFechar">Fechar</button></div>
+    <form id="fLogin"><label class="lbl" for="lNome">Nome</label><select id="lNome"><option>Fernanda</option><option>Adriano</option><option>Rolison</option></select>
+      <label class="lbl" for="lSenha">Senha</label><input type="password" id="lSenha" autocomplete="current-password" style="width:180px"><button class="primary" type="submit">Entrar</button></form>
+    <div class="note" id="lMsg">Só os analistas colocam os arquivos e escrevem as tratativas. Quem abre pelo link vê o painel pronto.</div>
+  </section>
+  <section class="panel intro" id="bloqueio" hidden>
+    <h2>Acesso restrito</h2>
+    <div>Este painel abre pelo link enviado pela equipe. Se você é analista, clique em <b>Entrar como analista</b>.</div>
+  </section>
 
   <section class="panel intro" id="intro" hidden>
     <div class="panel-h"><h2>Como usar todo dia</h2><button type="button" id="btnFecharAjuda">Fechar</button></div>
@@ -1065,13 +1086,58 @@ $("baixar").onclick=()=>{
   baixarBlob(gerarXlsx(L,sheets),`DATABRICKS - PAINEL ${dm(hoje.data).replace("/","-")}.xlsx`);msg("Excel gerado no formato da planilha da rede.");
 };
 
+
+/* ================= online: todos veem o mesmo painel ================= */
+const NUVEM=/^https?:$/.test(location.protocol)&&!/^(localhost|127\.)/.test(location.hostname)||/[?&]nuvem=1/.test(location.search);
+const AC={k:"",nome:"",senha:""};let remotoEm=0,remotoPor="",editor=false,ocupado=false;
+function lerAcesso(){try{const u=new URL(location.href);const k=u.searchParams.get("k");if(k){lsSet("chave",k);}}catch(e){}
+  AC.k=lsGet("chave")||"";try{const a=JSON.parse(lsGet("analista")||"null");if(a){AC.nome=a.nome;AC.senha=a.senha;}}catch(e){}}
+const hdr=()=>({"x-chave":encodeURIComponent(AC.k),"x-nome":encodeURIComponent(AC.nome),"x-senha":encodeURIComponent(AC.senha)});
+async function api(metodo,corpo,q){const o={method:metodo,headers:hdr(),cache:"no-store"};if(corpo){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(corpo);}
+  const r=await fetch("/api/estado"+(q||""),o);let j={};try{j=await r.json();}catch(e){}
+  if(!r.ok){const e=new Error(j.erro||("erro "+r.status));e.status=r.status;throw e;}return j;}
+const horaTxt=t=>t?new Date(t).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+function modo(){document.body.classList.toggle("editor",editor);document.body.classList.toggle("leitor",!editor);
+  $("btnAnalista").hidden=editor;$("btnSairAn").hidden=!editor;const q=$("quem");q.hidden=false;q.textContent=editor?"Analista: "+AC.nome:"Modo visualização";
+  if(editor){$("nome").value=AC.nome;lsSet("nome",AC.nome);}}
+function statusNuvem(){setConn("on",editor?"Painel online · você pode atualizar":"Painel online",(remotoEm?"atualizado por "+(remotoPor||"equipe")+" em "+horaTxt(remotoEm):"ainda sem atualização"));}
+async function baixarNuvem(){const j=await api("GET");editor=!!j.editor;if(j.nome)AC.nome=j.nome;remotoEm=j.em||0;remotoPor=j.por||"";
+  if(j.estado){S=normalizar(j.estado);try{await idbSet("estado",JSON.parse(JSON.stringify(S)));}catch(e){}}
+  document.body.classList.remove("bloq");$("bloqueio").hidden=true;modo();statusNuvem();return j;}
+const salvarLocalOrig=salvar;
+salvar=async function(){await salvarLocalOrig();if(!NUVEM||!editor)return;
+  try{setConn("warn","Enviando para o painel online…","");const atual=await api("GET");if(atual.estado&&atual.em!==remotoEm)S=mesclar(atual.estado,S);
+    podar(S);const r=await api("POST",{estado:S});remotoEm=r.em;remotoPor=r.por;statusNuvem();msg("Painel online atualizado: quem abrir o link já vê.");aplicar();}
+  catch(e){setConn("off","Não consegui enviar para o painel online",e.message+" · tente de novo em Atualizar");if(e.status===401){sairAnalista();}}};
+async function entrarNuvem(){
+  lerAcesso();
+  try{await baixarNuvem();
+    if(!S){await carregarLocal();if(editor){await salvar();}}
+  }catch(e){
+    if(e.status===401){
+      if(AC.senha){lsSet("analista","");AC.nome="";AC.senha="";$("login").hidden=false;$("lMsg").textContent=e.message;}
+      document.body.classList.add("bloq","leitor");$("bloqueio").hidden=!!AC.senha;setConn("off","Acesso restrito","use o link enviado pela equipe");S=null;
+    }else{await carregarLocal();setConn("off","Sem conexão com o painel online",e.message+" · mostrando a última versão guardada neste computador");modo();}}
+  aplicar();if(!hoje&&editor)$("intro").hidden=false;}
+function sairAnalista(){lsSet("analista","");AC.nome="";AC.senha="";editor=false;modo();entrarNuvem();}
+$("btnAnalista").onclick=()=>{$("login").hidden=false;$("lSenha").focus();};
+$("loginFechar").onclick=()=>{$("login").hidden=true;};
+$("btnSairAn").onclick=sairAnalista;
+$("fLogin").addEventListener("submit",async e=>{e.preventDefault();AC.nome=$("lNome").value;AC.senha=$("lSenha").value;
+  $("lMsg").textContent="Entrando…";
+  try{const j=await api("GET",null,"?so=em");if(!j.editor)throw Object.assign(new Error("Nome ou senha incorretos."),{status:401});
+    lsSet("analista",JSON.stringify({nome:AC.nome,senha:AC.senha}));$("lSenha").value="";$("login").hidden=true;await entrarNuvem();msg("Você entrou como analista. Pode subir os arquivos do dia.");}
+  catch(err){AC.senha="";$("lMsg").textContent=err.status===401?"Nome ou senha incorretos.":"Não consegui entrar: "+err.message;}});
+setInterval(async()=>{if(!NUVEM||document.hidden||editando||ocupado||document.body.classList.contains("bloq"))return;
+  try{const j=await api("GET",null,"?so=em");if(j.em&&j.em!==remotoEm){ocupado=true;await baixarNuvem();aplicar();msg("Painel atualizado por "+(remotoPor||"equipe")+".");ocupado=false;}}catch(e){ocupado=false;}},45000);
+
 /* ================= início ================= */
 (async function(){
   $("nome").value=lsGet("nome")||"";$("nome").addEventListener("change",()=>lsSet("nome",clean($("nome").value)));
   if(lsGet("aba")==="os")aba("os");
   if(typeof DecompressionStream==="undefined")msg("Este navegador é antigo para ler o .xlsx. Use o Edge ou o Chrome atualizados.");
-  await carregarLocal();aplicar();
-  if(!hoje)$("intro").hidden=false;
+  if(NUVEM){await entrarNuvem();}
+  else{$("btnAnalista").hidden=true;await carregarLocal();aplicar();if(!hoje)$("intro").hidden=false;}
 })();
 })();
 </script>
