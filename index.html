@@ -326,7 +326,7 @@ body{font-size:15px}
 body.leitor #btnSubir,body.leitor #btnBackup,body.leitor #btnAjuda,body.leitor #intro,body.leitor:not(.bloq):not(.quer-analista) #btnAnalista,body.leitor #imp,body.leitor #upload,body.leitor label[for=nome],body.leitor #nome,body.editor label[for=nome],body.editor #nome{display:none!important}
 body.leitor input.trat{pointer-events:none;background:transparent!important;border-color:transparent!important;box-shadow:none!important;padding-left:0}
 body.leitor input.trat.vazio::placeholder{color:transparent}
-body.bloq #v-painel,body.bloq #v-os,body.bloq .tabs,body.bloq .actions,body.bloq #btnBackup,body.bloq #btnAjuda{display:none!important}
+body.bloq #btnAnalista,body.bloq #v-painel,body.bloq #v-os,body.bloq .tabs,body.bloq .actions,body.bloq #btnBackup,body.bloq #btnAjuda{display:none!important}
 .quem{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;border-radius:999px;padding:4px 10px;background:var(--accent-soft);color:var(--accent)}
 body.leitor .quem{background:var(--sunk);color:var(--muted)}
 #login form,.cfgf{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
@@ -358,8 +358,8 @@ body.leitor .quem{background:var(--sunk);color:var(--muted)}
   </div>
   <div class="status" id="msg" role="status" aria-live="polite"></div>
   <section class="panel intro" id="login" hidden>
-    <div class="panel-h"><h2>Entrar (equipe)</h2><button type="button" id="loginFechar">Fechar</button></div>
-    <form id="fLogin"><label class="lbl" for="lNome">Nome</label><select id="lNome"><option>Fernanda</option><option>Adriano</option><option>Rolison</option></select>
+    <div class="panel-h"><h2>Entrar para atualizar o painel</h2><button type="button" id="loginFechar">Fechar</button></div>
+    <form id="fLogin"><label class="lbl" for="lNome">Nome</label><select id="lNome"><option value="Fernanda">Fernanda — Analista</option><option value="Adriano">Adriano — Técnico</option><option value="Rolison">Rolison — Técnico</option></select>
       <label class="lbl" for="lSenha">Senha</label><input type="password" id="lSenha" autocomplete="current-password" style="width:180px"><button class="primary" type="submit">Entrar</button></form>
     <div class="note" id="lMsg">Só a equipe (Fernanda, Adriano e Rolison) coloca os arquivos e escreve as tratativas. Quem abre pelo link vê o painel pronto.</div>
   </section>
@@ -451,7 +451,7 @@ body.leitor .quem{background:var(--sunk);color:var(--muted)}
     <div class="list" id="lista"></div>
     <div class="note" id="rodape"></div>
   </section>
-  <div class="foot">Painel de Pendências - Databricks · os dados ficam guardados só neste computador</div>
+  <div class="foot">Painel de Pendências - Databricks</div>
 </div>
 <datalist id="sugestoes"></datalist>
 
@@ -716,7 +716,7 @@ function resumoDe(D){
 function barra(a,b){const p=b?a*100/b:0;return `<div class="row" style="gap:8px;flex-wrap:nowrap"><div class="bar"><i style="width:${p.toFixed(1)}%"></i></div><span class="num" style="width:38px;text-align:right">${Math.round(p)}%</span></div>`;}
 function render(){
   if(!S||!hoje){
-    $("sub").textContent=!S?"Conecte o arquivo de dados da equipe para começar.":"Nenhuma base salva ainda. Clique em “Atualizar com os arquivos do dia”.";
+    $("sub").textContent=!S?"Área da equipe · Interlagos, Grajaú e Embu Guaçu":"Nenhuma base salva ainda. Clique em “Atualizar com os arquivos do dia”.";
     $("kpis").innerHTML="";$("cruzBox").innerHTML="";$("tbFaixa").innerHTML="";$("tbServ").innerHTML="";$("poloCards").innerHTML="";$("atencao").innerHTML="";$("chart").innerHTML="";$("tbHist").innerHTML="";$("chips").innerHTML="";
     $("lista").innerHTML='<div class="empty">Sem OS para mostrar ainda. Suba o Detalhamento do dia.</div>';$("blocos").hidden=true;$("kpis").hidden=true;if(S)renderHist();return;}
   $("blocos").hidden=false;$("kpis").hidden=false;
@@ -1115,7 +1115,7 @@ async function entrarNuvem(){
     if(e.status===401){
       if(e.dados&&e.dados.configurado===false){document.body.classList.add("bloq","leitor");abrirConfig(true);setConn("warn","Painel online ainda sem senhas","defina as senhas da equipe para começar");S=null;aplicar();return;}
       if(AC.senha){lsSet("analista","");AC.nome="";AC.senha="";$("login").hidden=false;$("lMsg").textContent=e.message;}
-      document.body.classList.add("bloq","leitor");$("bloqueio").hidden=!!AC.senha;setConn("off","Acesso restrito","use o link enviado pela equipe");S=null;
+      document.body.classList.add("bloq","leitor");$("bloqueio").hidden=true;$("login").hidden=false;$("loginFechar").hidden=true;if(!AC.senha)$("lMsg").textContent="Escolha seu nome, digite sua senha e clique em Entrar para atualizar o painel. A coordenação usa o link próprio dela, que se atualiza sozinho.";setConn("off","Painel de Pendências · equipe","entre com seu nome e senha");S=null;
     }else{await carregarLocal();setConn("off","Sem conexão com o painel online",e.message+" · mostrando a última versão guardada neste computador");modo();}}
   aplicar();if(!hoje&&editor)$("intro").hidden=false;}
 function sairAnalista(){lsSet("analista","");AC.nome="";AC.senha="";editor=false;modo();entrarNuvem();}
@@ -1125,7 +1125,7 @@ $("btnSairAn").onclick=sairAnalista;
 $("fLogin").addEventListener("submit",async e=>{e.preventDefault();AC.nome=$("lNome").value;AC.senha=$("lSenha").value;
   $("lMsg").textContent="Entrando…";
   try{const j=await api("GET",null,"?so=em");if(!j.editor)throw Object.assign(new Error("Nome ou senha incorretos."),{status:401});
-    lsSet("analista",JSON.stringify({nome:AC.nome,senha:AC.senha}));$("lSenha").value="";$("login").hidden=true;await entrarNuvem();msg("Você entrou. Pode subir os arquivos do dia.");}
+    lsSet("analista",JSON.stringify({nome:AC.nome,senha:AC.senha}));$("lSenha").value="";$("login").hidden=true;$("loginFechar").hidden=false;await entrarNuvem();msg("Você entrou. Pode subir os arquivos do dia.");}
   catch(err){AC.senha="";$("lMsg").textContent=err.status===401?"Nome ou senha incorretos.":"Não consegui entrar: "+err.message;}});
 
 function mostrarLink(chave){$("fLink").hidden=!(editor&&/^fernanda$/i.test(AC.nome))&&!!editor;$("fCfg").hidden=$("fLink").hidden;const l=location.origin+"/"+chave;$("fimLink").value=chave||"";$("linkLeitura").value=l;$("cfgLink").hidden=false;if(chave){lsSet("chave",chave);AC.k=chave;}}
