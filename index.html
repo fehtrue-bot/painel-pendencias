@@ -1064,10 +1064,10 @@ $("baixar").onclick=()=>{
     let so=0,sh=0,sc=0;for(const [nome,o,hh,estilo,cc] of linhas){so+=o||0;sh+=hh;sc+=cc||0;P.put("B"+r,nome,estilo);P.put("C"+r,o??"",linha);P.put("D"+r,hh,linhaB);P.put("E"+r,o==null||o===""?"":sgn(hh-o),dif(o==null||o===""?0:hh-o));P.put("F"+r,cc??"",sTrat);P.heights[r-1]=18;r++;}
     const temO=linhas.some(x=>x[1]!=null&&x[1]!=="");P.put("B"+r,"TOTAL",totL);P.put("C"+r,temO?so:"",tot(NAVY));P.put("D"+r,sh,tot(NAVY));P.put("E"+r,temO?sgn(sh-so):"",tot(temO&&sh-so>0?VERM:VERDE));P.put("F"+r,sc,tot(VERDE));P.heights[r-1]=18;r+=2;};
   const cats=["Vazamento","Esgoto","Desobstrução","Cavalete","Embu Guaçu","Hidro","Vistorias"];
-  bloco("POR SERVIÇO",cats.map(c=>[c,O?(O.porCat[c]||0):"",H.porCat[c]||0,st({f:{b:true,sz:11,c:"FFFFFF"},fill:COR_XL[c][1],bd:"FFFFFF"}),H.comCat[c]||0]));
-  bloco("POR POLO",PO.lista.map(p=>[poloNome(p.a),p.o??"",p.h,st({f:{b:true,sz:11,c:NAVY},bd:"E3E8EE"}),p.c]));
   const fx=[["+31 dias","+31 dias",VERM,"FDECEA"],["15 a 30 dias","15 a 30 dias","C55A11","FDF0E3"],["7 a 15 dias","7 a 15 dias",AMBAR,"FFF8DC"],["até 7 dias","Até 7 dias",VERDE,"E8F5E9"]];
   bloco("TEMPO DE ATRASO",fx.map(([k,l,c,bg])=>[l,O?(O.porFaixa[k]||0):"",H.porFaixa[k]||0,st({f:{b:true,sz:11,c},fill:bg,bd:"E3E8EE"}),D.filter(x=>x.r[I.faixa]===k&&clean(x.t)).length]));
+  bloco("POR SERVIÇO",cats.map(c=>[c,O?(O.porCat[c]||0):"",H.porCat[c]||0,st({f:{b:true,sz:11,c:"FFFFFF"},fill:COR_XL[c][1],bd:"FFFFFF"}),H.comCat[c]||0]));
+  bloco("POR POLO",PO.lista.map(p=>[poloNome(p.a),p.o??"",p.h,st({f:{b:true,sz:11,c:NAVY},bd:"E3E8EE"}),p.c]));
   // ---- abas de dados
   const sheets=[abaDados("GERAL",ord(D)),P];
   for(const [c,n] of [["Cavalete","Cavalete"],["Vazamento","Vazamento"],["Esgoto","Esgoto"],["Desobstrução","Desobstrução"],["Embu Guaçu","Embu_Guaçu"],["Hidro","Hidro"],["Vistorias","Vistorias"]])sheets.push(abaDados(n,ord(D.filter(x=>x.cat===c)),COR_XL[c][1]));
