@@ -1037,58 +1037,34 @@ $("baixar").onclick=()=>{
     f.filter=`A1:${colName(HEAD.length-1)}${Math.max(2,lista.length+1)}`;
     return f;}
   const ord=L2=>L2.slice().sort((a,b)=>(Number(b.r[I.dias])-Number(a.r[I.dias])));
-  // ---- PAINEL (mesmo layout da planilha da rede)
-  const P=folha("PAINEL",{grid:false,widths:[8,1.6,21.2,20.5,21.9,14.6,13,11.9,14.4,18.4,11,13,13,1.6],heights:{0:34,3:40,6:40},
-    merges:["C1:M1","D3:E3","F3:G3","H3:I3","J3:K3","L3:M3","D4:E4","F4:G4","H4:I4","J4:K4","L4:M4","C5:M5","C6:D6","E6:F6","G6:I6","J6:M6","C7:D7","E7:F7","G7:I7","J7:M7"]});
-  const lab=st({f:{b:true,sz:9,c:"595959"},fill:CINZ,h:"center",v:"center"});
-  const big=c=>st({f:{b:true,sz:28,c},fill:CINZ,h:"center",v:"center",nf:"#,##0"});
-  const navy14=st({f:{b:true,sz:14,c:"FFFFFF"},fill:NAVY,h:"center",v:"center"});
-  const th=st({f:{b:true,sz:12,c:"FFFFFF"},fill:NAVY,h:"center",v:"center"}),thL=st({f:{b:true,sz:12,c:"FFFFFF"},fill:NAVY,h:"left",v:"center"});
-  const nrm=st({f:{sz:12,c:TXT},h:"center"}),bold14=st({f:{b:true,sz:14,c:TXT},h:"center"});
-  const dif=n=>st({f:{b:true,sz:12,c:n>0?VERM:VERDE},h:"center"});
-  const tot=c=>st({f:{b:true,sz:12,c},fill:AZ,h:"center"}),totL=st({f:{b:true,sz:12,c:NAVY},fill:AZ,h:"left"});
-  P.put("C1","PAINEL DE PENDÊNCIAS - DATABRICKS",st({f:{b:true,sz:20,c:"FFFFFF"},fill:NAVY,h:"center",v:"center"}));
-  for(const c of "DEFGHIJKLM")P.put(c+"1","",st({fill:NAVY}));
-  P.put("C2",`Base de ${fmtData(hoje.data)}`+(ontem?` · comparando com ${fmtData(ontem.data)}`:"")+` · polos ${S.config.atcs.map(a=>poloNome(a)+" "+a).join(", ")}`,st({f:{i:true,sz:10,c:"595959"}}));
-  const tO=ontem?ontem.total:null;
-  [["C3","HOJE"],["D3","ONTEM"],["F3","DIFERENÇA"],["H3","COM TRATATIVA"],["J3","SEM TRATATIVA"],["L3","MAIS DE 31 DIAS"]].forEach(([r,t])=>P.put(r,t,lab));
-  for(const c of "EGIKM")P.put(c+"3","",lab);
-  P.put("C4",D.length,big(NAVY));P.put("D4",tO??"",big(TXT));P.put("F4",tO==null?"":D.length-tO,big(tO!=null&&D.length-tO>0?VERM:VERDE));
-  P.put("H4",H.com,big(VERDE));P.put("J4",H.sem,big(AMBAR));P.put("L4",H.porFaixa["+31 dias"]||0,big(VERM));
-  for(const c of "EGIKM")P.put(c+"4","",big(TXT));
-  P.put("C5","EVOLUÇÃO DESDE O INÍCIO",navy14);for(const c of "DEFGHIJKLM")P.put(c+"5","",navy14);
-  [["C6","INÍCIO"],["E6","HOJE"],["G6","REDUÇÃO DESDE O INÍCIO"],["J6","% REDUZIDO"]].forEach(([r,t])=>P.put(r,t,lab));for(const c of "DFHIKLM")P.put(c+"6","",lab);
-  const ini=S.config.inicio||null;
-  P.put("C7",ini??"",big(NAVY));P.put("E7",D.length,big(NAVY));P.put("G7",ini==null?"":D.length-ini,big("2E7D32"));
-  P.put("J7",ini?(ini-D.length)/ini:"",st({f:{b:true,sz:28,c:"2E7D32"},fill:CINZ,h:"center",v:"center",nf:"0%"}));for(const c of "DFHIKLM")P.put(c+"7","",big(TXT));
-  // por tempo de atraso
-  ["POR TEMPO DE ATRASO","Ontem","Hoje","Diferença"].forEach((t,i)=>P.put("EFGH"[i]+"9",t,i?th:thL));
-  const fx=[["+31 dias","+31 dias","FDECEA",VERM],["15 a 30 dias","15 a 30 dias","FDF0E3","C55A11"],["7 a 15 dias","7 a 15 dias","FFF8DC",AMBAR],["até 7 dias","Até 7 dias","E8F5E9",VERDE]];
-  let so=0,sh=0;fx.forEach(([k,l,bg,c],i)=>{const r=10+i,o=O?(O.porFaixa[k]||0):"",h=H.porFaixa[k]||0;so+=o||0;sh+=h;
-    P.put("E"+r,l,st({f:{b:true,sz:12,c},fill:bg}));P.put("F"+r,o,nrm);P.put("G"+r,h,bold14);P.put("H"+r,O?h-o:"",dif(O?h-o:0));});
-  P.put("E14","TOTAL",totL);P.put("F14",O?so:"",tot(NAVY));P.put("G14",sh,tot(NAVY));P.put("H14",O?sh-so:"",tot(O&&sh-so>0?VERM:VERDE));
-  // por polo (ao lado)
-  ["POR POLO","Ontem","Hoje","Diferença"].forEach((t,i)=>P.put("JKLM"[i]+"9",t,i?th:thL));
-  let po=0,ph=0;PO.lista.forEach((p,i)=>{const r=10+i;po+=p.o||0;ph+=p.h;P.put("J"+r,poloNome(p.a)+" ("+p.a+")",st({f:{b:true,sz:12,c:NAVY}}));P.put("K"+r,p.o??"",nrm);P.put("L"+r,p.h,bold14);P.put("M"+r,p.o==null?"":p.h-p.o,dif(p.o==null?0:p.h-p.o));});
-  P.put("J14","TOTAL",totL);P.put("K14",PO.temO?po:"",tot(NAVY));P.put("L14",ph,tot(NAVY));P.put("M14",PO.temO?ph-po:"",tot(PO.temO&&ph-po>0?VERM:VERDE));
-  // por serviço
-  ["POR SERVIÇO","Ontem","Hoje","Diferença","Com tratativa","Sem tratativa","% com tratativa"].forEach((t,i)=>P.put("DEFGHIJ"[i]+"16",t,i?th:thL));
-  const pctS=st({f:{sz:12,c:TXT},h:"center",nf:"0%"});
-  const cats=["Vazamento","Esgoto","Desobstrução","Cavalete","Embu Guaçu","Hidro","Vistorias"];let to=0,th2=0,tc=0;
-  cats.forEach((c,i)=>{const r=17+i,o=O?(O.porCat[c]||0):"",h=H.porCat[c]||0,cc=H.comCat[c]||0;to+=o||0;th2+=h;tc+=cc;
-    P.put("D"+r,c,st({f:{b:true,sz:12,c:"FFFFFF"},fill:COR_XL[c][1]}));P.put("E"+r,o,nrm);P.put("F"+r,h,bold14);P.put("G"+r,O?h-o:"",dif(O?h-o:0));
-    P.put("H"+r,cc,st({f:{b:true,sz:12,c:VERDE},h:"center"}));P.put("I"+r,h-cc,st({f:{b:true,sz:12,c:AMBAR},h:"center"}));P.put("J"+r,h?cc/h:0,pctS);});
-  const rn=st({f:{b:true,sz:12,c:VERM},h:"center"});
-  P.put("D24"," NOVAS ",st({f:{b:true,sz:12,c:VERM}}));P.put("E24",O?(O.novas||0):"",rn);P.put("F24",H.novas,rn);P.put("G24",O?H.novas-(O.novas||0):"",dif(O?H.novas-(O.novas||0):0));
-  P.put("H24",H.comNovas,st({f:{b:true,sz:12,c:VERDE},h:"center"}));P.put("I24",H.novas-H.comNovas,st({f:{b:true,sz:12,c:AMBAR},h:"center"}));P.put("J24",H.novas?H.comNovas/H.novas:0,pctS);
-  P.put("D25","Total Geral",totL);P.put("E25",O?to:"",tot(NAVY));P.put("F25",th2,tot(NAVY));P.put("G25",O?th2-to:"",tot(O&&th2-to>0?VERM:VERDE));P.put("H25",tc,tot(VERDE));P.put("I25",th2-tc,tot(NAVY));P.put("J25",th2?tc/th2:0,st({f:{b:true,sz:12,c:NAVY},fill:AZ,h:"center",nf:"0%"}));
-  // histórico
-  ["Data","Pendências","Variação","Novas","Executadas"].forEach((t,i)=>P.put("EFGHI"[i]+"27",t,th));
-  const asc=S.dias.filter(d=>d.total!=null).sort((a,b)=>a.data<b.data?-1:1);let r=28,prev=null;
-  const hc=st({f:{sz:12,c:TXT},h:"center",bd:"D9D9D9"});
-  if(ini){P.put("E"+r,"Início",hc);P.put("F"+r,ini,hc);P.put("G"+r,"",hc);P.put("H"+r,"",hc);P.put("I"+r,"",hc);prev=ini;r++;}
-  for(const d of asc){P.put("E"+r,dm(d.data),hc);P.put("F"+r,d.total,hc);P.put("G"+r,prev==null?"":d.total-prev,st({f:{b:true,sz:12,c:prev!=null&&d.total-prev>0?VERM:VERDE},h:"center",bd:"D9D9D9"}));
-    P.put("H"+r,d.novas??"",hc);P.put("I"+r,d.executadas??"",hc);prev=d.total;r++;}
+  // ---- PAINEL enxuto (cabe num print de celular)
+  const P=folha("PAINEL",{grid:false,widths:[2,24,13,13,13,2],heights:{0:30,1:16,3:16,4:36,5:14},merges:["B1:E1","B2:E2"]});
+  const sp=st({fill:"FFFFFF"});
+  const titulo=st({f:{b:true,sz:15,c:"FFFFFF"},fill:NAVY,h:"center",v:"center"});
+  const subt=st({f:{sz:9,c:"595959"},h:"center",v:"center"});
+  const kl=st({f:{b:true,sz:8,c:"595959"},fill:CINZ,h:"center",v:"center"});
+  const kv=c=>st({f:{b:true,sz:22,c},fill:CINZ,h:"center",v:"center",nf:"#,##0"});
+  const ks=st({f:{sz:8,c:"7F7F7F"},fill:CINZ,h:"center",v:"top"});
+  const thL=st({f:{b:true,sz:10,c:"FFFFFF"},fill:NAVY,h:"left",v:"center"}),th=st({f:{b:true,sz:10,c:"FFFFFF"},fill:NAVY,h:"center",v:"center"});
+  const linha=st({f:{sz:11,c:TXT},h:"center",bd:"E3E8EE"}),linhaB=st({f:{b:true,sz:12,c:TXT},h:"center",bd:"E3E8EE"});
+  const dif=n=>st({f:{b:true,sz:11,c:n>0?VERM:n<0?VERDE:"7F7F7F"},h:"center",bd:"E3E8EE"});
+  const totL=st({f:{b:true,sz:11,c:NAVY},fill:AZ,h:"left",bd:"C9D7E6"}),tot=c=>st({f:{b:true,sz:11,c},fill:AZ,h:"center",bd:"C9D7E6"});
+  const sgn=n=>n==null||n===""?"":(n>0?"+":"")+n;
+  P.put("B1",`PENDÊNCIAS - DATABRICKS · ${dm(hoje.data)}`,titulo);for(const c of "CDE")P.put(c+"1","",titulo);
+  P.put("B2",ontem?`comparado com ${fmtData(ontem.data)}`:`base de ${fmtData(hoje.data)}`,subt);
+  const tO=ontem?ontem.total:null,dT=tO==null?null:D.length-tO;
+  [["B","HOJE",D.length,NAVY,"pendências"],["C","ONTEM",tO??"",TXT,ontem?dm(ontem.data):""],["D","DIFERENÇA",dT==null?"":dT,dT>0?VERM:VERDE,dT==null?"":dT>0?"aumentou":"diminuiu"],["E","+31 DIAS",H.porFaixa["+31 dias"]||0,VERM,"mais urgentes"]]
+    .forEach(([c,l,v,cor,s])=>{P.put(c+"4",l,kl);P.put(c+"5",typeof v==="number"&&c==="D"?sgn(v):v,kv(cor));P.put(c+"6",s,ks);});
+  let r=8;
+  const bloco=(titulo,linhas,cab)=>{[titulo].concat(cab||["Ontem","Hoje","Dif."]).forEach((t,i)=>P.put("BCDE"[i]+r,t,i?th:thL));P.heights[r-1]=20;r++;
+    let so=0,sh=0;for(const [nome,o,hh,estilo] of linhas){so+=o||0;sh+=hh;P.put("B"+r,nome,estilo);P.put("C"+r,o??"",linha);P.put("D"+r,hh,linhaB);P.put("E"+r,o==null||o===""?"":sgn(hh-o),dif(o==null||o===""?0:hh-o));P.heights[r-1]=18;r++;}
+    const temO=linhas.some(x=>x[1]!=null&&x[1]!=="");P.put("B"+r,"TOTAL",totL);P.put("C"+r,temO?so:"",tot(NAVY));P.put("D"+r,sh,tot(NAVY));P.put("E"+r,temO?sgn(sh-so):"",tot(temO&&sh-so>0?VERM:VERDE));P.heights[r-1]=18;r+=2;};
+  const cats=["Vazamento","Esgoto","Desobstrução","Cavalete","Embu Guaçu","Hidro","Vistorias"];
+  bloco("POR SERVIÇO",cats.map(c=>[c,O?(O.porCat[c]||0):"",H.porCat[c]||0,st({f:{b:true,sz:11,c:"FFFFFF"},fill:COR_XL[c][1],bd:"FFFFFF"})]));
+  bloco("POR POLO",PO.lista.map(p=>[poloNome(p.a),p.o??"",p.h,st({f:{b:true,sz:11,c:NAVY},bd:"E3E8EE"})]));
+  const fx=[["+31 dias","+31 dias",VERM,"FDECEA"],["15 a 30 dias","15 a 30 dias","C55A11","FDF0E3"],["7 a 15 dias","7 a 15 dias",AMBAR,"FFF8DC"],["até 7 dias","Até 7 dias",VERDE,"E8F5E9"]];
+  bloco("TEMPO DE ATRASO",fx.map(([k,l,c,bg])=>[l,O?(O.porFaixa[k]||0):"",H.porFaixa[k]||0,st({f:{b:true,sz:11,c},fill:bg,bd:"E3E8EE"})]));
+  P.put("B"+r,`Com tratativa: ${nf(H.com)} · Sem tratativa: ${nf(H.sem)} · Novas hoje: ${nf(H.novas)}`,st({f:{sz:9,c:"595959"}}));P.merges.push(`B${r}:E${r}`);
   // ---- abas de dados
   const sheets=[abaDados("GERAL",ord(D)),P];
   for(const [c,n] of [["Cavalete","Cavalete"],["Vazamento","Vazamento"],["Esgoto","Esgoto"],["Desobstrução","Desobstrução"],["Embu Guaçu","Embu_Guaçu"],["Hidro","Hidro"],["Vistorias","Vistorias"]])sheets.push(abaDados(n,ord(D.filter(x=>x.cat===c)),COR_XL[c][1]));
