@@ -1,6 +1,9 @@
 // Banco (Upstash Redis pela API REST) e checagem de acesso.
-const URL_DB = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-const TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+// aceita qualquer prefixo que a Vercel tenha dado ao conectar o Upstash (KV_, STORAGE_, ARMAZENAR_...)
+const acharEnv = (fim) => process.env["KV_" + fim] || process.env["UPSTASH_REDIS_" + fim.replace("_API", "")] ||
+  Object.entries(process.env).filter(([k, v]) => k.endsWith(fim) && !k.includes("READ_ONLY") && v).map(([, v]) => v)[0];
+const URL_DB = acharEnv("REST_API_URL");
+const TOKEN = acharEnv("REST_API_TOKEN");
 
 async function pipe(cmds) {
   if (!URL_DB || !TOKEN) throw Object.assign(new Error("Banco não configurado no Vercel (falta conectar o Upstash Redis em Storage)."), { status: 500 });
