@@ -1149,7 +1149,7 @@ $("fLogin").addEventListener("submit",async e=>{e.preventDefault();AC.nome=$("lN
     lsSet("analista",JSON.stringify({nome:AC.nome,senha:AC.senha}));$("lSenha").value="";$("login").hidden=true;await entrarNuvem();msg("Você entrou como analista. Pode subir os arquivos do dia.");}
   catch(err){AC.senha="";$("lMsg").textContent=err.status===401?"Nome ou senha incorretos.":"Não consegui entrar: "+err.message;}});
 
-function mostrarLink(chave){const l=location.origin+"/"+chave;$("fimLink").value=chave||"";$("linkLeitura").value=l;$("cfgLink").hidden=false;if(chave){lsSet("chave",chave);AC.k=chave;}}
+function mostrarLink(chave){$("fLink").hidden=!(editor&&/^fernanda$/i.test(AC.nome))&&!!editor;const l=location.origin+"/"+chave;$("fimLink").value=chave||"";$("linkLeitura").value=l;$("cfgLink").hidden=false;if(chave){lsSet("chave",chave);AC.k=chave;}}
 async function abrirConfig(primeira){$("config").hidden=false;$("cfgTit").textContent=primeira?"Configurar o painel online":"Senhas e link";
   $("cfgNota").textContent=primeira?"Primeira vez: defina a senha de cada analista (pelo menos a sua). Os superiores vão abrir pelo link, sem senha.":"Para trocar a senha de alguém, digite a nova no campo dele. Campo vazio mantém a senha atual.";
   if(!primeira){try{const j=await api("GET",null,"","acesso");if(j.leitura)mostrarLink(j.leitura);}catch(e){}}}
