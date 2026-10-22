@@ -332,6 +332,35 @@ body.leitor .quem{background:var(--sunk);color:var(--muted)}
 #login form,.cfgf{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
 .cfgf label{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:13px}.cfgf input{width:170px}
 #login select{font:600 14px var(--f-body);padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+
+/* ===== baixas indevidas ===== */
+#v-bx{display:flex;flex-direction:column;gap:14px}
+#v-bx[hidden]{display:none}
+.bxcola{min-height:90px;max-height:160px;overflow:auto;border:2px dashed #9CCFEA;border-radius:12px;background:#F4FAFE;padding:12px;font-size:12px;color:var(--muted);outline:none;cursor:text}
+.bxcola:empty::before{content:"Clique aqui e aperte Ctrl+V";font-size:15px;font-weight:600;color:#3D7DA8}
+.bxcola:focus{border-color:var(--accent);background:#fff}
+.bxcola table{font-size:10px}
+.bxdica{font-size:12.5px;color:var(--muted);margin-top:8px}
+#bxMsg{margin-top:6px;font-size:13px;font-weight:600}#bxMsg.err{color:var(--red)}
+.bxk{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.bxk div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;border-left:5px solid var(--c);box-shadow:var(--shadow)}
+.bxk small{display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.bxk b{font-family:var(--f-display);font-size:30px;color:var(--c)}
+table.bxt{width:100%;border-collapse:collapse;font-size:12.5px}
+.bxt th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:8px;border-bottom:1px solid var(--line);background:var(--sunk);position:sticky;top:0}
+.bxt td{padding:8px;border-bottom:1px solid var(--line-2);vertical-align:top}
+.bxt td.e b{display:block;font-size:13px}
+.bxt small{display:block;color:var(--muted);font-size:11.5px}
+.bxt .tg{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px;margin:1px 0}
+.tg.sim{background:#DDF3E6;color:#1C6B41}.tg.nao{background:#FCE4E1;color:#A3232A}.tg.saiu{background:#FFF1CC;color:#8A5300}.tg.inf{background:#E2F1F8;color:#0B5F86}.tg.cz{background:#EEF2F6;color:#4A5A68}
+.bxdec{display:flex;flex-direction:column;gap:4px}
+.bxdec button{font-size:11.5px;font-weight:700;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;white-space:nowrap}
+.bxdec button[aria-pressed="true"][data-d="baixar"]{background:#1C6B41;color:#fff;border-color:#1C6B41}
+.bxdec button[aria-pressed="true"][data-d="nao"]{background:#A3232A;color:#fff;border-color:#A3232A}
+.bxdec input{font-size:11.5px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;width:150px}
+.tabs .tab{white-space:nowrap}
+.bxtxt{width:100%;min-height:260px;font:13px/1.5 var(--f-body);border:1px solid var(--line);border-radius:10px;padding:12px;resize:vertical}
+@media (max-width:900px){.bxk{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -340,6 +369,7 @@ body.leitor .quem{background:var(--sunk);color:var(--muted)}
   <nav class="tabs" role="tablist">
     <button class="tab" role="tab" id="t-painel" aria-selected="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg> Painel</button>
     <button class="tab" role="tab" id="t-os" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg> OS e tratativas</button>
+    <button class="tab" role="tab" id="t-bx" aria-selected="false" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Baixas indevidas</button>
   </nav>
   <div class="actions">
     <button type="button" class="primary" id="btnSubir"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg> Atualizar com os arquivos do dia</button><input type="file" id="arquivo" accept=".xlsx,.csv,.json" multiple hidden>
@@ -450,6 +480,18 @@ body.leitor .quem{background:var(--sunk);color:var(--muted)}
     </div>
     <div class="list" id="lista"></div>
     <div class="note" id="rodape"></div>
+  </section>
+  <section id="v-bx" class="view" hidden>
+    <article class="card bxin"><header class="ch"><div><h3>Possíveis baixas indevidas</h3><p>Cole aqui a lista que chega da diretoria. O painel confere cada OS e PDE no Databricks e na carteira e já monta a resposta do e-mail.</p></div><button type="button" id="bxLimpar">Limpar</button></header>
+      <div class="bxcola" id="bxCola" tabindex="0" contenteditable="true" spellcheck="false" aria-label="Cole aqui a tabela do e-mail"></div>
+      <div class="bxdica">No e-mail, selecione a tabela inteira (do título até a última linha), aperte <b>Ctrl+C</b>, clique no quadro acima e aperte <b>Ctrl+V</b>. Também dá para colar um <b>print</b> (imagem), mas copiar a tabela é mais certeiro.</div>
+      <div class="msg" id="bxMsg"></div>
+    </article>
+    <div id="bxRes" hidden>
+      <div class="bxk" id="bxK"></div>
+      <article class="card"><header class="ch"><div><h3>Conferência</h3><p id="bxNota"></p></div><span class="dica">Marque o que vai fazer em cada uma: entra na resposta</span></header><div class="scroll"><table class="bxt" id="bxT"></table></div></article>
+      <article class="card"><header class="ch"><div><h3>Resposta do e-mail</h3><p>pronta para copiar · pode editar aqui antes</p></div><button type="button" class="primary" id="bxCopiar">📋 Copiar resposta</button></header><textarea id="bxTxt" class="bxtxt" spellcheck="false"></textarea></article>
+    </div>
   </section>
   <div class="foot">Painel de Pendências - Databricks</div>
 </div>
@@ -848,9 +890,101 @@ function renderLista(D){
 function sugestoes(){if(!S)return;const c={};for(const t of Object.values(S.tratBase).concat(Object.values(S.trat).map(d=>d.texto||""))){const s=clean(t);if(s&&s.length<40)c[s]=(c[s]||0)+1;}
   $("sugestoes").innerHTML=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,25).map(([s])=>`<option value="${esc(s)}"></option>`).join("");}
 
+/* ================= baixas indevidas (só Fernanda) ================= */
+let BX=null;
+try{BX=JSON.parse(lsGet("bx")||"null");}catch(e){}
+const bxSalvar=()=>{try{lsSet("bx",JSON.stringify(BX));}catch(e){}};
+const BXH=[["os",h=>/ID_OS\b/.test(h)],["pde",h=>/ID_PDE/.test(h)],["cdtss",h=>/CD_TSS/.test(h)],["tss",h=>/(^|[^_A-Z])TSS$/.test(h)],["acat",h=>/ACATAMENTO/.test(h)],["nexec",h=>/NAO EXECUCAO/.test(h)],
+  ["baixa",h=>/DATA DA BAIXA/.test(h)],["qtd",h=>/ULTIMOS|DIAS MESMA/.test(h)],["fam",h=>/FAMILIA/.test(h)],["end",h=>/ENDERECO/.test(h)],["bai",h=>/BAIRRO/.test(h)],["mun",h=>/MUNICIPIO/.test(h)],["atc",h=>/ATC$/.test(h)]];
+const TIPOS_B=/^(RUA|R|AVENIDA|AV|TRAVESSA|TV|TRAV|ESTRADA|ESTR|EST|ALAMEDA|AL|PRACA|PCA|VIELA|RODOVIA|ROD|LARGO|PASSAGEM|BECO|VILA)$/;
+function chaveEndB(s){const w=U(s).replace(/[^A-Z0-9 ]/g," ").split(/\s+/).filter(Boolean);const i=w.findIndex(x=>/^\d+$/.test(x));if(i<1)return "";
+  return w.slice(0,i).filter((x,j)=>!(j===0&&TIPOS_B.test(x))&&!/^(DE|DA|DO|DOS|DAS|E)$/.test(x)).join(" ")+"|"+Number(w[i]);}
+function bxDeGrade(rows){
+  const hi=rows.findIndex(r=>r.some(c=>/ID_OS\b/.test(U(c))));if(hi<0)return null;
+  const h=rows[hi].map(c=>U(clean(c)));const ix={};for(const [k,f] of BXH){const j=h.findIndex((x,jj)=>f(x)&&!Object.values(ix).includes(jj));if(j>=0)ix[k]=j;}
+  const g=(r,k)=>ix[k]!=null?clean(r[ix[k]]):"";
+  return rows.slice(hi+1).map(r=>({os:key(g(r,"os").replace(/\D/g,"")),pde:key(g(r,"pde").replace(/\D/g,"")),pdeTxt:g(r,"pde"),tss:g(r,"tss"),cdtss:g(r,"cdtss"),acat:g(r,"acat"),nexec:g(r,"nexec"),baixa:g(r,"baixa"),fam:g(r,"fam"),qtd:g(r,"qtd"),end:g(r,"end"),bai:g(r,"bai"),mun:g(r,"mun"),atc:g(r,"atc").replace(/\D/g,"")})).filter(x=>x.os);}
+function bxDeTexto(t){const out=[];const visto=new Set();
+  for(const ln of String(t).split(/\n/)){const m=ln.match(/\b(20\d{11})\b/);if(!m||visto.has(m[1]))continue;visto.add(m[1]);
+    const resto=ln.replace(m[1]," ");const p=resto.match(/\b(0\d{9})\b/);const e=ln.match(/\b(RUA|R\.|AV\.?|AVENIDA|TRAVESSA|ESTRADA|ALAMEDA|PRA[CÇ]A|VIELA)\s+[^\t|]*?\d+[A-Z0-9 \/]*/i);
+    out.push({os:key(m[1]),pde:p?key(p[1]):"",tss:"",cdtss:"",acat:"",nexec:/OUTRO SERVI/i.test(ln)?"TRATA-SE DE OUTRO SERVIÇO":/NADA CONSTA/i.test(ln)?"NADA CONSTA NO LOCAL":"",baixa:"",fam:"",qtd:"",end:e?clean(e[0]):"",bai:"",mun:"",atc:""});}
+  return out;}
+function bxIndices(){const dias=S.dias.slice().sort((a,b)=>a.data<b.data?-1:1);let ultimo="";const os={},pde={},end={};
+  for(const d of dias){const L=S.linhas[d.data];const regs=L?L.map(r=>({os:key(r[I.os]),pde:key(r[I.pde]),r})):(d.slim||[]).map(x=>({os:x[0],pde:x[4]||"",r:null}));if(!regs.length)continue;ultimo=d.data;
+    for(const x of regs){if(x.os){const o=os[x.os]||(os[x.os]={pri:d.data,ult:d.data,r:null});o.ult=d.data;if(x.r)o.r=x.r;}
+      if(x.pde){const p=pde[x.pde]||(pde[x.pde]={});const q=p[x.os]||(p[x.os]={pri:d.data,ult:d.data,r:null});q.ult=d.data;if(x.r)q.r=x.r;}
+      if(x.r){const k=chaveEndB(x.r[I.end]);if(k){const e=end[k]||(end[k]={});const q=e[x.os]||(e[x.os]={pri:d.data,ult:d.data,r:null});q.ult=d.data;q.r=x.r;}}}}
+  return {os,pde,end,ultimo};}
+const dmy2=d=>d?d.slice(8,10)+"/"+d.slice(5,7)+"/"+d.slice(0,4):"";
+function bxDb(it,ix){const o=ix.os[it.os];
+  if(o){const r=o.r;const det=r?[r[I.st],r[I.dias]!==""&&r[I.dias]!=null?r[I.dias]+" dias pendente":""].filter(Boolean).join(" · "):"";const t=trat(it.os);
+    if(o.ult===ix.ultimo)return {c:"sim",t:"Está no Databricks",d:`desde ${dm(o.pri)}${det?" · "+det:""}${t?" · tratativa: "+t:""}`,txt:`já está no Databricks desde ${dmy2(o.pri)}${t?" (tratativa: "+t+")":""}`};
+    return {c:"saiu",t:"Entrou e saiu do Databricks",d:`de ${dm(o.pri)} até ${dm(o.ult)}`,txt:`entrou no Databricks em ${dmy2(o.pri)} e saiu depois de ${dmy2(o.ult)}`};}
+  const outra=(m)=>{const l=Object.entries(m||{}).sort((a,b)=>a[1].ult<b[1].ult?1:-1)[0];return l?{os:l[0],...l[1]}:null;};
+  const p=it.pde&&outra(ix.pde[it.pde]);
+  if(p){const tss=p.r?p.r[I.tss]:"";const ag=p.ult===ix.ultimo;return {c:"inf",t:"Essa OS não, mas o PDE sim",d:`OS ${p.os}${tss?" · "+tss:""} · ${ag?"está desde "+dm(p.pri):"esteve de "+dm(p.pri)+" a "+dm(p.ult)}`,txt:`essa OS não entrou no Databricks, mas o PDE ${ag?"tem":"teve"} a OS ${p.os}${tss?" ("+tss+")":""} no Databricks ${ag?"desde "+dmy2(p.pri):"de "+dmy2(p.pri)+" a "+dmy2(p.ult)}`};}
+  const ke=chaveEndB(it.end);const e=ke&&outra(ix.end[ke]);
+  if(e){const tss=e.r?e.r[I.tss]:"";return {c:"inf",t:"Mesmo endereço no Databricks",d:`OS ${e.os}${tss?" · "+tss:""} · ${e.ult===ix.ultimo?"está":"esteve"} desde ${dm(e.pri)}`,txt:`essa OS não entrou no Databricks, mas o mesmo endereço tem a OS ${e.os}${tss?" ("+tss+")":""}`};}
+  return {c:"nao",t:"Não entrou no Databricks",d:"nem a OS nem o PDE",txt:"não entrou no Databricks"};}
+function bxCart(it){const c=BX.cart;if(!c)return {c:"cz",t:"Carteira não conferida",d:"o link da carteira ainda não foi atualizado",txt:""};
+  const x=(c.res||{})[it.os]||{os:[],end:[]};const ex=x.os.filter(r=>r.fonte==="ex"),ca=x.os.find(r=>r.fonte==="ca"),ac=x.os.find(r=>r.fonte==="ac");
+  const exOk=ex.find(r=>r.conta),exNao=ex.find(r=>!r.conta);let s;
+  if(exOk)s={c:"sim",t:"Executada",d:`${exOk.ini||dm(exOk.dt)} · ${exOk.cod||""} ${exOk.res||""}`,txt:`serviço executado em ${exOk.ini||dmy2(exOk.dt)}`};
+  else if(exNao)s={c:"saiu",t:"Baixada sem execução",d:`${exNao.ini||dm(exNao.dt)} · ${exNao.cod||""} ${exNao.res||""}`,txt:`baixada sem execução em ${exNao.ini||dmy2(exNao.dt)} (${exNao.res||exNao.cod})`};
+  else if(ca)s={c:ca.fora?"nao":"inf",t:"Na carteira",d:`${ca.fora?"fora do prazo":"no prazo"}${ca.tr?" · residual "+ca.tr:""}`,txt:`está na carteira, ainda não executada${ca.fora?" (fora do prazo)":""}`};
+  else if(ac)s={c:"inf",t:"Acatada",d:ac.ins||"",txt:`acatada em ${ac.ins}`};
+  else s={c:"cz",t:"Não está na carteira",d:`carteira de ${dm(c.carteira&&c.carteira.dc)} · só os serviços do painel`,txt:""};
+  if(x.end&&x.end.length){const o=x.end[0];s.d+=` · mesmo endereço: OS ${o.os} ${o.tss||""} (${o.fonte==="ex"?(o.conta?"executada":"baixada sem execução"):o.fonte==="ca"?"na carteira":"acatada"})`;}
+  return s;}
+const bxMsgT=(t,err)=>{$("bxMsg").textContent=t||"";$("bxMsg").className=err?"err":"";};
+async function bxProcessar(itens,origem){
+  if(!itens||!itens.length){bxMsgT("Não achei nenhuma OS no que foi colado. Copie a tabela do e-mail inteira, com o título das colunas.",true);return;}
+  const ant={};if(BX&&BX.itens)for(const x of BX.itens)ant[x.os]=x;
+  for(const x of itens){const a=ant[x.os];x.dec=a?a.dec:"";x.obs=a?a.obs:"";}
+  BX={itens,em:Date.now(),origem,cart:null};bxMsgT(`Li ${itens.length} OS ${origem}. Conferindo na carteira…`);bxRender();
+  try{BX.cart=await api("POST",{itens:itens.map(x=>({os:x.os,end:x.end}))},"","baixas");if(!BX.cart.carteira)BX.cart=null;bxMsgT(`Li ${itens.length} OS ${origem}.`+(BX.cart?"":" A carteira ainda não está publicada; conferi só o Databricks."));}
+  catch(e){BX.cart=null;bxMsgT(`Li ${itens.length} OS ${origem}. Conferi só o Databricks (carteira: ${e.message}).`);}
+  bxSalvar();bxRender();}
+function bxRender(){
+  const tem=!!(BX&&BX.itens&&BX.itens.length);$("bxRes").hidden=!tem;if(!tem)return;
+  const ix=bxIndices();const atcs=(S.config.atcs||[]).map(String);
+  const L=BX.itens.map(it=>({it,db:bxDb(it,ix),ca:bxCart(it),nossa:!it.atc||atcs.includes(it.atc)}));
+  const n=f=>L.filter(f).length;
+  $("bxK").innerHTML=[["Na lista",BX.itens.length,"#0B6E99"],["Já no Databricks",n(x=>x.db.c==="sim"),"#1C6B41"],["Entraram e saíram / PDE",n(x=>x.db.c==="saiu"||x.db.c==="inf"),"#C27C00"],["Não entraram",n(x=>x.db.c==="nao"),"#C2362B"]].map(([l,v,c])=>`<div style="--c:${c}"><small>${l}</small><b>${v}</b></div>`).join("");
+  $("bxNota").textContent=`Databricks até ${dm(ix.ultimo)}${BX.cart?" · carteira de "+dm(BX.cart.carteira.dc):""} · ${n(x=>!x.nossa)} fora da nossa área (ATC diferente de ${atcs.join(", ")}) ficam fora da resposta`;
+  $("bxT").innerHTML=`<thead><tr><th>#</th><th>Endereço</th><th>OS de ontem</th><th>Serviço anterior</th><th>Databricks</th><th>Carteira / executados</th><th>Resposta</th></tr></thead><tbody>`+L.map((x,i)=>{const it=x.it;
+    return `<tr style="${x.nossa?"":"opacity:.55"}"><td>${i+1}</td><td class="e"><b>${esc(it.end||"–")}</b><small>${esc([it.bai,it.mun].filter(Boolean).join(" · "))}${it.atc?" · ATC "+esc(it.atc):""}${x.nossa?"":" · fora da nossa área"}</small></td>
+      <td><b>${esc(it.os)}</b><small>${esc(it.tss||"")}${it.acat?" · "+esc(it.acat):""}</small><small>PDE ${esc(it.pdeTxt||it.pde||"–")}</small></td>
+      <td><small>${esc(it.nexec||"")}${it.baixa?" · "+esc(it.baixa):""}</small><small>${esc(it.fam||"")}${it.qtd?" · "+esc(it.qtd)+" em 30 dias":""}</small></td>
+      <td><span class="tg ${x.db.c}">${x.db.t}</span><small>${esc(x.db.d)}</small></td>
+      <td><span class="tg ${x.ca.c}">${x.ca.t}</span><small>${esc(x.ca.d)}</small></td>
+      <td><div class="bxdec" data-i="${i}"><button type="button" data-d="baixar" aria-pressed="${it.dec==="baixar"}">Vou baixar</button><button type="button" data-d="nao" aria-pressed="${it.dec==="nao"}">Não vou baixar</button><input data-obs placeholder="observação (opcional)" value="${esc(it.obs||"")}"></div></td></tr>`;}).join("")+"</tbody>";
+  bxTexto(L);}
+function bxTexto(L){const h=new Date().getHours();
+  const linhas=L.filter(x=>x.nossa).map((x,i)=>{const it=x.it;const sit=[x.db.txt,x.ca.txt].filter(Boolean).join("; ");
+    return `${i+1}) ${it.end||"Endereço não informado"}${it.bai?" – "+it.bai:""}\n   OS ${it.os}${it.tss?" · "+it.tss:""}\n   ${sit.charAt(0).toUpperCase()+sit.slice(1)}.${it.dec==="baixar"?" Vamos baixar.":it.dec==="nao"?" Não vamos baixar.":""}${it.obs?" "+it.obs:""}`;});
+  $("bxTxt").value=`${h<12?"Bom dia":h<18?"Boa tarde":"Boa noite"}!\n\nSegue o retorno das possíveis baixas indevidas da nossa área:\n\n${linhas.join("\n\n")||"(nenhuma OS da nossa área nesta lista)"}\n\nAtt.,\nFernanda`;}
+$("bxT").addEventListener("click",e=>{const b=e.target.closest(".bxdec button");if(!b)return;const it=BX.itens[+b.parentNode.dataset.i];it.dec=it.dec===b.dataset.d?"":b.dataset.d;bxSalvar();bxRender();});
+$("bxT").addEventListener("change",e=>{const i=e.target.closest("[data-obs]");if(!i)return;BX.itens[+i.parentNode.dataset.i].obs=i.value;bxSalvar();bxRender();});
+$("bxCopiar").onclick=async()=>{const t=$("bxTxt").value;try{await navigator.clipboard.writeText(t);}catch(e){$("bxTxt").select();document.execCommand("copy");}const b=$("bxCopiar");b.textContent="✔ Copiada";setTimeout(()=>b.textContent="📋 Copiar resposta",1600);};
+$("bxLimpar").onclick=()=>{BX=null;bxSalvar();$("bxCola").innerHTML="";bxMsgT("");bxRender();};
+let tessB=null;
+function carregarTessB(){if(window.Tesseract)return Promise.resolve();if(tessB)return tessB;tessB=new Promise((res,rej)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";s.onload=res;s.onerror=()=>{tessB=null;rej(new Error("bloqueado"));};document.head.appendChild(s);});return tessB;}
+$("bxCola").addEventListener("paste",async e=>{e.preventDefault();const cd=e.clipboardData;$("bxCola").innerHTML="";
+  const img=[...(cd.items||[])].find(x=>/^image\//.test(x.type));const html=cd.getData("text/html"),txt=cd.getData("text/plain");
+  if(html&&/<t[dh]/i.test(html)){const doc=new DOMParser().parseFromString(html,"text/html");const rows=[...doc.querySelectorAll("tr")].map(tr=>[...tr.children].map(td=>td.textContent));
+    const it=bxDeGrade(rows)||bxDeTexto(rows.map(r=>r.join("\t")).join("\n"));$("bxCola").textContent=`✔ Tabela colada (${rows.length} linhas)`;return bxProcessar(it,"da tabela");}
+  if(txt&&!img){const rows=txt.split(/\r?\n/).map(l=>l.split("\t"));const it=bxDeGrade(rows)||bxDeTexto(txt);$("bxCola").textContent="✔ Texto colado";return bxProcessar(it,"do texto");}
+  if(img){const f=img.getAsFile();$("bxCola").innerHTML=`<img src="${URL.createObjectURL(f)}" style="max-width:100%;max-height:130px">`;bxMsgT("Lendo o print… pode levar uns 20 segundos.");
+    try{await carregarTessB();const r=await Tesseract.recognize(f,"por");bxProcessar(bxDeTexto(r.data.text||""),"do print (confira os números)");}
+    catch(err){bxMsgT("Não consegui ler o print neste computador. Copie a tabela do e-mail (selecionar → Ctrl+C) e cole aqui.",true);}
+    return;}
+  bxMsgT("Não reconheci o que foi colado. Copie a tabela do e-mail e cole de novo.",true);});
+$("bxCola").addEventListener("drop",e=>e.preventDefault());
+
 /* ================= eventos ================= */
-function aba(n){$("t-painel").setAttribute("aria-selected",n==="painel");$("t-os").setAttribute("aria-selected",n==="os");$("v-painel").hidden=n!=="painel";$("v-os").hidden=n!=="os";if(n==="os")renderLista();lsSet("aba",n);}
-$("t-painel").onclick=()=>aba("painel");$("t-os").onclick=()=>aba("os");
+function aba(n){if(n==="bx"&&$("t-bx").hidden)n="painel";$("t-bx").setAttribute("aria-selected",n==="bx");$("v-bx").hidden=n!=="bx";$("t-painel").setAttribute("aria-selected",n==="painel");$("t-os").setAttribute("aria-selected",n==="os");$("v-painel").hidden=n!=="painel";$("v-os").hidden=n!=="os";if(n==="bx")bxRender();if(n==="os")renderLista();lsSet("aba",n);}
+$("t-painel").onclick=()=>aba("painel");$("t-os").onclick=()=>aba("os");$("t-bx").onclick=()=>aba("bx");
 $("chips").addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(!b)return;filtro=b.dataset.f;renderChips(derivar());renderLista();});
 let tb;$("busca").addEventListener("input",()=>{clearTimeout(tb);tb=setTimeout(()=>renderLista(),180);});
 $("faixa").addEventListener("change",()=>renderLista());
@@ -947,7 +1081,7 @@ async function importarRede(wb,nome){
       const rows=linhasRede.map(r=>idx.map((j,k)=>k===I.data?excelData(r[j]):txtCel(r[j])));
       const d=dataRede||(S.dias.length?S.dias.slice().sort((a,b)=>a.data<b.data?1:-1)[0].data:null)||(()=>{const x=new Date();x.setDate(x.getDate()-1);return new Date(x.getTime()-x.getTimezoneOffset()*60000).toISOString().slice(0,10);})();
       const old=S.dias.find(x=>x.data===d)||{};
-      S.dias=S.dias.filter(x=>x.data!==d).concat([Object.assign({},old,{data:d,total:rows.length,slim:rows.map(r=>[key(r[I.os]),catBase(r),r[I.faixa],poloDe(r)]),enviadoEm:Date.now(),fonte:nome})]);
+      S.dias=S.dias.filter(x=>x.data!==d).concat([Object.assign({},old,{data:d,total:rows.length,slim:rows.map(r=>[key(r[I.os]),catBase(r),r[I.faixa],poloDe(r),key(r[I.pde])]),enviadoEm:Date.now(),fonte:nome})]);
       S.linhas[d]=rows;nb=` · base de ${dm(d)} da planilha guardada como comparação`;
     }
   }
@@ -993,7 +1127,7 @@ $("upSalvar").onclick=()=>{
   if(prev&&!prev.resumo)prev.resumo=resumoDia(prev);
   const setP=new Set(prev?prev.slim.map(s=>s[0]):[]),setN=new Set(rows.map(r=>key(r[I.os])));
   const meta={data:dt,total:rows.length,novas:prev?[...setN].filter(k=>!setP.has(k)).length:null,executadas:prev?[...setP].filter(k=>!setN.has(k)).length:null,
-    slim:rows.map(r=>[key(r[I.os]),catBase(r),r[I.faixa],poloDe(r)]),enviadoEm:Date.now(),enviadoPor:clean($("nome").value)||"",fonte:upload.nome};
+    slim:rows.map(r=>[key(r[I.os]),catBase(r),r[I.faixa],poloDe(r),key(r[I.pde])]),enviadoEm:Date.now(),enviadoPor:clean($("nome").value)||"",fonte:upload.nome};
   if(pendRede){const rk=new Map(pendRede.rows.map(x=>[x[0],x]));const cont=[],contTrat=[],novasR=[];
     for(const k of setN){if(rk.has(k)){cont.push(k);if(rk.get(k)[1])contTrat.push(k);}else novasR.push(k);}
     const saidas=pendRede.rows.filter(x=>!setN.has(x[0]));
@@ -1095,7 +1229,7 @@ async function api(metodo,corpo,q,rota){const o={method:metodo,headers:hdr(),cac
   const r=await fetch("/api/"+(rota||"estado")+(q||""),o);let j={};try{j=await r.json();}catch(e){}
   if(!r.ok){const e=new Error(j.erro||("erro "+r.status));e.status=r.status;e.dados=j;throw e;}return j;}
 const horaTxt=t=>t?new Date(t).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
-function modo(){document.body.classList.toggle("editor",editor);document.body.classList.toggle("leitor",!editor);
+function modo(){document.body.classList.toggle("editor",editor);{const f=editor&&/^fernanda$/i.test(AC.nome);$("t-bx").hidden=!f;if(!f&&!$("v-bx").hidden)aba("painel");}document.body.classList.toggle("leitor",!editor);
   $("btnAnalista").hidden=editor;$("btnSairAn").hidden=!editor;$("btnConfig").hidden=!editor;$("btnConfig").textContent=/^fernanda$/i.test(AC.nome)?"Senhas e link":"Link dos coordenadores";const q=$("quem");q.hidden=false;q.textContent=editor?(/^fernanda$/i.test(AC.nome)?"Analista: ":"Técnico: ")+AC.nome:"Modo visualização";
   if(editor){$("nome").value=AC.nome;lsSet("nome",AC.nome);}}
 function statusNuvem(){setConn("on",editor?"Painel online · você pode atualizar":"Painel online",(remotoEm?"atualizado por "+(remotoPor||"equipe")+" em "+horaTxt(remotoEm):"ainda sem atualização"));}
