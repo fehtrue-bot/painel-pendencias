@@ -361,9 +361,50 @@ table.bxt{width:100%;border-collapse:collapse;font-size:12.5px}
 .tabs .tab{white-space:nowrap}
 .bxtxt{width:100%;min-height:260px;font:13px/1.5 var(--f-body);border:1px solid var(--line);border-radius:10px;padding:12px;resize:vertical}
 @media (max-width:900px){.bxk{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* ======== visual estilo Norius (laranja) ======== */
+:root{--bg:#EEF1EF;--accent:#C46A00;--accent-2:#F2A541;--accent-soft:#FFF1DF;--navy:#E8891A;--navy-2:#F2A541;--line:#E3E7E5;--line-2:#EEF1EF;--sunk:#F4F6F5;--shadow:0 1px 3px rgba(0,0,0,.09);--mono:"Consolas","Cascadia Mono","Roboto Mono",ui-monospace,monospace}
+body{background:var(--bg)}
+.nfaixa{height:28px;background:#E8891A;color:#fff;font-weight:800;font-size:12px;letter-spacing:.08em;display:flex;align-items:center;justify-content:space-between;padding:0 18px}
+.appbar{background:#fff!important;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);border-bottom:1px solid var(--line)}
+.appbar .brand{display:none}
+.appbar-in{padding-top:6px!important;grid-template-columns:1fr auto!important}
+.appbar .tabs{justify-self:start;grid-column:auto!important;order:0!important}
+.tab{color:#5C6B66!important}.tab:hover{background:#FFF5E8!important;color:#E8891A!important}
+.tab[aria-selected="true"]{background:#E8891A!important;color:#fff!important;border-radius:6px 6px 0 0}
+.appbar .ghost{background:#fff;color:#B85F00;border-color:#F5D2A8}
+.appbar .primary{background:#E8891A!important;border-color:#E8891A!important;color:#fff!important}
+.ncab{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:#fff;border-radius:6px;box-shadow:var(--shadow);padding:12px 20px}
+.ncab .rel b{display:block;font-family:var(--mono);font-size:40px;font-weight:600;line-height:1;color:#1F2A26}
+.ncab .rel small{font-family:var(--mono);font-size:12.5px;color:#6B7672;letter-spacing:.14em}
+.ncab .marca{font-weight:900;color:#E8891A;font-size:44px;letter-spacing:.02em;line-height:1;text-align:center}
+.ncab .marca span{display:block;font-size:12px;letter-spacing:.32em;color:#6B7672;font-weight:700;margin-top:6px}
+.ncab .nst{justify-self:end;background:#F0F2F1;border-radius:6px;padding:8px 14px;text-align:center;font-weight:700;color:#7A1F1F;font-size:15px;line-height:1.25}
+.ncab .nst small{display:block;font-weight:600;font-size:12px;color:#6B7672}
+.conn{border-radius:6px;border:0}
+/* blocos de números */
+.kpis{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
+.kpi,.kpi.hl{background:#fff!important;color:var(--ink)!important;border:0!important;border-radius:6px!important;box-shadow:var(--shadow)!important;display:grid!important;grid-template-columns:44px minmax(0,1fr) auto;grid-template-areas:"ic lbl v" "ic sm v";align-items:center;column-gap:12px;row-gap:2px;padding:16px 18px!important;min-height:86px}
+.kpi::before{display:none!important}
+.kpi .top{display:contents}
+.kpi .ic{grid-area:ic;width:40px!important;height:40px!important;border-radius:50%!important;background:transparent!important;color:var(--tone,#E8891A)!important;border:2px solid var(--tone,#E8891A)}
+.kpi.hl .ic{color:#E8891A!important;border-color:#E8891A}
+.kpi .ic svg{width:20px;height:20px}
+.kpi .lbl{grid-area:lbl;font-size:15px!important;font-weight:700!important;letter-spacing:0!important;text-transform:none!important;color:#1F2A26!important}
+.kpi small{grid-area:sm;font-size:11.5px!important;color:#7A8581!important}
+.kpi b{grid-area:v;font-family:var(--f-body)!important;font-size:38px!important;font-weight:500!important;color:var(--tone,#E8891A)!important}
+.kpi.hl b{color:#E8891A!important}
+.kpi .kg{display:none}
+/* cartões */
+.card,.pcard{border-radius:6px!important;border:0!important;box-shadow:var(--shadow)!important}
+.ch h3{color:#1F2A26}
+.ncab .marca{display:flex;align-items:center;gap:14px;justify-content:center}
+.ncab .marca .mt{display:flex;flex-direction:column;align-items:center}
+.ncab .gota{width:54px;height:54px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#F7B347,#E8891A);box-shadow:0 3px 10px rgba(232,137,26,.35);flex:none}
+.tab[aria-selected="true"] svg{stroke:#fff}
 </style>
 </head>
 <body>
+<div class="nfaixa"><span>PAINEL DE PENDÊNCIAS</span><span>DATABRICKS</span></div>
 <header class="appbar"><div class="appbar-in">
   <div class="brand"><span class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c-3.6 4.4-6.5 8-6.5 11.6a6.5 6.5 0 0 0 13 0C18.5 10.5 15.6 6.9 12 2.5Z" fill="#fff" fill-opacity=".95"/><path d="M9 14.5a3 3 0 0 0 3 3" stroke="#0B6E99" stroke-width="1.8" stroke-linecap="round"/></svg></span><div style="min-width:0"><div class="brand-t">Painel de Pendências - Databricks</div><div class="brand-s" id="sub">Conecte o arquivo de dados da equipe para começar.</div></div></div>
   <nav class="tabs" role="tablist">
@@ -377,6 +418,7 @@ table.bxt{width:100%;border-collapse:collapse;font-size:12.5px}
   </div>
 </div></header>
 <div class="wrap">
+  <div class="ncab"><div class="rel"><b id="nHora">--:--:--</b><small id="nData"></small></div><div class="marca"><span class="gota"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c-3.6 4.4-6.5 8-6.5 11.6a6.5 6.5 0 0 0 13 0C18.5 10.5 15.6 6.9 12 2.5Z" fill="#fff"/><path d="M9 14.5a3 3 0 0 0 3 3" stroke="#E8891A" stroke-width="1.8" stroke-linecap="round"/></svg></span><div class="mt">PENDÊNCIAS<span>INTERLAGOS · GRAJAÚ · EMBU GUAÇU</span></div></div><div class="nst" id="nSt">Databricks<small>atualizado</small></div></div>
   <div class="conn">
     <span class="dot" id="connDot"></span>
     <div class="txt"><b id="connTit">Carregando…</b> <span class="note" id="connSub"></span></div>
@@ -1290,5 +1332,10 @@ setInterval(async()=>{if(!NUVEM||document.hidden||editando||ocupado||document.bo
 })();
 })();
 </script>
-</body>
+<script>
+(function(){const SEM=["DOM","SEG","TER","QUA","QUI","SEX","SÁB"],MES=["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"],p=n=>String(n).padStart(2,"0");
+function t(){const d=new Date();document.getElementById("nHora").textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;document.getElementById("nData").textContent=`${SEM[d.getDay()]} · ${p(d.getDate())} ${MES[d.getMonth()]} ${d.getFullYear()}`;
+ const s=document.getElementById("sub");const st=document.getElementById("nSt");if(s&&st){const m=s.textContent.match(/Base de (\d\d\/\d\d) · ([\d.]+) OS/);if(m)st.innerHTML=`${m[2]} pendências<small>base de ${m[1]}</small>`;}}
+setInterval(t,1000);t();})();
+</script></body>
 </html>
