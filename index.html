@@ -539,14 +539,15 @@ body{background:#E8EEF7}
   </section>
   <section id="v-cz" class="view" hidden>
     <article class="card"><header class="ch"><div><h3>Cruzar as pendências com a carteira</h3><p>Suba a carteira do sistema (Interlagos e Embu juntas). O painel procura, para cada pendência do Databricks, se tem OS aberta no mesmo PDE, fornecimento ou endereço, e escreve no padrão <b>OS 26106993798 - VAZAMENTO DE AGUA LEITO PAVIMENTADO</b>.</p></div></header>
-      <div class="czup"><label class="czslot" for="czArq"><b>Carteira do sistema</b><small id="czNomes">clique para escolher · pode escolher mais de um arquivo (carteira e, se quiser, acatados)</small><input type="file" id="czArq" accept=".xlsx,.csv" multiple hidden></label><button type="button" class="primary" id="czOk" disabled>Cruzar</button></div>
+      <div class="czup"><label class="czslot" for="czArq"><b>Carteira do sistema</b><small id="czNomes">clique para escolher · pode escolher mais de um arquivo (carteira e, se quiser, acatados)</small><input type="file" id="czArq" accept=".xlsx,.csv" multiple hidden></label><label class="czslot" for="czTrab"><b>Planilha que já trabalhamos <span style="font-weight:500;color:var(--muted)">(opcional)</span></b><small id="czTrabN">a planilha com a coluna Status/tratativa · as que já estão preenchidas nela não são mexidas</small><input type="file" id="czTrab" accept=".xlsx,.csv" hidden></label><button type="button" class="primary" id="czOk" disabled>Cruzar</button></div>
       <div class="msg" id="czMsg"></div>
     </article>
     <div id="czRes" hidden>
       <div class="bxk" id="czK"></div>
       <article class="card"><header class="ch"><div><h3>Pendências com OS aberta</h3><p id="czNota"></p></div>
-        <div class="czbt"><label class="czchk"><input type="checkbox" id="czSoSem" checked> só as sem tratativa</label><button type="button" id="czCopiar">📋 Copiar lista</button><button type="button" class="primary" id="czGravar">Gravar como tratativa</button></div></header>
+        <div class="czbt"><span class="czchk">só as que estão sem tratativa · as que já têm tratativa não são mexidas</span><button type="button" id="czCopiar">📋 Copiar lista</button><button type="button" class="primary" id="czGravar">Gravar como tratativa</button></div></header>
         <div class="scroll"><table class="bxt" id="czT"></table></div></article>
+      <article class="card" id="czTrabBox" hidden><header class="ch"><div><h3>Já trabalhadas × carteira</h3><p>a OS que está escrita na tratativa continua aberta na carteira?</p></div><button type="button" id="czCopiar2">📋 Copiar lista</button></header><div class="scroll"><table class="bxt" id="czT2"></table></div></article>
     </div>
   </section>
   <section id="v-bx" class="view" hidden>
@@ -972,29 +973,49 @@ async function czLer(f){let tabs=[];
       const g=i=>i>=0?clean(r[i]):"";out.push({os,pde:key(g(iP).replace(/\D/g,"")),forn:key(g(iF).split(" - ")[0].replace(/\D/g,"")),end:clean(g(iE)+" "+g(iN)),bai:g(iB),tss:g(iT),ins:g(iI),st:g(iS),tr:g(iR)});}}
   if(!out.length)throw new Error(`Não achei a coluna "Número OS" em ${f.name}.`);return out;}
 $("czArq").onchange=e=>{czArqs=[...e.target.files];$("czNomes").textContent=czArqs.length?"✔ "+czArqs.map(f=>f.name).join(" + "):"clique para escolher";$("czArq").closest(".czslot").classList.toggle("ok",czArqs.length>0);$("czOk").disabled=!czArqs.length;};
+let czTrabArq=null;
+$("czTrab").onchange=e=>{czTrabArq=e.target.files[0]||null;$("czTrabN").textContent=czTrabArq?"✔ "+czTrabArq.name:"a planilha com a coluna Status/tratativa";$("czTrab").closest(".czslot").classList.toggle("ok",!!czTrabArq);};
+async function czLerTrab(f){let tabs=[];if(/\.csv$/i.test(f.name))tabs=[lerCsv(await f.text())];else{const w=await abrirXlsx(await f.arrayBuffer());for(const n of w.nomes)tabs.push(await w.ler(n));}
+  const mapa={};for(const g of tabs){if(!g)continue;const hi=g.findIndex((r,i)=>i<30&&r&&r.some(c=>U(clean(c))==="OS")&&r.some(c=>/^(STATUS|TRATATIVA)$/.test(U(clean(c)))));if(hi<0)continue;
+    const h=g[hi].map(c=>U(clean(c)));const iOS=h.lastIndexOf("OS"),iT=h.findIndex(c=>/^(STATUS|TRATATIVA)$/.test(c)),iE=h.findIndex(c=>/^ENDERECO/.test(c));
+    for(const r of g.slice(hi+1)){if(!r)continue;const k=key(r[iOS]);const t=clean(r[iT]);if(k&&t&&!mapa[k])mapa[k]={t,end:iE>=0?clean(r[iE]):""};}}
+  if(!Object.keys(mapa).length)throw new Error(`Não achei as colunas "OS" e "Status" em ${f.name}.`);return mapa;}
 $("czOk").onclick=async()=>{const m=$("czMsg");m.className="";m.textContent="Lendo a carteira…";
   try{const C=[];for(const f of czArqs)C.push(...await czLer(f));
     const vis=new Set(),cart=C.filter(c=>{if(vis.has(c.os))return false;vis.add(c.os);return true;});
     const porP={},porF={},porE={};for(const c of cart){if(c.pde)(porP[c.pde]=porP[c.pde]||[]).push(c);if(c.forn)(porF[c.forn]=porF[c.forn]||[]).push(c);const k=chaveEndB(c.end);if(k)(porE[k]=porE[k]||[]).push(c);}
-    CZ={em:Date.now(),arquivos:czArqs.map(f=>f.name),total:cart.length,porP,porF,porE};m.textContent=`Carteira lida: ${nf(cart.length)} OS abertas em ${czArqs.length} arquivo(s).`;czRender();}
+    const porOS={};for(const c of cart)porOS[c.os]=c;
+    const trab=czTrabArq?await czLerTrab(czTrabArq):{};
+    CZ={em:Date.now(),arquivos:czArqs.map(f=>f.name),total:cart.length,porP,porF,porE,porOS,trab,trabNome:czTrabArq?czTrabArq.name:""};
+    m.textContent=`Carteira lida: ${nf(cart.length)} OS abertas em ${czArqs.length} arquivo(s).`+(czTrabArq?` Planilha trabalhada: ${nf(Object.keys(trab).length)} com tratativa.`:"");czRender();}
   catch(err){m.className="err";m.textContent="Não consegui ler: "+err.message;}};
 function czCruzar(){if(!CZ||!linhas||!linhas.length)return [];const out=[];
   linhas.forEach((r,i)=>{const os=key(r[I.os]),pde=key(r[I.pde]),forn=key(String(r[I.forn]??"").replace(/\D/g,""));const tira=L=>(L||[]).filter(c=>c.os!==os);
     let L=tira(CZ.porP[pde]),por="PDE";if(!L.length){L=tira(CZ.porF[forn]);por="fornecimento";}if(!L.length){L=tira(CZ.porE[chaveEndB(r[I.end])]);por="endereço";}
-    out.push({i,r,os,achou:L,por:L.length?por:"",t:trat(os)});});return out;}
+    out.push({i,r,os,achou:L,por:L.length?por:"",t:trat(os)||((CZ.trab||{})[os]||{}).t||""});});return out;}
 function czRender(){const tem=!!CZ;$("czRes").hidden=!tem;if(!tem)return;
-  const X=czCruzar(),com=X.filter(x=>x.achou.length);const soSem=$("czSoSem").checked;const V=com.filter(x=>!soSem||!x.t);
-  $("czK").innerHTML=[["Pendências hoje",X.length,"#0B2545"],["Com OS aberta na carteira",com.length,"#1C6B41"],["Dessas, sem tratativa",com.filter(x=>!x.t).length,"#C27C00"],["Sem OS aberta",X.length-com.length,"#C2362B"]].map(([l,v,c])=>`<div style="--c:${c}"><small>${l}</small><b>${nf(v)}</b></div>`).join("");
+  const X=czCruzar(),com=X.filter(x=>x.achou.length);const soSem=true;const V=com.filter(x=>!x.t);
+  $("czK").innerHTML=[["Pendências hoje",X.length,"#0B2545"],["Com OS aberta na carteira",com.length,"#1C6B41"],["Dessas, sem tratativa (vão ser preenchidas)",com.filter(x=>!x.t).length,"#C27C00"],["Sem OS aberta",X.length-com.length,"#C2362B"]].map(([l,v,c])=>`<div style="--c:${c}"><small>${l}</small><b>${nf(v)}</b></div>`).join("");
   $("czNota").textContent=`base do Databricks de ${hoje?dm(hoje.data):"–"} × ${CZ.arquivos.join(" + ")} (${nf(CZ.total)} OS abertas) · procura pelo PDE, depois fornecimento, depois endereço`;
-  $("czT").innerHTML=`<thead><tr><th><input type="checkbox" id="czTodos" checked title="marcar todas"></th><th>Endereço</th><th>Pendência no Databricks</th><th>OS aberta na carteira</th><th>Achou pelo</th><th>Tratativa atual</th></tr></thead><tbody>`+
+  $("czT").innerHTML=`<thead><tr><th><input type="checkbox" id="czTodos" checked title="marcar todas"></th><th>Endereço</th><th>Pendência no Databricks</th><th>OS aberta na carteira</th><th>Achou pelo</th></tr></thead><tbody>`+
     (V.length?V.map(x=>{const r=x.r;return `<tr><td><input type="checkbox" data-czi="${x.i}" checked></td><td class="e"><b>${esc(r[I.end]).replace(/\.0+(?=\D|$)/g,"")}</b><small>${esc(poloNome(poloDe(r)))}</small></td><td><small>${esc(r[I.tss])}</small><small>OS ${esc(x.os)} · ${esc(r[I.dias])} dias</small></td>
-      <td><span class="czos">${esc(czTexto(x.achou))}</span>${x.achou.map(c=>`<small>${esc(c.st||"")}${c.ins?" · inserida "+esc(c.ins):""}</small>`).join("")}</td><td><span class="tg ${x.por==="PDE"?"sim":x.por==="fornecimento"?"inf":"saiu"}">${x.por}</span></td><td><small>${esc(x.t||"–")}</small></td></tr>`;}).join(""):`<tr><td colspan="6" class="note" style="padding:16px">Nenhuma pendência ${soSem?"sem tratativa ":""}com OS aberta na carteira.</td></tr>`)+"</tbody>";
+      <td><span class="czos">${esc(czTexto(x.achou))}</span>${x.achou.map(c=>`<small>${esc(c.st||"")}${c.ins?" · inserida "+esc(c.ins):""}</small>`).join("")}</td><td><span class="tg ${x.por==="PDE"?"sim":x.por==="fornecimento"?"inf":"saiu"}">${x.por}</span></td></tr>`;}).join(""):`<tr><td colspan="5" class="note" style="padding:16px">Nenhuma pendência ${soSem?"sem tratativa ":""}com OS aberta na carteira.</td></tr>`)+"</tbody>";
+  czRenderTrab(X);
   const tt=$("czTodos");if(tt)tt.onchange=()=>document.querySelectorAll("[data-czi]").forEach(c=>c.checked=tt.checked);}
-$("czSoSem").onchange=czRender;
-const czMarcadas=()=>{const X=czCruzar();const sel=new Set([...document.querySelectorAll("[data-czi]:checked")].map(c=>+c.dataset.czi));return X.filter(x=>sel.has(x.i)&&x.achou.length);};
+const czMarcadas=()=>{const X=czCruzar();const sel=new Set([...document.querySelectorAll("[data-czi]:checked")].map(c=>+c.dataset.czi));return X.filter(x=>sel.has(x.i)&&x.achou.length&&!x.t);};
+
+function czTrabLista(X){const out=[];for(const x of X){if(!x.t)continue;const ns=[...new Set((x.t.match(/\d{9,13}/g)||[]).map(n=>key(n)))].filter(n=>n!==x.os);if(!ns.length)continue;
+  out.push({x,itens:ns.map(n=>({os:n,c:CZ.porOS[n]||null}))});}return out;}
+function czRenderTrab(X){const L=czTrabLista(X);$("czTrabBox").hidden=!L.length;if(!L.length)return;
+  const ab=L.filter(y=>y.itens.some(i=>i.c)).length;
+  $("czTrabBox").querySelector("p").textContent=`${nf(L.length)} pendências já trabalhadas citam uma OS · ${nf(ab)} com a OS ainda aberta na carteira · ${nf(L.length-ab)} com a OS que não está mais na carteira (pode ter sido executada ou baixada)`;
+  const ord=L.slice().sort((a,b)=>(a.itens.some(i=>i.c)?1:0)-(b.itens.some(i=>i.c)?1:0));
+  $("czT2").innerHTML=`<thead><tr><th>Endereço</th><th>Tratativa</th><th>Na carteira hoje</th></tr></thead><tbody>`+ord.map(y=>{const r=y.x.r;
+    return `<tr data-txt="${esc(clean(r[I.end]).replace(/\.0+(?=\D|$)/g,"")+"\t"+y.x.t+"\t"+y.itens.map(i=>"OS "+i.os+": "+(i.c?"ainda aberta":"não está mais na carteira")).join(" / "))}"><td class="e"><b>${esc(r[I.end]).replace(/\.0+(?=\D|$)/g,"")}</b><small>${esc(r[I.tss])}</small></td><td><small>${esc(y.x.t)}</small></td>
+      <td>${y.itens.map(i=>i.c?`<span class="tg sim">OS ${esc(i.os)} ainda aberta</span><small>${esc(semAc(i.c.tss))}${i.c.st?" · "+esc(i.c.st):""}</small>`:`<span class="tg saiu">OS ${esc(i.os)} não está mais na carteira</span>`).join("")}</td></tr>`;}).join("")+"</tbody>";}
+$("czCopiar2").onclick=async()=>{const t=[...document.querySelectorAll("#czT2 [data-txt]")].map(e=>e.dataset.txt).join("\n");if(!t)return;try{await navigator.clipboard.writeText(t);}catch(e){}const b=$("czCopiar2");b.textContent="✔ Copiada";setTimeout(()=>b.textContent="📋 Copiar lista",1500);};
 $("czCopiar").onclick=async()=>{const t=czMarcadas().map(x=>`${clean(x.r[I.end]).replace(/\.0+(?=\D|$)/g,"")}\t${czTexto(x.achou)}`).join("\n");if(!t)return;try{await navigator.clipboard.writeText(t);}catch(e){}const b=$("czCopiar");b.textContent="✔ Copiada";setTimeout(()=>b.textContent="📋 Copiar lista",1500);};
 $("czGravar").onclick=()=>{const L=czMarcadas();if(!L.length){$("czMsg").textContent="Marque pelo menos uma.";return;}
-  const sobre=L.filter(x=>x.t).length;if(sobre&&!confirm(`${sobre} dessas já têm tratativa. Substituir pela OS aberta?`))return;
   for(const x of L)S.trat[x.os]={texto:czTexto(x.achou),em:Date.now(),por:clean($("nome").value)||AC.nome||"cruzamento com a carteira"};
   agendarSalvar();$("czMsg").className="";$("czMsg").textContent=`✔ ${L.length} tratativa(s) gravada(s) no padrão "OS ... - SERVIÇO". Já aparecem em OS e tratativas e na coordenação.`;aplicar();czRender();};
 
