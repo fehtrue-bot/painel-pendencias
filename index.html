@@ -423,7 +423,7 @@ body{background:#E8EEF7}
   </div>
 </div></header>
 <div class="wrap">
-  <div class="ncab"><div class="rel"><b id="nHora">--:--:--</b><small id="nData"></small><div class="nbv" id="nBv"></div></div><div class="marca"><span class="gota"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c-3.6 4.4-6.5 8-6.5 11.6a6.5 6.5 0 0 0 13 0C18.5 10.5 15.6 6.9 12 2.5Z" fill="#fff"/><path d="M9 14.5a3 3 0 0 0 3 3" stroke="#0B2545" stroke-width="1.8" stroke-linecap="round"/></svg></span><div class="mt">DATABRICKS<span>INTERLAGOS · GRAJAÚ · EMBU GUAÇU</span></div></div><div class="nst" id="nSt">Databricks<small>atualizado</small></div></div>
+  <div class="ncab"><div class="rel"><b id="nHora">--:--:--</b><small id="nData"></small><div class="nbv" id="nBv">Ninguém conectado</div></div><div class="marca"><span class="gota"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c-3.6 4.4-6.5 8-6.5 11.6a6.5 6.5 0 0 0 13 0C18.5 10.5 15.6 6.9 12 2.5Z" fill="#fff"/><path d="M9 14.5a3 3 0 0 0 3 3" stroke="#0B2545" stroke-width="1.8" stroke-linecap="round"/></svg></span><div class="mt">DATABRICKS<span>INTERLAGOS · GRAJAÚ · EMBU GUAÇU</span></div></div><div class="nst" id="nSt">Databricks<small>atualizado</small></div></div>
   <div class="conn">
     <span class="dot" id="connDot"></span>
     <div class="txt"><b id="connTit">Carregando…</b> <span class="note" id="connSub"></span></div>
@@ -1270,13 +1270,16 @@ const AC={k:"",nome:"",senha:""};let remotoEm=0,remotoPor="",editor=false,ocupad
 if(/[?&](analista|equipe)/.test(location.search))document.body.classList.add("quer-analista");
 function lerAcesso(){try{const u=new URL(location.href);const k=u.searchParams.get("k");if(k){lsSet("chave",k);}}catch(e){}
   try{const seg=decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g,""));if(seg&&!/[?&]k=/.test(location.search)&&/^[a-z0-9-]{6,60}$/i.test(seg)&&seg!=="index.html"){lsSet("chave",seg);}}catch(e){}
-  AC.k=lsGet("chave")||"";try{const a=JSON.parse(lsGet("analista")||"null");if(a){AC.nome=a.nome;AC.senha=a.senha;}}catch(e){}}
+  // no endereço principal (sem o final do link da coordenação) sempre pede quem vai entrar
+  let slug="";try{slug=decodeURIComponent(location.pathname.replace(/^\/+|\/+$/g,""));}catch(e){}
+  const ehLinkCoord=(slug&&slug!=="index.html")||/[?&]k=/.test(location.search);
+  AC.k=ehLinkCoord?(lsGet("chave")||""):"";try{const a=JSON.parse(lsGet("analista")||"null");if(a){AC.nome=a.nome;AC.senha=a.senha;}}catch(e){}}
 const hdr=()=>({"x-chave":encodeURIComponent(AC.k),"x-nome":encodeURIComponent(AC.nome),"x-senha":encodeURIComponent(AC.senha)});
 async function api(metodo,corpo,q,rota){const o={method:metodo,headers:hdr(),cache:"no-store"};if(corpo){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(corpo);}
   const r=await fetch("/api/"+(rota||"estado")+(q||""),o);let j={};try{j=await r.json();}catch(e){}
   if(!r.ok){const e=new Error(j.erro||("erro "+r.status));e.status=r.status;e.dados=j;throw e;}return j;}
 const horaTxt=t=>t?new Date(t).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
-function modo(){document.body.classList.toggle("editor",editor);{const bv=$("nBv");if(bv){const nm=AC.nome||"";bv.innerHTML=editor&&nm?`${/^fernanda$/i.test(nm)?"Bem-vinda":"Bem-vindo"}, <b>${esc(nm)}</b> · ${/^fernanda$/i.test(nm)?"analista":"técnico"}`:"Modo visualização";}}{const f=editor&&/^fernanda$/i.test(AC.nome);$("t-bx").hidden=!f;if(!f&&!$("v-bx").hidden)aba("painel");}document.body.classList.toggle("leitor",!editor);
+function modo(){document.body.classList.toggle("editor",editor);{const bv=$("nBv");if(bv){const nm=AC.nome||"";bv.innerHTML=editor&&nm?`${/^fernanda$/i.test(nm)?"Bem-vinda":"Bem-vindo"}, <b>${esc(nm)}</b> · ${/^fernanda$/i.test(nm)?"analista":"técnico"}`:(AC.k?"Modo visualização":"Ninguém conectado");}}{const f=editor&&/^fernanda$/i.test(AC.nome);$("t-bx").hidden=!f;if(!f&&!$("v-bx").hidden)aba("painel");}document.body.classList.toggle("leitor",!editor);
   $("btnAnalista").hidden=editor;$("btnSairAn").hidden=!editor;$("btnConfig").hidden=!editor;$("btnConfig").textContent=/^fernanda$/i.test(AC.nome)?"Senhas e link":"Link dos coordenadores";const q=$("quem");q.hidden=false;q.textContent=editor?(/^fernanda$/i.test(AC.nome)?"Analista: ":"Técnico: ")+AC.nome:"Modo visualização";
   if(editor){$("nome").value=AC.nome;lsSet("nome",AC.nome);}}
 function statusNuvem(){setConn("on",editor?"Painel online · você pode atualizar":"Painel online",(remotoEm?"atualizado por "+(remotoPor||"equipe")+" em "+horaTxt(remotoEm):"ainda sem atualização"));}
