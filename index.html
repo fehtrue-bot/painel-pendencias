@@ -326,7 +326,7 @@ body{font-size:15px}
 body.leitor #btnSubir,body.leitor #btnBackup,body.leitor #btnAjuda,body.leitor #intro,body.leitor:not(.bloq):not(.quer-analista) #btnAnalista,body.leitor #imp,body.leitor #upload,body.leitor label[for=nome],body.leitor #nome,body.editor label[for=nome],body.editor #nome{display:none!important}
 body.leitor input.trat{pointer-events:none;background:transparent!important;border-color:transparent!important;box-shadow:none!important;padding-left:0}
 body.leitor input.trat.vazio::placeholder{color:transparent}
-body.bloq #btnAnalista,body.bloq #v-painel,body.bloq #v-os,body.bloq .tabs,body.bloq .actions,body.bloq #btnBackup,body.bloq #btnAjuda{display:none!important}
+body.bloq #btnAnalista,body.bloq #v-painel,body.bloq #v-os,body.bloq #v-bx,body.bloq .tabs,body.bloq .actions,body.bloq #btnBackup,body.bloq #btnAjuda{display:none!important}
 .quem{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;border-radius:999px;padding:4px 10px;background:var(--accent-soft);color:var(--accent)}
 body.leitor .quem{background:var(--sunk);color:var(--muted)}
 #login form,.cfgf{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
@@ -375,6 +375,10 @@ body{background:var(--bg)}
 .appbar .primary{background:#0B2545!important;border-color:#0B2545!important;color:#fff!important}
 .ncab{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:#fff;border-radius:6px;box-shadow:var(--shadow);padding:12px 20px}
 .ncab .rel b{display:block;font-family:var(--mono);font-size:40px;font-weight:600;line-height:1;color:#1F2A26}
+.ncab .nbv{margin-top:8px;font-size:15px;color:#33475B}.ncab .rel .nbv b{display:inline;font-family:var(--f-body);font-size:15px;font-weight:700;line-height:1.3;color:#0B2545}
+#login #fLogin{display:flex;flex-direction:column;align-items:stretch;gap:6px;margin-top:6px}#login #fLogin select,#login #fLogin input{width:100%!important;padding:10px 12px;font-size:15px}#login #fLogin button{margin-top:6px;padding:11px}
+body.bloq #login{max-width:520px;margin:20px auto}
+#login h2{color:#0B2545}
 .ncab .rel small{font-family:var(--mono);font-size:12.5px;color:#6B7672;letter-spacing:.14em}
 .ncab .marca{font-weight:900;color:#0B2545;font-size:44px;letter-spacing:.02em;line-height:1;text-align:center}
 .ncab .marca span{display:block;font-size:12px;letter-spacing:.32em;color:#6B7672;font-weight:700;margin-top:6px}
@@ -419,7 +423,7 @@ body{background:#E8EEF7}
   </div>
 </div></header>
 <div class="wrap">
-  <div class="ncab"><div class="rel"><b id="nHora">--:--:--</b><small id="nData"></small></div><div class="marca"><span class="gota"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c-3.6 4.4-6.5 8-6.5 11.6a6.5 6.5 0 0 0 13 0C18.5 10.5 15.6 6.9 12 2.5Z" fill="#fff"/><path d="M9 14.5a3 3 0 0 0 3 3" stroke="#0B2545" stroke-width="1.8" stroke-linecap="round"/></svg></span><div class="mt">DATABRICKS<span>INTERLAGOS · GRAJAÚ · EMBU GUAÇU</span></div></div><div class="nst" id="nSt">Databricks<small>atualizado</small></div></div>
+  <div class="ncab"><div class="rel"><b id="nHora">--:--:--</b><small id="nData"></small><div class="nbv" id="nBv"></div></div><div class="marca"><span class="gota"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c-3.6 4.4-6.5 8-6.5 11.6a6.5 6.5 0 0 0 13 0C18.5 10.5 15.6 6.9 12 2.5Z" fill="#fff"/><path d="M9 14.5a3 3 0 0 0 3 3" stroke="#0B2545" stroke-width="1.8" stroke-linecap="round"/></svg></span><div class="mt">DATABRICKS<span>INTERLAGOS · GRAJAÚ · EMBU GUAÇU</span></div></div><div class="nst" id="nSt">Databricks<small>atualizado</small></div></div>
   <div class="conn">
     <span class="dot" id="connDot"></span>
     <div class="txt"><b id="connTit">Carregando…</b> <span class="note" id="connSub"></span></div>
@@ -431,7 +435,7 @@ body{background:#E8EEF7}
   </div>
   <div class="status" id="msg" role="status" aria-live="polite"></div>
   <section class="panel intro" id="login" hidden>
-    <div class="panel-h"><h2>Entrar para atualizar o painel</h2><button type="button" id="loginFechar">Fechar</button></div>
+    <div class="panel-h"><h2>Quem vai entrar?</h2><button type="button" id="loginFechar">Fechar</button></div>
     <form id="fLogin"><label class="lbl" for="lNome">Nome</label><select id="lNome"><option value="Fernanda">Fernanda — Analista</option><option value="Adriano">Adriano — Técnico</option><option value="Rolison">Rolison — Técnico</option></select>
       <label class="lbl" for="lSenha">Senha</label><input type="password" id="lSenha" autocomplete="current-password" style="width:180px"><button class="primary" type="submit">Entrar</button></form>
     <div class="note" id="lMsg">Só a equipe (Fernanda, Adriano e Rolison) coloca os arquivos e escreve as tratativas. Quem abre pelo link vê o painel pronto.</div>
@@ -1272,7 +1276,7 @@ async function api(metodo,corpo,q,rota){const o={method:metodo,headers:hdr(),cac
   const r=await fetch("/api/"+(rota||"estado")+(q||""),o);let j={};try{j=await r.json();}catch(e){}
   if(!r.ok){const e=new Error(j.erro||("erro "+r.status));e.status=r.status;e.dados=j;throw e;}return j;}
 const horaTxt=t=>t?new Date(t).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
-function modo(){document.body.classList.toggle("editor",editor);{const f=editor&&/^fernanda$/i.test(AC.nome);$("t-bx").hidden=!f;if(!f&&!$("v-bx").hidden)aba("painel");}document.body.classList.toggle("leitor",!editor);
+function modo(){document.body.classList.toggle("editor",editor);{const bv=$("nBv");if(bv){const nm=AC.nome||"";bv.innerHTML=editor&&nm?`${/^fernanda$/i.test(nm)?"Bem-vinda":"Bem-vindo"}, <b>${esc(nm)}</b> · ${/^fernanda$/i.test(nm)?"analista":"técnico"}`:"Modo visualização";}}{const f=editor&&/^fernanda$/i.test(AC.nome);$("t-bx").hidden=!f;if(!f&&!$("v-bx").hidden)aba("painel");}document.body.classList.toggle("leitor",!editor);
   $("btnAnalista").hidden=editor;$("btnSairAn").hidden=!editor;$("btnConfig").hidden=!editor;$("btnConfig").textContent=/^fernanda$/i.test(AC.nome)?"Senhas e link":"Link dos coordenadores";const q=$("quem");q.hidden=false;q.textContent=editor?(/^fernanda$/i.test(AC.nome)?"Analista: ":"Técnico: ")+AC.nome:"Modo visualização";
   if(editor){$("nome").value=AC.nome;lsSet("nome",AC.nome);}}
 function statusNuvem(){setConn("on",editor?"Painel online · você pode atualizar":"Painel online",(remotoEm?"atualizado por "+(remotoPor||"equipe")+" em "+horaTxt(remotoEm):"ainda sem atualização"));}
@@ -1295,7 +1299,10 @@ async function entrarNuvem(){
       document.body.classList.add("bloq","leitor");$("bloqueio").hidden=true;$("login").hidden=false;$("loginFechar").hidden=true;if(!AC.senha)$("lMsg").textContent="Escolha seu nome, digite sua senha e clique em Entrar para atualizar o painel. A coordenação usa o link próprio dela, que se atualiza sozinho.";setConn("off","Painel de Pendências · equipe","entre com seu nome e senha");S=null;
     }else{await carregarLocal();setConn("off","Sem conexão com o painel online",e.message+" · mostrando a última versão guardada neste computador");modo();}}
   aplicar();if(!hoje&&editor)$("intro").hidden=false;}
-function sairAnalista(){lsSet("analista","");AC.nome="";AC.senha="";editor=false;modo();entrarNuvem();}
+function sairAnalista(){lsSet("analista","");AC.nome="";AC.senha="";editor=false;modo();
+  // mostra a tela para escolher quem vai entrar
+  document.body.classList.add("bloq","leitor");$("bloqueio").hidden=true;$("config").hidden=true;$("login").hidden=false;$("loginFechar").hidden=true;
+  $("lMsg").textContent="Você saiu. Escolha quem vai entrar e digite a senha.";$("nBv").textContent="Ninguém conectado";setConn("warn","Ninguém conectado","escolha o nome e digite a senha para entrar");window.scrollTo(0,0);setTimeout(()=>$("lSenha").focus(),50);}
 $("btnAnalista").onclick=()=>{$("login").hidden=false;$("lSenha").focus();};
 $("loginFechar").onclick=()=>{$("login").hidden=true;};
 $("btnSairAn").onclick=sairAnalista;
