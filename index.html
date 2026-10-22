@@ -367,6 +367,8 @@ table.bxt{width:100%;border-collapse:collapse;font-size:12.5px}
 .czbt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.czchk{font-size:12.5px;color:var(--muted);display:flex;gap:5px;align-items:center}
 .czos{font-family:var(--f-body);font-weight:700;color:#0B2545;font-size:12.5px}
 .bxt td input[type=checkbox]{width:16px;height:16px}
+.bxt tr.czend td{background:#FFF4D6}.bxt tr.czend td:first-child{box-shadow:inset 4px 0 0 #E0A500}
+.czleg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#7A5200;background:#FFF4D6;border:1px solid #F0D58A;border-radius:999px;padding:3px 10px}
 .bxtxt{width:100%;min-height:260px;font:13px/1.5 var(--f-body);border:1px solid var(--line);border-radius:10px;padding:12px;resize:vertical}
 @media (max-width:900px){.bxk{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* ======== visual estilo Norius (azul-marinho) ======== */
@@ -990,21 +992,21 @@ $("czOk").onclick=async()=>{const m=$("czMsg");m.className="";m.textContent="Len
     m.textContent=`Carteira lida: ${nf(cart.length)} OS abertas em ${czArqs.length} arquivo(s).`+(czTrabArq?` Databricks atual: ${nf(Object.keys(trab).length)} com tratativa.`:"");czRender();}
   catch(err){m.className="err";m.textContent="Não consegui ler: "+err.message;}};
 function czCruzar(){if(!CZ||!linhas||!linhas.length)return [];const out=[];
-  linhas.forEach((r,i)=>{const os=key(r[I.os]),pde=key(r[I.pde]),forn=key(String(r[I.forn]??"").replace(/\D/g,""));const tira=L=>(L||[]).filter(c=>c.os!==os);
+  linhas.forEach((r,i)=>{const os=key(r[I.os]),pde=key(r[I.pde]),forn=key(String(r[I.forn]??"").replace(/\D/g,""));const mesma=o=>o===os||("20"+o)===os;const tira=L=>(L||[]).filter(c=>!mesma(c.os));
     let L=tira(CZ.porP[pde]),por="PDE";if(!L.length){L=tira(CZ.porF[forn]);por="fornecimento";}if(!L.length){L=tira(CZ.porE[chaveEndB(r[I.end])]);por="endereço";}
-    out.push({i,r,os,achou:L,por:L.length?por:"",t:trat(os)||((CZ.trab||{})[os]||{}).t||""});});return out;}
+    const propria=CZ.porOS[os]||CZ.porOS[os.replace(/^20/,"")]||null;out.push({i,r,os,propria,achou:L,por:L.length?por:"",t:trat(os)||((CZ.trab||{})[os]||{}).t||""});});return out;}
 function czRender(){const tem=!!CZ;$("czRes").hidden=!tem;if(!tem)return;
   const X=czCruzar(),com=X.filter(x=>x.achou.length);const soSem=true;const V=com.filter(x=>!x.t);
   $("czK").innerHTML=[["Pendências hoje",X.length,"#0B2545"],["Com OS aberta na carteira",com.length,"#1C6B41"],["Dessas, sem tratativa (vão ser preenchidas)",com.filter(x=>!x.t).length,"#C27C00"],["Sem OS aberta",X.length-com.length,"#C2362B"]].map(([l,v,c])=>`<div style="--c:${c}"><small>${l}</small><b>${nf(v)}</b></div>`).join("");
-  $("czNota").textContent=`base do Databricks de ${hoje?dm(hoje.data):"–"} × ${CZ.arquivos.join(" + ")} (${nf(CZ.total)} OS abertas) · procura pelo PDE, depois fornecimento, depois endereço`;
+  const nEnd=V.filter(x=>x.por==="endereço").length;$("czNota").innerHTML=(nEnd?`<span class="czleg">■ ${nf(nEnd)} achadas só pelo endereço (PDE e fornecimento diferentes) · vêm desmarcadas</span> `:"")+esc(`base do Databricks de ${hoje?dm(hoje.data):"–"} × ${CZ.arquivos.join(" + ")} (${nf(CZ.total)} OS abertas) · procura pelo PDE, depois fornecimento, depois endereço`);
   $("czT").innerHTML=`<thead><tr><th><input type="checkbox" id="czTodos" checked title="marcar todas"></th><th>Endereço</th><th>Pendência no Databricks</th><th>OS aberta na carteira</th><th>Achou pelo</th></tr></thead><tbody>`+
-    (V.length?V.map(x=>{const r=x.r;return `<tr><td><input type="checkbox" data-czi="${x.i}" checked></td><td class="e"><b>${esc(r[I.end]).replace(/\.0+(?=\D|$)/g,"")}</b><small>${esc(poloNome(poloDe(r)))}</small></td><td><small>${esc(r[I.tss])}</small><small>OS ${esc(x.os)} · ${esc(r[I.dias])} dias</small></td>
-      <td><span class="czos">${esc(czTexto(x.achou))}</span>${x.achou.map(c=>`<small>${esc(c.st||"")}${c.ins?" · inserida "+esc(c.ins):""}</small>`).join("")}</td><td><span class="tg ${x.por==="PDE"?"sim":x.por==="fornecimento"?"inf":"saiu"}">${x.por}</span></td></tr>`;}).join(""):`<tr><td colspan="5" class="note" style="padding:16px">Nenhuma pendência ${soSem?"sem tratativa ":""}com OS aberta na carteira.</td></tr>`)+"</tbody>";
+    (V.length?V.map(x=>{const r=x.r;const soEnd=x.por==="endereço";return `<tr class="${soEnd?"czend":""}"><td><input type="checkbox" data-czi="${x.i}" ${soEnd?"":"checked"}></td><td class="e"><b>${esc(r[I.end]).replace(/\.0+(?=\D|$)/g,"")}</b><small>${esc(poloNome(poloDe(r)))}</small></td><td><small>${esc(r[I.tss])}</small><small>OS ${esc(x.os)} · ${esc(r[I.dias])} dias</small>${x.propria?`<small style="color:#0B5F86">a própria OS também está na carteira (${esc(x.propria.st||"aberta")})</small>`:""}</td>
+      <td><span class="czos">${esc(czTexto(x.achou))}</span>${x.achou.map(c=>`<small>${esc(c.st||"")}${c.ins?" · inserida "+esc(c.ins):""}</small>`).join("")}</td><td><span class="tg ${x.por==="PDE"?"sim":x.por==="fornecimento"?"inf":"saiu"}">${soEnd?"só endereço":x.por}</span>${soEnd?`<small>PDE e fornecimento diferentes · confira antes de gravar</small>`:""}</td></tr>`;}).join(""):`<tr><td colspan="5" class="note" style="padding:16px">Nenhuma pendência ${soSem?"sem tratativa ":""}com OS aberta na carteira.</td></tr>`)+"</tbody>";
   czRenderTrab(X);
   const tt=$("czTodos");if(tt)tt.onchange=()=>document.querySelectorAll("[data-czi]").forEach(c=>c.checked=tt.checked);}
 const czMarcadas=()=>{const X=czCruzar();const sel=new Set([...document.querySelectorAll("[data-czi]:checked")].map(c=>+c.dataset.czi));return X.filter(x=>sel.has(x.i)&&x.achou.length&&!x.t);};
 
-function czTrabLista(X){const out=[];for(const x of X){if(!x.t)continue;const ns=[...new Set((x.t.match(/\d{9,13}/g)||[]).map(n=>key(n)))].filter(n=>n!==x.os);if(!ns.length)continue;
+function czTrabLista(X){const out=[];for(const x of X){if(!x.t)continue;const ns=[...new Set((x.t.match(/\d{9,13}/g)||[]).map(n=>key(n)))].filter(n=>n!==x.os&&("20"+n)!==x.os);if(!ns.length)continue;
   out.push({x,itens:ns.map(n=>({os:n,c:CZ.porOS[n]||null}))});}return out;}
 function czRenderTrab(X){const L=czTrabLista(X);$("czTrabBox").hidden=!L.length;if(!L.length)return;
   const ab=L.filter(y=>y.itens.some(i=>i.c)).length;
