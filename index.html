@@ -539,7 +539,7 @@ body{background:#E8EEF7}
   </section>
   <section id="v-cz" class="view" hidden>
     <article class="card"><header class="ch"><div><h3>Cruzar as pendências com a carteira</h3><p>Suba a carteira do sistema (Interlagos e Embu juntas). O painel procura, para cada pendência do Databricks, se tem OS aberta no mesmo PDE, fornecimento ou endereço, e escreve no padrão <b>OS 26106993798 - VAZAMENTO DE AGUA LEITO PAVIMENTADO</b>.</p></div></header>
-      <div class="czup"><label class="czslot" for="czArq"><b>Carteira do sistema</b><small id="czNomes">clique para escolher · pode escolher mais de um arquivo (carteira e, se quiser, acatados)</small><input type="file" id="czArq" accept=".xlsx,.csv" multiple hidden></label><label class="czslot" for="czTrab"><b>Planilha que já trabalhamos <span style="font-weight:500;color:var(--muted)">(opcional)</span></b><small id="czTrabN">a planilha com a coluna Status/tratativa · as que já estão preenchidas nela não são mexidas</small><input type="file" id="czTrab" accept=".xlsx,.csv" hidden></label><button type="button" class="primary" id="czOk" disabled>Cruzar</button></div>
+      <div class="czup"><label class="czslot" for="czArq"><b>Carteira do sistema</b><small id="czNomes">clique para escolher · pode escolher mais de um arquivo (carteira e, se quiser, acatados)</small><input type="file" id="czArq" accept=".xlsx,.csv" multiple hidden></label><label class="czslot" for="czTrab"><b>Databricks atual <span style="font-weight:500;color:var(--muted)">(opcional)</span></b><small id="czTrabN">a planilha com a coluna Status/tratativa · as que já estão preenchidas nela não são mexidas</small><input type="file" id="czTrab" accept=".xlsx,.csv" hidden></label><button type="button" class="primary" id="czOk" disabled>Cruzar</button></div>
       <div class="msg" id="czMsg"></div>
     </article>
     <div id="czRes" hidden>
@@ -987,7 +987,7 @@ $("czOk").onclick=async()=>{const m=$("czMsg");m.className="";m.textContent="Len
     const porOS={};for(const c of cart)porOS[c.os]=c;
     const trab=czTrabArq?await czLerTrab(czTrabArq):{};
     CZ={em:Date.now(),arquivos:czArqs.map(f=>f.name),total:cart.length,porP,porF,porE,porOS,trab,trabNome:czTrabArq?czTrabArq.name:""};
-    m.textContent=`Carteira lida: ${nf(cart.length)} OS abertas em ${czArqs.length} arquivo(s).`+(czTrabArq?` Planilha trabalhada: ${nf(Object.keys(trab).length)} com tratativa.`:"");czRender();}
+    m.textContent=`Carteira lida: ${nf(cart.length)} OS abertas em ${czArqs.length} arquivo(s).`+(czTrabArq?` Databricks atual: ${nf(Object.keys(trab).length)} com tratativa.`:"");czRender();}
   catch(err){m.className="err";m.textContent="Não consegui ler: "+err.message;}};
 function czCruzar(){if(!CZ||!linhas||!linhas.length)return [];const out=[];
   linhas.forEach((r,i)=>{const os=key(r[I.os]),pde=key(r[I.pde]),forn=key(String(r[I.forn]??"").replace(/\D/g,""));const tira=L=>(L||[]).filter(c=>c.os!==os);
