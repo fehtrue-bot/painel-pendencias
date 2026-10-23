@@ -477,7 +477,7 @@ body{background:#E8EEF7}
     <button class="tab" role="tab" id="t-bx" aria-selected="false" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Baixas indevidas</button>
   </nav>
   <div class="actions">
-    <button type="button" class="primary" id="btnSubir"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg> Atualizar com os arquivos do dia</button><input type="file" id="arquivo" accept=".xlsx,.csv,.json" multiple hidden>
+    <button type="button" class="primary" id="btnSubir"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"/></svg> Atualizar com os arquivos do dia</button><input type="file" id="arquivo" accept=".xlsx,.xls,.csv,.json,.htm,.html,.xml" multiple hidden>
     <button id="baixar" type="button" class="ghost"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M6 10l6 6 6-6M4 20h16"/></svg> Baixar Excel</button>
   </div>
 </div></header>
@@ -534,8 +534,8 @@ body{background:#E8EEF7}
   <section class="panel imp" id="imp" hidden>
     <div class="panel-h"><h2>Atualizar o painel do dia</h2><button type="button" id="impFechar">Fechar</button></div>
     <div class="slots">
-      <label class="slot" for="fDet"><span class="sn1">1</span><span class="st1"><b>Detalhamento do sistema</b><small>o arquivo que você baixa do sistema hoje (obrigatório)</small><em id="nDet">Clique para escolher o arquivo</em></span><input type="file" id="fDet" accept=".xlsx,.csv"></label>
-      <label class="slot" for="fRede"><span class="sn1">2</span><span class="st1"><b>Planilha da rede (de ontem)</b><small>a cópia da planilha em que a equipe escreveu os Status e as tratativas</small><em id="nRede">Clique para escolher o arquivo</em></span><input type="file" id="fRede" accept=".xlsx"></label>
+      <label class="slot" for="fDet"><span class="sn1">1</span><span class="st1"><b>Detalhamento do sistema</b><small>o arquivo que você baixa do sistema hoje (obrigatório)</small><em id="nDet">Clique para escolher o arquivo</em></span><input type="file" id="fDet" accept=".xlsx,.xls,.csv,.txt,.htm,.html,.xml"></label>
+      <label class="slot" for="fRede"><span class="sn1">2</span><span class="st1"><b>Planilha da rede (de ontem)</b><small>a cópia da planilha em que a equipe escreveu os Status e as tratativas</small><em id="nRede">Clique para escolher o arquivo</em></span><input type="file" id="fRede" accept=".xlsx,.xls,.htm,.html,.xml"></label>
     </div>
     <div class="row"><button type="button" class="primary" id="impOk" disabled>Atualizar painel</button><span class="note" id="impNota">O painel cruza os dois: traz os Status da equipe para as OS que continuam, mostra o que saiu e o que entrou.</span></div>
     <div class="row" style="gap:6px"><span class="note">Outros arquivos:</span><button type="button" id="btnRestaurar" style="padding:6px 10px;font-size:12.5px">Restaurar cópia de segurança</button></div>
@@ -589,7 +589,7 @@ body{background:#E8EEF7}
   </section>
   <section id="v-cz" class="view" hidden>
     <article class="card"><header class="ch"><div><h3>Cruzar as pendências com a carteira</h3><p>Suba a carteira do sistema (Interlagos e Embu juntas). O painel procura, para cada pendência do Databricks, se tem OS aberta no mesmo PDE, fornecimento ou endereço, e escreve no padrão <b>OS 26106993798 - VAZAMENTO DE AGUA LEITO PAVIMENTADO</b>.</p></div></header>
-      <div class="czup"><label class="czslot" for="czArq"><b>Carteira do sistema</b><small id="czNomes">clique para escolher · pode escolher mais de um arquivo (carteira e, se quiser, acatados)</small><input type="file" id="czArq" accept=".xlsx,.csv" multiple hidden></label><label class="czslot" for="czTrab"><b>Databricks atual <span style="font-weight:500;color:var(--muted)">(opcional)</span></b><small id="czTrabN">a planilha com a coluna Status/tratativa · as que já estão preenchidas nela não são mexidas</small><input type="file" id="czTrab" accept=".xlsx,.csv" hidden></label><button type="button" class="primary" id="czOk" disabled>Cruzar</button></div>
+      <div class="czup"><label class="czslot" for="czArq"><b>Carteira do sistema</b><small id="czNomes">clique para escolher · pode escolher mais de um arquivo (carteira e, se quiser, acatados)</small><input type="file" id="czArq" accept=".xlsx,.xls,.csv,.txt,.htm,.html,.xml" multiple hidden></label><label class="czslot" for="czTrab"><b>Databricks atual <span style="font-weight:500;color:var(--muted)">(opcional)</span></b><small id="czTrabN">a planilha com a coluna Status/tratativa · as que já estão preenchidas nela não são mexidas</small><input type="file" id="czTrab" accept=".xlsx,.xls,.csv,.txt,.htm,.html,.xml" hidden></label><button type="button" class="primary" id="czOk" disabled>Cruzar</button></div>
       <div class="msg" id="czMsg"></div>
     </article>
     <div id="czRes" hidden>
@@ -627,7 +627,7 @@ async function inflateRaw(bytes){
 }
 async function unzip(buf){
   const u=new Uint8Array(buf),v=new DataView(buf);let e=-1;
-  for(let i=u.length-22;i>=Math.max(0,u.length-70000);i--){if(v.getUint32(i,true)===0x06054b50){e=i;break;}}
+  for(let i=u.length-22;i>=0;i--){if(v.getUint32(i,true)===0x06054b50){e=i;break;}}
   if(e<0)throw new Error("zip");
   const n=v.getUint16(e+10,true);let p=v.getUint32(e+16,true);const files={};const td=new TextDecoder();
   for(let k=0;k<n;k++){
@@ -665,6 +665,27 @@ async function abrirXlsx(buf){
     return aoa;}
   return {nomes:abas.map(a=>a.nome),ler};
 }
+// Abre qualquer planilha exportada: .xlsx normal, Excel 2003 (XML), página web salva como .xls/.xlsx ou texto (CSV/TSV)
+async function abrirPlanilha(file){
+  const buf=await file.arrayBuffer();const u=new Uint8Array(buf.slice(0,8));
+  if(u[0]===0x50&&u[1]===0x4B){try{return await abrirXlsx(buf);}catch(e){throw new Error(`O arquivo "${file.name}" parece estar incompleto ou corrompido. Baixe de novo do sistema.`);}}
+  if(u[0]===0xD0&&u[1]===0xCF&&u[2]===0x11&&u[3]===0xE0)throw new Error(`O arquivo "${file.name}" está no formato antigo do Excel (.xls). Abra no Excel e use Salvar como → Pasta de Trabalho do Excel (.xlsx), depois suba de novo.`);
+  if(!buf.byteLength)throw new Error(`O arquivo "${file.name}" está vazio. Baixe de novo do sistema.`);
+  let txt=new TextDecoder("utf-8").decode(buf);if(txt.includes("�"))txt=new TextDecoder("windows-1252").decode(buf);
+  const ini=txt.slice(0,2000).trim();
+  const grade=linhas=>({nomes:["Planilha1"],ler:async()=>linhas});
+  if(/<\?xml|<Workbook/i.test(ini)&&/<Worksheet|<ss:Worksheet/i.test(txt)){
+    const doc=new DOMParser().parseFromString(txt,"application/xml");const abas=tags(doc,"Worksheet");
+    const lerAba=ws=>{const out=[];for(const row of tags(ws,"Row")){const r=[];for(const c of tags(row,"Cell")){const ix=c.getAttribute("ss:Index")||c.getAttributeNS("urn:schemas-microsoft-com:office:spreadsheet","Index");if(ix)while(r.length<Number(ix)-1)r.push("");const d=tags(c,"Data")[0];r.push(d?d.textContent:"");}out.push(r);}return out;};
+    return {nomes:abas.map((w,i)=>w.getAttribute("ss:Name")||"Planilha"+(i+1)),ler:async nome=>{const i=abas.findIndex((w,k)=>(w.getAttribute("ss:Name")||"Planilha"+(k+1))===nome);return lerAba(abas[Math.max(0,i)]);}};}
+  if(/<(html|table|!doctype)/i.test(ini)||/<table/i.test(txt.slice(0,20000))){
+    const doc=new DOMParser().parseFromString(txt,"text/html");const tabs=[...doc.querySelectorAll("table")];
+    if(!tabs.length)throw new Error(`Não achei tabela no arquivo "${file.name}".`);
+    const t=tabs.sort((a,b)=>b.rows.length-a.rows.length)[0];
+    return grade([...t.rows].map(tr=>[...tr.cells].map(td=>td.textContent.replace(/\s+/g," ").trim())));}
+  // texto: tabulação ou ; ou ,
+  const l0=txt.split("\n")[0];if(l0.includes("\t"))return grade(txt.split(/\r?\n/).map(l=>l.split("\t")));
+  return grade(lerCsv(txt));}
 async function lerXlsx(buf){const w=await abrirXlsx(buf);return w.ler(w.nomes[0]);}
 function lerCsv(txt){const sep=(txt.split("\n")[0].match(/;/g)||[]).length>(txt.split("\n")[0].match(/,/g)||[]).length?";":",";
   const rows=[];let row=[],cur="",q=false;
@@ -1016,7 +1037,7 @@ let CZ=null,czArqs=[];
 const semAc=t=>String(t||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/\s+/g," ").trim();
 const czTexto=L=>L.map(c=>`OS ${c.os} - ${semAc(c.tss)}`).join(" / ");
 async function czLer(f){let tabs=[];
-  if(/\.csv$/i.test(f.name))tabs=[lerCsv(await f.text())];else{const w=await abrirXlsx(await f.arrayBuffer());for(const n of w.nomes)tabs.push(await w.ler(n));}
+  if(/\.csv$/i.test(f.name))tabs=[lerCsv(await f.text())];else{const w=await abrirPlanilha(f);for(const n of w.nomes)tabs.push(await w.ler(n));}
   const out=[];for(const aoa of tabs){if(!aoa)continue;const hi=aoa.findIndex((r,i)=>i<30&&r&&r.some(c=>U(clean(c))==="NUMERO OS"));if(hi<0)continue;
     const h=aoa[hi].map(c=>U(clean(c)));const ix=n=>h.findIndex(x=>n.includes(x));
     const iOS=ix(["NUMERO OS"]),iP=ix(["PDE"]),iF=ix(["FORNECIMENTO - TITULAR","FORNECIMENTO"]),iE=ix(["ENDERECO"]),iN=ix(["NUMERO"]),iB=ix(["BAIRRO"]),iT=ix(["TSS","DESCRICAO TSS"]),iI=ix(["DATA INSERCAO"]),iS=ix(["STATUS DA OPERACAO"]),iR=ix(["TEMPO RESIDUAL"]);
@@ -1026,7 +1047,7 @@ async function czLer(f){let tabs=[];
 $("czArq").onchange=e=>{czArqs=[...e.target.files];$("czNomes").textContent=czArqs.length?"✔ "+czArqs.map(f=>f.name).join(" + "):"clique para escolher";$("czArq").closest(".czslot").classList.toggle("ok",czArqs.length>0);$("czOk").disabled=!czArqs.length;};
 let czTrabArq=null;
 $("czTrab").onchange=e=>{czTrabArq=e.target.files[0]||null;$("czTrabN").textContent=czTrabArq?"✔ "+czTrabArq.name:"a planilha com a coluna Status/tratativa";$("czTrab").closest(".czslot").classList.toggle("ok",!!czTrabArq);};
-async function czLerTrab(f){let tabs=[];if(/\.csv$/i.test(f.name))tabs=[lerCsv(await f.text())];else{const w=await abrirXlsx(await f.arrayBuffer());for(const n of w.nomes)tabs.push(await w.ler(n));}
+async function czLerTrab(f){let tabs=[];if(/\.csv$/i.test(f.name))tabs=[lerCsv(await f.text())];else{const w=await abrirPlanilha(f);for(const n of w.nomes)tabs.push(await w.ler(n));}
   const mapa={};for(const g of tabs){if(!g)continue;const hi=g.findIndex((r,i)=>i<30&&r&&r.some(c=>U(clean(c))==="OS")&&r.some(c=>/^(STATUS|TRATATIVA)$/.test(U(clean(c)))));if(hi<0)continue;
     const h=g[hi].map(c=>U(clean(c)));const iOS=h.lastIndexOf("OS"),iT=h.findIndex(c=>/^(STATUS|TRATATIVA)$/.test(c)),iE=h.findIndex(c=>/^ENDERECO/.test(c));
     for(const r of g.slice(hi+1)){if(!r)continue;const k=key(r[iOS]);const t=clean(r[iT]);if(k&&t&&!mapa[k])mapa[k]={t,end:iE>=0?clean(r[iE]):""};}}
@@ -1198,11 +1219,11 @@ $("fRede").addEventListener("change",e=>{impArq.rede=e.target.files[0]||null;mar
 $("impOk").onclick=async()=>{
   if(!impArq.det||!S)return;$("impOk").disabled=true;msg("Lendo os arquivos…");const avisos=[];pendRede=null;let det=null;
   try{
-    if(impArq.rede){const wb=await abrirXlsx(await impArq.rede.arrayBuffer());
+    if(impArq.rede){const wb=await abrirPlanilha(impArq.rede);
       if(wb.nomes.some(n=>U(n)==="GERAL"))avisos.push(await importarRede(wb,impArq.rede.name));
       else avisos.push(`o arquivo ${impArq.rede.name} não parece ser a planilha da rede (não tem a aba GERAL)`);}
     if(/\.csv$/i.test(impArq.det.name))det={aoa:lerCsv(await impArq.det.text()),nome:impArq.det.name};
-    else{const wb=await abrirXlsx(await impArq.det.arrayBuffer());
+    else{const wb=await abrirPlanilha(impArq.det);
       if(wb.nomes.some(n=>U(n)==="GERAL")&&wb.nomes.some(n=>U(n)==="PAINEL")){msg("No campo 1 vai o Detalhamento do sistema. Esse arquivo parece ser a planilha da rede: coloque ele no campo 2.");$("impOk").disabled=false;return;}
       det={aoa:await wb.ler(wb.nomes[0]),nome:impArq.det.name};}
   }catch(err){msg("Não consegui ler um dos arquivos. Confira se são .xlsx.");$("impOk").disabled=false;return;}
@@ -1218,7 +1239,7 @@ $("arquivo").addEventListener("change",async e=>{
     try{
       if(/\.json$/i.test(f.name)){S=mesclar(JSON.parse(await f.text()),S);avisos.push("cópia de segurança importada");continue;}
       if(/\.csv$/i.test(f.name)){det={aoa:lerCsv(await f.text()),nome:f.name};continue;}
-      const wb=await abrirXlsx(await f.arrayBuffer());
+      const wb=await abrirPlanilha(f);
       const rede=wb.nomes.some(n=>U(n)==="PAINEL")&&wb.nomes.some(n=>U(n)==="GERAL");
       if(rede)avisos.push(await importarRede(wb,f.name));
       else det={aoa:await wb.ler(wb.nomes[0]),nome:f.name};
