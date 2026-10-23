@@ -314,6 +314,9 @@ body{font-size:15px}
 .ai .t{font-weight:600;font-size:15px}
 .ai .t small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
 .ai b{font-family:var(--f-display);font-size:28px;font-weight:600;color:var(--c);white-space:nowrap}
+.ai.forte{border:0;color:#fff;padding:14px 16px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.ai.forte.f31{background:linear-gradient(110deg,#B02A20,#D9473B)}.ai.forte.f15{background:linear-gradient(110deg,#C9630F,#EE8A2E)}
+.ai.forte .t{font-size:16px;font-weight:700}.ai.forte .t small{color:rgba(255,255,255,.88)}.ai.forte b{color:#fff;font-size:32px}
 .at .lbl{margin-top:4px}
 .vrow{padding:8px 4px}
 #v-painel .ai[data-go]:hover{background:#F6FAFC;box-shadow:0 2px 10px rgba(16,32,48,.06)}
@@ -914,9 +917,9 @@ function render(){
   // ---- pontos de atenção
   {const velhas=D.filter(x=>!clean(x.t)).sort((a,b)=>Number(b.r[I.dias])-Number(a.r[I.dias])).slice(0,3);
    const nGr=new Set(D.filter(x=>x.grp!=null).map(x=>x.grp)).size,nDup=D.filter(x=>x.grp!=null).length;
-   const it=(c,go,t,sub,v)=>`<div class="ai" style="--c:${c}" data-go='${JSON.stringify(go)}' title="Ver estas OS"><span class="t">${t}<small>${sub}</small></span><b>${v}</b></div>`;
-   let a=it("#C2362B",{faixa:"+31 dias",trat:"sem"},"+31 dias sem tratativa","as mais urgentes",nf(D.filter(x=>x.r[I.faixa]==="+31 dias"&&!clean(x.t)).length));
-   a+=it("#E07B24",{faixa:"15 a 30 dias",trat:"sem"},"15 a 30 dias sem tratativa","as próximas a virar +31",nf(D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&!clean(x.t)).length));
+   const it=(c,go,t,sub,v,cls)=>`<div class="ai${cls?" "+cls:""}" style="--c:${c}" data-go='${JSON.stringify(go)}' title="Ver estas OS"><span class="t">${t}<small>${sub}</small></span><b>${v}</b></div>`;
+   let a=it("#C2362B",{faixa:"+31 dias",trat:"sem"},"+31 dias sem tratativa","as mais urgentes",nf(D.filter(x=>x.r[I.faixa]==="+31 dias"&&!clean(x.t)).length),"forte f31");
+   a+=it("#E07B24",{faixa:"15 a 30 dias",trat:"sem"},"15 a 30 dias sem tratativa","as próximas a virar +31",nf(D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&!clean(x.t)).length),"forte f15");
    a+=it("#0B6E99",{cat:"Novas"},"OS novas hoje",`${nf(H.comNovas)} já com tratativa`,nf(H.novas));
    a+=it("#8B5CF6",{cat:"Duplicidades"},"Duplicidades",`${nf(nDup)} OS em ${nf(nGr)} grupos`,nf(nGr));
    if(velhas.length)a+=`<div class="lbl">Mais antigas sem tratativa</div>`+velhas.map(x=>`<div class="vrow" data-go='${JSON.stringify({busca:String(x.r[I.os])})}' title="Abrir esta OS"><span class="vd">${esc(x.r[I.dias])}<small>dias</small></span><span class="va"><b>${esc(String(x.r[I.end]).replace(/\.0{6,}/,"").split(" / ")[0])}</b><small>${esc(x.r[I.tss])} · ${esc(poloNome(x.polo))}</small></span></div>`).join("");
