@@ -362,6 +362,8 @@ table.bxt{width:100%;border-collapse:collapse;font-size:12.5px}
 .bxdec button[aria-pressed="true"][data-d="nao"]{background:#A3232A;color:#fff;border-color:#A3232A}
 .bxdec input{font-size:11.5px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;width:150px}
 .tabs .tab{white-space:nowrap}
+tr.vcart td{background:#FDECEA!important}tr.vcart td:first-child{box-shadow:inset 4px 0 0 #C2362B}
+.tag.vcart{background:#C2362B;color:#fff;white-space:normal}
 #v-cz{display:flex;flex-direction:column;gap:14px}#v-cz[hidden]{display:none}
 .czup{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;margin-top:6px}
 .czslot{flex:1;min-width:280px;border:2px dashed #C5D1E3;border-radius:10px;padding:12px 14px;cursor:pointer;background:#F6F8FC;display:flex;flex-direction:column;gap:3px}
@@ -574,7 +576,7 @@ body{background:#E8EEF7}
         <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="busca" placeholder="Buscar endereço, OS, fornecimento, PDE ou tratativa"></div>
         <select id="polo" aria-label="Polo" style="font:600 13.5px var(--f-body);padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)"><option value="">Todos os polos</option><option value="923">Interlagos (923)</option><option value="929">Grajaú (929)</option><option value="299">Embu Guaçu (299)</option></select>
         <select id="faixa" aria-label="Faixa de atraso"><option value="">Todas as faixas</option><option value="+31 dias">+31 dias</option><option value="15 a 30 dias">15 a 30 dias</option><option value="7 a 15 dias">7 a 15 dias</option><option value="até 7 dias">Até 7 dias</option></select>
-        <select id="fTrat" aria-label="Tratativa"><option value="">Com e sem tratativa</option><option value="sem">Só sem tratativa</option><option value="com">Só com tratativa</option></select>
+        <select id="fTrat" aria-label="Tratativa"><option value="">Com e sem tratativa</option><option value="sem">Só sem tratativa</option><option value="com">Só com tratativa</option><option value="verif">Verificar: OS não está na carteira</option></select>
       </div>
       <div class="ativos" id="ativos" hidden></div>
       <div class="legend">
@@ -819,6 +821,7 @@ function mesclar(disco,meu){
   for(const d of meu.dias||[]){const x=porData[d.data];
     if(!x||(d.enviadoEm||0)>(x.enviadoEm||0)){porData[d.data]=d;if(meu.linhas[d.data])r.linhas[d.data]=meu.linhas[d.data];else if(x&&(d.enviadoEm||0)>(x.enviadoEm||0))delete r.linhas[d.data];}
     else if(x&&d.resumo&&!x.resumo)x.resumo=d.resumo;}
+  if(meu.verifCart&&(!r.verifCart||(meu.verifCart.em||0)>(r.verifCart.em||0)))r.verifCart=meu.verifCart;
   r.dias=Object.values(porData);
   if((meu.config.em||0)>(r.config.em||0))r.config=meu.config;
   r.tratBase=Object.assign({},meu.tratBase||{},r.tratBase);
@@ -944,6 +947,7 @@ function render(){
    const it=(c,go,t,sub,v,cls)=>`<div class="ai${cls?" "+cls:""}" style="--c:${c}" data-go='${JSON.stringify(go)}' title="Ver estas OS"><span class="t">${t}<small>${sub}</small></span><b>${v}</b></div>`;
    let a=it("#C2362B",{faixa:"+31 dias",trat:"sem"},"+31 dias sem tratativa","as mais urgentes",nf(D.filter(x=>x.r[I.faixa]==="+31 dias"&&!clean(x.t)).length),"forte f31");
    a+=it("#E07B24",{faixa:"15 a 30 dias",trat:"sem"},"15 a 30 dias sem tratativa","as próximas a virar +31",nf(D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&!clean(x.t)).length),"forte f15");
+   {const VC=(S.verifCart&&S.verifCart.itens)||{};const nv=D.filter(x=>VC[x.os]).length;if(nv)a+=it("#C2362B",{trat:"verif"},"Verificar: OS não está na carteira",`a OS da tratativa sumiu da carteira de ${new Date(S.verifCart.em).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}`,nf(nv));}
    a+=it("#0B6E99",{cat:"Novas"},"OS novas hoje",`${nf(H.comNovas)} já com tratativa`,nf(H.novas));
    a+=it("#8B5CF6",{cat:"Duplicidades"},"Duplicidades",`${nf(nDup)} OS em ${nf(nGr)} grupos`,nf(nGr));
    if(velhas.length)a+=`<div class="lbl">Mais antigas sem tratativa</div>`+velhas.map(x=>`<div class="vrow" data-go='${JSON.stringify({busca:String(x.r[I.os])})}' title="Abrir esta OS"><span class="vd">${esc(x.r[I.dias])}<small>dias</small></span><span class="va"><b>${esc(String(x.r[I.end]).replace(/\.0{6,}/,"").split(" / ")[0])}</b><small>${esc(x.r[I.tss])} · ${esc(poloNome(x.polo))}</small></span></div>`).join("");
@@ -983,14 +987,14 @@ function filtrados(D){
   const q=U($("busca").value).trim(),ft=$("fTrat").value,pf=$("polo").value,fx=$("faixa").value;
   let V=D.filter(x=>!pf||x.polo===pf).filter(x=>!fx||x.r[I.faixa]===fx)
     .filter(x=>filtro==="Todas"||(filtro==="Novas"?x.nova:filtro==="Duplicidades"?x.grp!=null:filtro==="Já tratadas (rede)"?x.rede==="tratada":filtro==="Continuam sem tratativa (rede)"?x.rede==="semtrat":filtro==="Entraram hoje (rede)"?x.rede==="nova":x.cat===filtro));
-  if(ft==="sem")V=V.filter(x=>!clean(x.t));else if(ft==="com")V=V.filter(x=>!!clean(x.t));
+  if(ft==="sem")V=V.filter(x=>!clean(x.t));else if(ft==="com")V=V.filter(x=>!!clean(x.t));else if(ft==="verif"){const VC=(S.verifCart&&S.verifCart.itens)||{};V=V.filter(x=>VC[x.os]);}
   if(q)V=V.filter(x=>U([x.r[I.end],x.r[I.os],x.r[I.forn],x.r[I.pde],x.t,x.r[I.tss]].join(" ")).includes(q));
   if(filtro==="Duplicidades")return V.sort((a,b)=>(b.grpN-a.grpN)||(a.grp-b.grp)||(Number(b.r[I.dias])-Number(a.r[I.dias])));
   return V.sort((a,b)=>(b.dupOS-a.dupOS)||(Number(b.r[I.dias])-Number(a.r[I.dias]))||(a.r[I.end]<b.r[I.end]?-1:1));
 }
 function filtrosAtivos(){
   const a=[];if(filtro!=="Todas")a.push(filtro);if($("polo").value)a.push(poloNome($("polo").value));if($("faixa").value)a.push($("faixa").value);
-  if($("fTrat").value)a.push($("fTrat").value==="sem"?"Sem tratativa":"Com tratativa");if($("busca").value.trim())a.push(`busca: “${$("busca").value.trim()}”`);
+  if($("fTrat").value)a.push($("fTrat").value==="sem"?"Sem tratativa":$("fTrat").value==="verif"?"Verificar (carteira)":"Com tratativa");if($("busca").value.trim())a.push(`busca: “${$("busca").value.trim()}”`);
   $("ativos").hidden=!a.length;$("ativos").innerHTML=a.length?`Mostrando: ${a.map(t=>`<span class="fa">${esc(t)}</span>`).join("")} <button type="button" id="limpar">Limpar filtros</button>`:"";
 }
 function irPara(o){
@@ -1019,11 +1023,12 @@ function renderLista(D){
   const ro="";filtrosAtivos();let gAtual=null,gNum=0;
   const grupos={};if(filtro==="Duplicidades")for(const x of V)(grupos[x.grp]=grupos[x.grp]||[]).push(x);
   let h=`<table><thead><tr><th></th><th>Fornecimento / OS</th><th>Tratativa (Status)</th><th>Endereço</th><th>Serviço (TSS)</th><th>Situação</th><th class="r">Dias</th><th>Faixa</th><th>MNE</th></tr></thead><tbody>`;
-  for(const x of V){const r=x.r,op=aberto.has(x.i),d=S.trat[x.os];
+  const VC=(S.verifCart&&S.verifCart.itens)||{};
+  for(const x of V){const r=x.r,op=aberto.has(x.i),d=S.trat[x.os];const vc=VC[x.os]||"";
     if(filtro==="Duplicidades"&&x.grp!==gAtual){gAtual=x.grp;gNum++;const L=grupos[x.grp];h+=`<tr class="grp"><td colspan="9"><b>Grupo ${gNum}</b> ${L.length} OS · <span class="gm">${descGrupo(L)}</span></td></tr>`;}
     const tg=(x.dupOS?'<span class="tag dos">OS REPETIDA</span>':"")+(x.dupF?'<span class="tag df">FORNEC. REPETIDO</span>':"")+(x.dupE&&!x.dupF&&!x.dupOS?'<span class="tag de">MESMO ENDEREÇO</span>':"")+(x.nova?'<span class="tag nova">NOVA</span>':"")+(x.rede==="tratada"?'<span class="tag rede">JÁ TRATADA ONTEM</span>':"")+(["Todas","Novas","Duplicidades"].includes(filtro)?`<span class="tag cat" style="--c:${CORES[x.cat]||"#999"}">${esc(x.cat)}</span>`:"")+(poloNome(x.polo)!==x.cat?`<span class="tag pol">${esc(poloNome(x.polo))}</span>`:"");
     const end=String(r[I.end]).replace(/\.0{6,}/,"");const ep=end.split(" / ");
-    h+=`<tr class="${x.dupOS?"dupOS":x.dupF?"dupF":x.dupE?"dupE":""}"><td><button class="more" type="button" data-i="${x.i}" aria-expanded="${op}" aria-label="Detalhes">${op?"▾":"▸"}</button></td><td class="mono"><b>${esc(r[I.forn])}</b><br><span class="note">PDE ${esc(r[I.pde])}</span><br><span class="note">OS ${esc(r[I.os])}</span></td><td><input class="trat${clean(x.t)?"":" vazio"}" list="sugestoes" data-os="${esc(x.os)}" value="${esc(x.t)}" title="${esc(x.t)}" placeholder="sem tratativa: clique para escrever" aria-label="Tratativa da OS ${esc(r[I.os])}"${ro}>${tg?"<div>"+tg+"</div>":""}</td><td class="addr">${esc(ep[0])}${ep[1]?`<small>${esc(ep.slice(1).join(" / "))} · ${esc(r[I.mun])}</small>`:`<small>${esc(r[I.mun])}</small>`}</td><td class="tss">${esc(r[I.tss])}</td><td class="sit">${situ(r[I.st])}</td><td class="r"><span class="dias">${esc(r[I.dias])}</span></td><td><span class="pill ${faixaCls(r[I.faixa])}">${esc(r[I.faixa])}</span></td><td class="mne">${esc(r[I.mne])}</td></tr>`;
+    h+=`<tr class="${x.dupOS?"dupOS":x.dupF?"dupF":x.dupE?"dupE":""}${vc?" vcart":""}"><td><button class="more" type="button" data-i="${x.i}" aria-expanded="${op}" aria-label="Detalhes">${op?"▾":"▸"}</button></td><td class="mono"><b>${esc(r[I.forn])}</b><br><span class="note">PDE ${esc(r[I.pde])}</span><br><span class="note">OS ${esc(r[I.os])}</span></td><td><input class="trat${clean(x.t)?"":" vazio"}" list="sugestoes" data-os="${esc(x.os)}" value="${esc(x.t)}" title="${esc(x.t)}" placeholder="sem tratativa: clique para escrever" aria-label="Tratativa da OS ${esc(r[I.os])}"${ro}>${tg||vc?"<div>"+tg+(vc?`<span class="tag vcart" title="${esc(vc)}">VERIFICAR · ${esc(vc)}</span>`:"")+"</div>":""}</td><td class="addr">${esc(ep[0])}${ep[1]?`<small>${esc(ep.slice(1).join(" / "))} · ${esc(r[I.mun])}</small>`:`<small>${esc(r[I.mun])}</small>`}</td><td class="tss">${esc(r[I.tss])}</td><td class="sit">${situ(r[I.st])}</td><td class="r"><span class="dias">${esc(r[I.dias])}</span></td><td><span class="pill ${faixaCls(r[I.faixa])}">${esc(r[I.faixa])}</span></td><td class="mne">${esc(r[I.mne])}</td></tr>`;
     if(op)h+=`<tr class="det"><td></td><td colspan="8"><dl><dt>Nota OS</dt><dd>${esc(r[I.nota])||"–"}</dd><dt>Nota de baixa</dt><dd>${esc(r[I.baixa])||"–"}</dd><dt>Abertura</dt><dd>${esc(fmtData(r[I.data]))} · Iniciativa ${esc(r[I.inic])} · Qtd OS ${esc(r[I.qtd])} · ${esc(r[I.mun])} · ATC ${esc(r[I.atc])}</dd><dt>Tratativa</dt><dd>${d&&d.em?`alterada por ${esc(d.por||"alguém")} em ${new Date(d.em).toLocaleString("pt-BR")}`:"vinda da planilha"}</dd></dl></td></tr>`;}
   $("lista").innerHTML=h+"</tbody></table>";
   $("rodape").textContent=`${nf(V.length)} de ${nf(D.length)} OS. A tratativa fica gravada pela OS, então acompanha a OS mesmo quando a base do dia muda de ordem.`;
@@ -1059,6 +1064,8 @@ $("czOk").onclick=async()=>{const m=$("czMsg");m.className="";m.textContent="Len
     const porOS={};for(const c of cart)porOS[c.os]=c;
     const trab=czTrabArq?await czLerTrab(czTrabArq):{};
     CZ={em:Date.now(),arquivos:czArqs.map(f=>f.name),total:cart.length,porP,porF,porE,porOS,trab,trabNome:czTrabArq?czTrabArq.name:""};
+    {const ver={};for(const y of czTrabLista(czCruzar())){const fora=y.itens.filter(i=>!i.c);if(fora.length)ver[y.x.os]=fora.map(i=>"OS "+i.os).join(" / ")+(fora.length>1?" não estão":" não está")+" na carteira de "+(new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}));}
+     S.verifCart={em:Date.now(),itens:ver};agendarSalvar();}
     m.textContent=`Carteira lida: ${nf(cart.length)} OS abertas em ${czArqs.length} arquivo(s).`+(czTrabArq?` Databricks atual: ${nf(Object.keys(trab).length)} com tratativa.`:"");czRender();}
   catch(err){m.className="err";m.textContent="Não consegui ler: "+err.message;}};
 function czCruzar(){if(!CZ||!linhas||!linhas.length)return [];const out=[];
@@ -1355,8 +1362,9 @@ $("baixar").onclick=()=>{
   const sBodyR=st({f:{sz:11,c:TXT},fill:"F8CFCB"}),sDateR=st({f:{sz:11,c:TXT},fill:"F8CFCB",nf:"dd/mm/yyyy"});
   const sBodyV=st({f:{sz:11,c:TXT},fill:"E9DFFC"}),sDateV=st({f:{sz:11,c:TXT},fill:"E9DFFC",nf:"dd/mm/yyyy"});
   const sBodyA=st({f:{sz:11,c:TXT},fill:"FCE5A8"}),sDateA=st({f:{sz:11,c:TXT},fill:"FCE5A8",nf:"dd/mm/yyyy"});
-  const HEAD=["Fornecimento","PDE","Status","Endereço OS","Serviço (Família)","Serviço (TSS)","Status","Município","Regional","ATC","ATP","Data Abertura","Dias Pendente","Faixa","MNE","Nota OS","Nota de Baixa","Iniciativa","Qtd OS","OS","Serviço","Polo","Alerta","Cruzamento com a rede"];
-  const W=[20,11.1,53.6,74.2,18,42.6,24.9,12.8,10,6.2,6.1,14.5,14.8,10.6,41.1,56.8,41.4,10.2,21.5,16.5,15,14,22,26];
+  const HEAD=["Fornecimento","PDE","Status","Endereço OS","Serviço (Família)","Serviço (TSS)","Status","Município","Regional","ATC","ATP","Data Abertura","Dias Pendente","Faixa","MNE","Nota OS","Nota de Baixa","Iniciativa","Qtd OS","OS","Serviço","Polo","Alerta","Cruzamento com a rede","Verificar (carteira)"];
+  const W=[20,11.1,53.6,74.2,18,42.6,24.9,12.8,10,6.2,6.1,14.5,14.8,10.6,41.1,56.8,41.4,10.2,21.5,16.5,15,14,22,26,42];
+  const VCX=(S.verifCart&&S.verifCart.itens)||{};const sVc=st({f:{b:true,sz:11,c:"FFFFFF"},fill:"C2362B"}),sVcT=st({f:{b:true,sz:11,c:"9C1C1C"},fill:"F8CFCB"});
   const dt=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?new Date(+v.slice(0,4),+v.slice(5,7)-1,+v.slice(8,10)):v;
   const COR_XL={"Vazamento":["C9E0F8","2A7FD4"],"Esgoto":["DDD1F7","7A4FD6"],"Desobstrução":["C4EBE0","0F9D8A"],"Cavalete":["FBD7B5","E07B24"],"Embu Guaçu":["F4C6DA","C2417A"],"Hidro":["C3E6F3","3A9BC4"],"Vistorias":["DDE1E5","6B7785"],"Outros":["F2F2F2","A0AAB3"]};
   const sCat=(cat,data)=>st({f:{sz:11,c:TXT},fill:(COR_XL[cat]||COR_XL.Outros)[0],...(data?{nf:"dd/mm/yyyy"}:{})});
@@ -1366,9 +1374,9 @@ $("baixar").onclick=()=>{
     const f=folha(nome,{widths:W,heights:{0:20.25},freeze:"A2",tab});
     HEAD.forEach((h,c)=>f.cells.set("0,"+c,{v:h,s:sHead}));
     lista.forEach((x,i)=>{const r=x.r,row=i+1;const cat=x.cat||catFrom(catBase(r),x.t||"");const sb=sCat(cat),sd=sCat(cat,true);
-      const vals=[r[I.forn],r[I.pde],x.t,r[I.end],r[I.fam],r[I.tss],r[I.st],r[I.mun],r[I.reg],r[I.atc],r[I.atp],dt(r[I.data]),Number(r[I.dias])||r[I.dias],r[I.faixa],r[I.mne],r[I.nota],r[I.baixa],r[I.inic],Number(r[I.qtd])||r[I.qtd],r[I.os],cat,poloNome(x.polo),x.dupOS?"OS REPETIDA":x.dupF?"FORNECIMENTO REPETIDO":x.dupE?"MESMO ENDEREÇO":"",x.rede==="tratada"?"JÁ TRATADA ONTEM":x.rede==="semtrat"?"SEM TRATATIVA ONTEM":x.rede==="nova"?"ENTROU HOJE":""];
+      const vals=[r[I.forn],r[I.pde],x.t,r[I.end],r[I.fam],r[I.tss],r[I.st],r[I.mun],r[I.reg],r[I.atc],r[I.atp],dt(r[I.data]),Number(r[I.dias])||r[I.dias],r[I.faixa],r[I.mne],r[I.nota],r[I.baixa],r[I.inic],Number(r[I.qtd])||r[I.qtd],r[I.os],cat,poloNome(x.polo),x.dupOS?"OS REPETIDA":x.dupF?"FORNECIMENTO REPETIDO":x.dupE?"MESMO ENDEREÇO":"",x.rede==="tratada"?"JÁ TRATADA ONTEM":x.rede==="semtrat"?"SEM TRATATIVA ONTEM":x.rede==="nova"?"ENTROU HOJE":"",VCX[x.os]?"VERIFICAR: "+VCX[x.os]:""];const vcx=!!vals[24];
       const al=x.dupOS?sAl.r:x.dupF?sAl.a:x.dupE?sAl.v:sb;
-      vals.forEach((v,c)=>f.cells.set(row+","+c,{v,s:c===11?sd:c===20?sCatB(cat):c===22?al:sb}));});
+      vals.forEach((v,c)=>f.cells.set(row+","+c,{v,s:c===24?(vcx?sVc:sb):(c===2&&vcx)?sVcT:c===11?sd:c===20?sCatB(cat):c===22?al:sb}));});
     f.filter=`A1:${colName(HEAD.length-1)}${Math.max(2,lista.length+1)}`;
     return f;}
   const ord=L2=>L2.slice().sort((a,b)=>(Number(b.r[I.dias])-Number(a.r[I.dias])));
