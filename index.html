@@ -362,8 +362,8 @@ table.bxt{width:100%;border-collapse:collapse;font-size:12.5px}
 .bxdec button[aria-pressed="true"][data-d="nao"]{background:#A3232A;color:#fff;border-color:#A3232A}
 .bxdec input{font-size:11.5px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;width:150px}
 .tabs .tab{white-space:nowrap}
-tr.vcart td{background:#FDECEA!important}tr.vcart td:first-child{box-shadow:inset 4px 0 0 #C2362B}
-.tag.vcart{background:#C2362B;color:#fff;white-space:normal}
+tr.vcart td{background:#FFFAEB!important}tr.vcart td:first-child{box-shadow:inset 3px 0 0 #E8C66A}
+.tag.vcart{background:#FFF2CC;color:#7F6000;border:1px solid #F0DC9A;white-space:normal;font-weight:600}
 #v-cz{display:flex;flex-direction:column;gap:14px}#v-cz[hidden]{display:none}
 .czup{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;margin-top:6px}
 .czslot{flex:1;min-width:280px;border:2px dashed #C5D1E3;border-radius:10px;padding:12px 14px;cursor:pointer;background:#F6F8FC;display:flex;flex-direction:column;gap:3px}
@@ -947,7 +947,7 @@ function render(){
    const it=(c,go,t,sub,v,cls)=>`<div class="ai${cls?" "+cls:""}" style="--c:${c}" data-go='${JSON.stringify(go)}' title="Ver estas OS"><span class="t">${t}<small>${sub}</small></span><b>${v}</b></div>`;
    let a=it("#C2362B",{faixa:"+31 dias",trat:"sem"},"+31 dias sem tratativa","as mais urgentes",nf(D.filter(x=>x.r[I.faixa]==="+31 dias"&&!clean(x.t)).length),"forte f31");
    a+=it("#E07B24",{faixa:"15 a 30 dias",trat:"sem"},"15 a 30 dias sem tratativa","as próximas a virar +31",nf(D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&!clean(x.t)).length),"forte f15");
-   {const VC=(S.verifCart&&S.verifCart.itens)||{};const nv=D.filter(x=>VC[x.os]).length;if(nv)a+=it("#C2362B",{trat:"verif"},"Verificar: OS não está na carteira",`a OS da tratativa sumiu da carteira de ${new Date(S.verifCart.em).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}`,nf(nv));}
+   {const VC=(S.verifCart&&S.verifCart.itens)||{};const nv=D.filter(x=>VC[x.os]).length;if(nv)a+=it("#C9A227",{trat:"verif"},"Verificar: OS não está na carteira",`a OS da tratativa sumiu da carteira de ${new Date(S.verifCart.em).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}`,nf(nv));}
    a+=it("#0B6E99",{cat:"Novas"},"OS novas hoje",`${nf(H.comNovas)} já com tratativa`,nf(H.novas));
    a+=it("#8B5CF6",{cat:"Duplicidades"},"Duplicidades",`${nf(nDup)} OS em ${nf(nGr)} grupos`,nf(nGr));
    if(velhas.length)a+=`<div class="lbl">Mais antigas sem tratativa</div>`+velhas.map(x=>`<div class="vrow" data-go='${JSON.stringify({busca:String(x.r[I.os])})}' title="Abrir esta OS"><span class="vd">${esc(x.r[I.dias])}<small>dias</small></span><span class="va"><b>${esc(String(x.r[I.end]).replace(/\.0{6,}/,"").split(" / ")[0])}</b><small>${esc(x.r[I.tss])} · ${esc(poloNome(x.polo))}</small></span></div>`).join("");
@@ -1364,7 +1364,7 @@ $("baixar").onclick=()=>{
   const sBodyA=st({f:{sz:11,c:TXT},fill:"FCE5A8"}),sDateA=st({f:{sz:11,c:TXT},fill:"FCE5A8",nf:"dd/mm/yyyy"});
   const HEAD=["Fornecimento","PDE","Status","Endereço OS","Serviço (Família)","Serviço (TSS)","Status","Município","Regional","ATC","ATP","Data Abertura","Dias Pendente","Faixa","MNE","Nota OS","Nota de Baixa","Iniciativa","Qtd OS","OS","Serviço","Polo","Alerta","Cruzamento com a rede","Verificar (carteira)"];
   const W=[20,11.1,53.6,74.2,18,42.6,24.9,12.8,10,6.2,6.1,14.5,14.8,10.6,41.1,56.8,41.4,10.2,21.5,16.5,15,14,22,26,42];
-  const VCX=(S.verifCart&&S.verifCart.itens)||{};const sVc=st({f:{b:true,sz:11,c:"FFFFFF"},fill:"C2362B"}),sVcT=st({f:{b:true,sz:11,c:"9C1C1C"},fill:"F8CFCB"});
+  const VCX=(S.verifCart&&S.verifCart.itens)||{};const sVc=st({f:{sz:11,c:"7F6000"},fill:"FFF2CC"}),sVcT=st({f:{sz:11,c:"1F2937"},fill:"FFF2CC"});
   const dt=v=>/^\d{4}-\d{2}-\d{2}$/.test(v)?new Date(+v.slice(0,4),+v.slice(5,7)-1,+v.slice(8,10)):v;
   const COR_XL={"Vazamento":["C9E0F8","2A7FD4"],"Esgoto":["DDD1F7","7A4FD6"],"Desobstrução":["C4EBE0","0F9D8A"],"Cavalete":["FBD7B5","E07B24"],"Embu Guaçu":["F4C6DA","C2417A"],"Hidro":["C3E6F3","3A9BC4"],"Vistorias":["DDE1E5","6B7785"],"Outros":["F2F2F2","A0AAB3"]};
   const sCat=(cat,data)=>st({f:{sz:11,c:TXT},fill:(COR_XL[cat]||COR_XL.Outros)[0],...(data?{nf:"dd/mm/yyyy"}:{})});
