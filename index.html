@@ -948,10 +948,10 @@ function render(){
    const it=(c,go,t,sub,v,cls)=>`<div class="ai${cls?" "+cls:""}" style="--c:${c}" data-go='${JSON.stringify(go)}' title="Ver estas OS"><span class="t">${t}<small>${sub}</small></span><b>${v}</b></div>`;
    let a=it("#C2362B",{faixa:"+31 dias",trat:"sem"},"+31 dias sem tratativa","as mais urgentes",nf(D.filter(x=>x.r[I.faixa]==="+31 dias"&&!clean(x.t)).length),"forte f31");
    a+=it("#E07B24",{faixa:"15 a 30 dias",trat:"sem"},"15 a 30 dias sem tratativa","as próximas a virar +31",nf(D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&!clean(x.t)).length),"forte f15");
-   {const VC=(S.verifCart&&S.verifCart.itens)||{};const nv=D.filter(x=>VC[x.os]).length;if(nv)a+=it("#C9A227",{trat:"verif"},"Verificar: OS não está na carteira",`a OS da tratativa sumiu da carteira de ${new Date(S.verifCart.em).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}`,nf(nv));}
    a+=it("#0B6E99",{cat:"Novas"},"OS novas hoje",`${nf(H.comNovas)} já com tratativa`,nf(H.novas));
    a+=it("#8B5CF6",{cat:"Duplicidades"},"Duplicidades",`${nf(nDup)} OS em ${nf(nGr)} grupos`,nf(nGr));
    if(velhas.length)a+=`<div class="lbl">Mais antigas sem tratativa</div>`+velhas.map(x=>`<div class="vrow" data-go='${JSON.stringify({busca:String(x.r[I.os])})}' title="Abrir esta OS"><span class="vd">${esc(x.r[I.dias])}<small>dias</small></span><span class="va"><b>${esc(String(x.r[I.end]).replace(/\.0{6,}/,"").split(" / ")[0])}</b><small>${esc(x.r[I.tss])} · ${esc(poloNome(x.polo))}</small></span></div>`).join("");
+   {const VC=(S.verifCart&&S.verifCart.itens)||{};const nv=D.filter(x=>VC[x.os]).length;if(nv)a+=it("#C9A227",{trat:"verif"},"Verificar: OS não está na carteira",`a OS da tratativa sumiu da carteira de ${new Date(S.verifCart.em).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}`,nf(nv));}
    $("atencao").innerHTML=`<div class="at">${a}</div>`;}
   // ---- cruzamento com a rede
   {const cz=hoje.cruz;
