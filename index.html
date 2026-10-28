@@ -467,6 +467,7 @@ body{background:#E8EEF7}
   .toolbar .filters .search{flex:1 1 100%!important}
 }
 .nmres{display:flex;gap:10px;flex-wrap:wrap}.nmres>div{background:#F3F6F9;border:1px solid #DFE6EC;border-radius:10px;padding:6px 12px;min-width:92px}.nmres small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5E6E7B}.nmres b{font-size:18px;color:#0B2545}.nmres em{font-style:normal;font-size:11px;color:#5E6E7B;font-weight:600}.nmres>div>em{display:block}
+.ai.med{cursor:pointer}.ai.med b{display:flex;align-items:baseline;gap:6px}.ai.med b i{font-style:normal;font-size:.6em;color:#7A8995}
 </style>
 </head>
 <body>
@@ -951,7 +952,9 @@ function render(){
    let a=it("#C2362B",{faixa:"+31 dias",trat:"sem"},"+31 dias sem tratativa","as mais urgentes",nf(D.filter(x=>x.r[I.faixa]==="+31 dias"&&!clean(x.t)).length),"forte f31");
    a+=it("#E07B24",{faixa:"15 a 30 dias",trat:"sem"},"15 a 30 dias sem tratativa","as próximas a virar +31",nf(D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&!clean(x.t)).length),"forte f15");
    a+=it("#0B6E99",{cat:"Novas"},"OS novas hoje",`${nf(H.comNovas)} já com tratativa`,nf(H.novas));
-   a+=it("#8B5CF6",{cat:"Duplicidades"},"Duplicidades",`${nf(nDup)} OS em ${nf(nGr)} grupos`,nf(nGr));
+   {const h=new Date();const ym=h.getFullYear()+"-"+String(h.getMonth()+1).padStart(2,"0");const L=S.dias.filter(d=>d.data&&d.data.startsWith(ym));
+    const E=L.filter(d=>d.novas!=null),X=L.filter(d=>d.executadas!=null);const mE=E.length?Math.round(E.reduce((s,d)=>s+d.novas,0)/E.length):null,mX=X.length?Math.round(X.reduce((s,d)=>s+d.executadas,0)/X.length):null;
+    a+=`<div class="ai med" style="--c:#0B6E99" onclick="document.getElementById('pNovasMes').scrollIntoView({behavior:'smooth',block:'center'})" title="Ver o gráfico de entradas × saídas"><span class="t">Média por dia no mês<small>${mE==null&&mX==null?"aparece com as bases do mês":"entradas × saídas · "+(E.length||X.length)+" dias com base"}</small></span><b><span style="color:#D9711C">${mE==null?"–":nf(mE)}</span><i>×</i><span style="color:#23824F">${mX==null?"–":nf(mX)}</span></b></div>`;}
    if(velhas.length)a+=`<div class="lbl">Mais antigas sem tratativa</div>`+velhas.map(x=>`<div class="vrow" data-go='${JSON.stringify({busca:String(x.r[I.os])})}' title="Abrir esta OS"><span class="vd">${esc(x.r[I.dias])}<small>dias</small></span><span class="va"><b>${esc(String(x.r[I.end]).replace(/\.0{6,}/,"").split(" / ")[0])}</b><small>${esc(x.r[I.tss])} · ${esc(poloNome(x.polo))}</small></span></div>`).join("");
    {const VC=(S.verifCart&&S.verifCart.itens)||{};const nv=D.filter(x=>VC[x.os]).length;if(nv)a+=it("#C9A227",{trat:"verif"},"Verificar: OS não está na carteira",`a OS da tratativa sumiu da carteira de ${new Date(S.verifCart.em).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}`,nf(nv));}
    $("atencao").innerHTML=`<div class="at">${a}</div>`;}
