@@ -466,7 +466,7 @@ body{background:#E8EEF7}
   .ncab .rel .nbv b{font-size:13.5px!important;font-family:var(--f-body)!important}
   .toolbar .filters .search{flex:1 1 100%!important}
 }
-.nmres{display:flex;gap:10px;flex-wrap:wrap}.nmres>div{background:#F3F6F9;border:1px solid #DFE6EC;border-radius:10px;padding:6px 12px;min-width:92px}.nmres small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5E6E7B}.nmres b{font-size:18px;color:#0B2545}.nmres em{font-style:normal;font-size:11px;color:#5E6E7B;font-weight:600}
+.nmres{display:flex;gap:10px;flex-wrap:wrap}.nmres>div{background:#F3F6F9;border:1px solid #DFE6EC;border-radius:10px;padding:6px 12px;min-width:92px}.nmres small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5E6E7B}.nmres b{font-size:18px;color:#0B2545}.nmres em{font-style:normal;font-size:11px;color:#5E6E7B;font-weight:600}.nmres>div>em{display:block}
 </style>
 </head>
 <body>
@@ -565,7 +565,7 @@ body{background:#E8EEF7}
       <article class="card s4"><header class="ch"><div><h3>Pontos de atenção</h3><p>o que pede ação hoje</p></div></header><div id="atencao"></div></article>
       <article class="card s8"><header class="ch"><div><h3>Pendências por serviço</h3><p>quantidade de OS hoje e quanto já tem tratativa</p></div><div class="leg2"><span style="--c:#2FA36B">Com tratativa</span><span style="--c:#F3C46B">Sem tratativa</span></div></header><div id="tbServ"></div></article>
       <article class="card s4"><header class="ch"><div><h3>Tempo de atraso</h3><p id="faixaNota">distribuição das OS por faixa</p></div></header><div id="tbFaixa"></div></article>
-      <article class="card s12" id="pNovasMes"><header class="ch"><div><h3 id="nmTit">Novas entradas no mês</h3><p id="nmNota">OS que entraram em cada dia do mês · começa de novo todo dia 1º</p></div><div class="nmres" id="nmRes"></div></header><div class="chart" id="nmChart"></div></article>
+      <article class="card s12" id="pNovasMes"><header class="ch"><div><h3 id="nmTit">Entradas × saídas no mês</h3><p id="nmNota">OS que entraram e que saíram em cada dia do mês · começa de novo todo dia 1º</p></div><div class="nmres" id="nmRes"></div></header><div class="chart" id="nmChart"></div></article>
       <article class="card s12"><header class="ch"><div><h3>Por polo</h3><p>Interlagos, Grajaú e Embu Guaçu</p></div><span class="dica">Clique em qualquer número, barra ou cartão para ver as OS</span></header><div class="polos" id="poloCards"></div></article>
       <article class="card s12" id="pCruz"><header class="ch"><div><h3>Cruzamento com a planilha da rede</h3><p id="cruzNota">o que a equipe tratou, o que saiu e o que entrou</p></div></header><div id="cruzBox"></div></article>
     </div>
@@ -964,21 +964,25 @@ function render(){
      $("cruzBox").innerHTML=`<div class="cruz">${t("#23824F",nT,"Já tratadas, continuam na base","já têm tratativa da equipe: não precisa refazer",{cat:"Já tratadas (rede)"})}${t("#D9711C",nS,"Continuam sem tratativa","estavam na planilha e ninguém tratou ainda",{cat:"Continuam sem tratativa (rede)"})}${t("#0B6E99",nN,"Entraram hoje","não estavam na planilha da rede",{cat:"Entraram hoje (rede)"})}${t("#6B7785",nO,"Saíram da base",`${nf(nOt)} tinham tratativa · ${nf(nO-nOt)} sem`,{cat:"Saíram (rede)"})}</div>`;}}
   renderHist();renderNovasMes();renderChips(D);if(!$("v-os").hidden)renderLista(D);
 }
-// ---- novas entradas do mês (zera todo dia 1º)
+// ---- entradas × saídas do mês (zera todo dia 1º)
 function renderNovasMes(){const MES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
   const h=new Date();const ym=h.getFullYear()+"-"+String(h.getMonth()+1).padStart(2,"0");
   const pa=new Date(h.getFullYear(),h.getMonth()-1,1);const ymA=pa.getFullYear()+"-"+String(pa.getMonth()+1).padStart(2,"0");
-  const dias=S.dias.filter(d=>d.data&&d.data.startsWith(ym)&&d.novas!=null).sort((a,b)=>a.data<b.data?-1:1);
-  const tot=dias.reduce((a,d)=>a+d.novas,0),totA=S.dias.filter(d=>d.data&&d.data.startsWith(ymA)&&d.novas!=null).reduce((a,d)=>a+d.novas,0);
-  $("nmTit").textContent="Novas entradas em "+MES[h.getMonth()];
-  const mx=dias.reduce((a,d)=>d.novas>(a?a.novas:-1)?d:a,null);
-  $("nmRes").innerHTML=`<div><small>No mês</small><b>${nf(tot)}</b></div><div><small>Média por dia</small><b>${dias.length?nf(Math.round(tot/dias.length)):"–"}</b></div><div><small>Maior dia</small><b>${mx?nf(mx.novas)+" <em>"+dm(mx.data)+"</em>":"–"}</b></div>${totA?`<div><small>${MES[pa.getMonth()]} inteiro</small><b>${nf(totA)}</b></div>`:""}`;
-  if(!dias.length){$("nmChart").innerHTML=`<div class="note" style="padding:18px 4px">O mês de ${MES[h.getMonth()]} começou. As novas entradas aparecem aqui a partir da primeira base do mês.</div>`;return;}
-  const W=Math.max(1250,dias.length*46+60),Hh=240,pl=36,pr=10,pt=24,pb=36,max=Math.max(...dias.map(d=>d.novas))*1.15||1,bw=(W-pl-pr)/dias.length,y=v=>pt+(Hh-pt-pb)*(1-v/max);
+  const ok=d=>d.data&&(d.novas!=null||d.executadas!=null);
+  const dias=S.dias.filter(d=>ok(d)&&d.data.startsWith(ym)).sort((a,b)=>a.data<b.data?-1:1);
+  const soma=(L,k)=>L.reduce((a,d)=>a+(d[k]||0),0);const ant=S.dias.filter(d=>ok(d)&&d.data.startsWith(ymA));
+  const te=soma(dias,"novas"),ts=soma(dias,"executadas"),sal=te-ts,teA=soma(ant,"novas"),tsA=soma(ant,"executadas");
+  $("nmTit").textContent="Entradas × saídas em "+MES[h.getMonth()];
+  $("nmRes").innerHTML=`<div><small>Entraram</small><b style="color:#D9711C">${nf(te)}</b></div><div><small>Saíram</small><b style="color:#23824F">${nf(ts)}</b></div><div><small>Saldo do mês</small><b style="color:${sal>0?"#C2362B":"#23824F"}">${sal>0?"+":sal<0?"−":""}${nf(Math.abs(sal))}</b><em>${sal>0?"carteira subiu":sal<0?"carteira caiu":""}</em></div>${ant.length?`<div><small>${MES[pa.getMonth()]}</small><b style="font-size:14px">${nf(teA)} <em>entraram</em> · ${nf(tsA)} <em>saíram</em></b></div>`:""}`;
+  if(!dias.length){$("nmChart").innerHTML=`<div class="note" style="padding:18px 4px">O mês de ${MES[h.getMonth()]} começou. As entradas e saídas aparecem aqui a partir da primeira base do mês.</div>`;return;}
+  const W=Math.max(1250,dias.length*70+60),Hh=250,pl=36,pr=10,pt=26,pb=38,max=Math.max(1,...dias.map(d=>Math.max(d.novas||0,d.executadas||0)))*1.15,bw=(W-pl-pr)/dias.length,y=v=>pt+(Hh-pt-pb)*(1-v/max);
   let g="";for(let k=0;k<=3;k++){const v=Math.round(max*k/3),yy=y(v);g+=`<line x1="${pl}" x2="${W-pr}" y1="${yy}" y2="${yy}" stroke="#E6ECF1"/><text x="${pl-6}" y="${yy+4}" text-anchor="end" font-size="10.5" fill="#7A8995">${v}</text>`;}
   const WD=["dom","seg","ter","qua","qui","sex","sáb"];
-  dias.forEach((d,i)=>{const x=pl+i*bw+bw*.2,w=bw*.6,ult=i===dias.length-1;g+=`<rect x="${x}" y="${y(d.novas)}" width="${w}" height="${Hh-pb-y(d.novas)}" rx="4" fill="${ult?"#0B2545":"#5DA9D6"}"><title>${dm(d.data)}: ${d.novas} novas</title></rect><text x="${x+w/2}" y="${y(d.novas)-5}" text-anchor="middle" font-size="11" font-weight="700" fill="#14212B">${d.novas}</text><text x="${x+w/2}" y="${Hh-pb+15}" text-anchor="middle" font-size="10.5" font-weight="600" fill="#33424E">${dm(d.data)}</text><text x="${x+w/2}" y="${Hh-pb+28}" text-anchor="middle" font-size="9.5" fill="#7A8995">${WD[new Date(d.data+"T12:00").getDay()]}</text>`;});
-  $("nmChart").innerHTML=`<div class="scroll"><svg viewBox="0 0 ${W} ${Hh}" style="min-width:${Math.min(W,560)}px;width:100%" role="img" aria-label="Novas entradas por dia no mês">${g}</svg></div>`;}
+  dias.forEach((d,i)=>{const cx=pl+i*bw+bw/2,w=Math.min(26,bw*.32);
+    [[d.novas,"#F0A23B","entraram",-1],[d.executadas,"#23824F","saíram",1]].forEach(([v,c,l,lado])=>{if(v==null)return;const x=lado<0?cx-w-2:cx+2;g+=`<rect x="${x}" y="${y(v)}" width="${w}" height="${Hh-pb-y(v)}" rx="3" fill="${c}"><title>${dm(d.data)}: ${v} ${l}</title></rect><text x="${x+w/2}" y="${y(v)-4}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#14212B">${v}</text>`;});
+    const sd=(d.novas||0)-(d.executadas||0);
+    g+=`<text x="${cx}" y="${Hh-pb+15}" text-anchor="middle" font-size="10.5" font-weight="600" fill="#33424E">${dm(d.data)}</text><text x="${cx}" y="${Hh-pb+28}" text-anchor="middle" font-size="9.5" fill="${d.novas!=null&&d.executadas!=null?(sd>0?"#C2362B":"#23824F"):"#7A8995"}">${d.novas!=null&&d.executadas!=null?(sd>0?"+":sd<0?"−":"")+Math.abs(sd):WD[new Date(d.data+"T12:00").getDay()]}</text>`;});
+  $("nmChart").innerHTML=`<div class="leg2" style="margin:2px 0 4px"><span style="--c:#F0A23B">Entraram (OS novas)</span><span style="--c:#23824F">Saíram</span><span class="note" style="font-size:11.5px">embaixo de cada dia: saldo do dia</span></div><div class="scroll"><svg viewBox="0 0 ${W} ${Hh}" style="min-width:${Math.min(W,560)}px;width:100%" role="img" aria-label="Entradas e saídas por dia no mês">${g}</svg></div>`;}
 function renderHist(){
   const ini=S.config.inicio;const asc=S.dias.filter(d=>d.total!=null).sort((a,b)=>a.data<b.data?-1:1);
   const pts=(ini?[{lab:"Início",total:ini}]:[]).concat(asc.map(d=>({lab:dm(d.data),total:d.total})));
