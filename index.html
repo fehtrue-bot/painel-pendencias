@@ -469,6 +469,14 @@ body{background:#E8EEF7}
 .nmres{display:flex;gap:10px;flex-wrap:wrap}.nmres>div{background:#F3F6F9;border:1px solid #DFE6EC;border-radius:10px;padding:6px 12px;min-width:92px}.nmres small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5E6E7B}.nmres b{font-size:18px;color:#0B2545}.nmres em{font-style:normal;font-size:11px;color:#5E6E7B;font-weight:600}.nmres>div>em{display:block}
 .ai.med{cursor:pointer}.ai.med b{display:flex;align-items:baseline;gap:6px}.ai.med b i{font-style:normal;font-size:.6em;color:#7A8995}
 .sub31{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ai.s31{padding:8px 10px}.ai.s31 .t{font-size:12.5px}.ai.s31 small{font-size:10.5px}.ai.s31 b{font-size:22px;color:var(--c)}
+.v31g{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:end;height:200px;padding-top:6px}
+.v31c{display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;gap:4px;border-radius:10px;padding:4px 2px}
+.v31c[data-go]{cursor:pointer}.v31c[data-go]:hover{background:#F2F8FB}
+.v31n{font-weight:800;font-size:18px;color:#14212B}
+.v31b{width:64%;max-width:70px;min-height:4px;display:flex;flex-direction:column-reverse;border-radius:6px 6px 2px 2px;overflow:hidden;background:#EEF2F5}
+.v31b i{display:block;min-height:3px}
+.v31l{font-size:12px;font-weight:700;color:#33424E;text-align:center;line-height:1.2}.v31l small{display:block;font-size:10px;font-weight:600;color:#7A8995}
+.v31p{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.v31p span{border:1px solid #DFE6EC;background:#F3F6F9;border-radius:8px;padding:5px 10px;font-size:12.5px;cursor:pointer}.v31p span:hover{border-color:#5DA9D6}.v31p b{color:#0B2545}
 </style>
 </head>
 <body>
@@ -563,6 +571,7 @@ body{background:#E8EEF7}
   <section id="v-painel" class="view">
     <div class="kpis" id="kpis"></div>
     <div class="dash" id="blocos">
+      <article class="card s12" id="p31card"><header class="ch"><div><h3>Vão virar +31 · sem OS aberta</h3><p>OS com 24 a 30 dias que ainda não têm OS aberta na tratativa · clique para ver os endereços</p></div><div class="nmres" id="p31res"></div></header><div id="p31box"></div></article>
       <article class="card s8"><header class="ch"><div><h3>Evolução das pendências</h3><p id="reducao"></p></div></header><div class="chart" id="chart"></div><details class="hist"><summary>Ver tabela do histórico</summary><div class="scroll"><table id="tbHist"></table></div></details></article>
       <article class="card s4"><header class="ch"><div><h3>Pontos de atenção</h3><p>o que pede ação hoje</p></div></header><div id="atencao"></div></article>
       <article class="card s8"><header class="ch"><div><h3>Pendências por serviço</h3><p>quantidade de OS hoje e quanto já tem tratativa</p></div><div class="leg2"><span style="--c:#2FA36B">Com tratativa</span><span style="--c:#F3C46B">Sem tratativa</span></div></header><div id="tbServ"></div></article>
@@ -952,7 +961,7 @@ function render(){
    const it=(c,go,t,sub,v,cls)=>`<div class="ai${cls?" "+cls:""}" style="--c:${c}" data-go='${JSON.stringify(go)}' title="Ver estas OS"><span class="t">${t}<small>${sub}</small></span><b>${v}</b></div>`;
    let a=it("#C2362B",{faixa:"+31 dias",trat:"sem"},"+31 dias sem tratativa","as mais urgentes",nf(D.filter(x=>x.r[I.faixa]==="+31 dias"&&!clean(x.t)).length),"forte f31");
    a+=it("#E07B24",{faixa:"15 a 30 dias",trat:"sem"},"15 a 30 dias sem tratativa","as próximas a virar +31",nf(D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&!clean(x.t)).length),"forte f15");
-   a+=`<div class="sub31">${[["v31","#C2362B","Viraram +31 hoje","estavam em 15 a 30 dias na base anterior",C31.v31.length],["p31","#E07B24","Viram +31 em até 7 dias","24 a 30 dias e ainda sem OS aberta",C31.p31.length]].map(([k,c,t,sb,n])=>`<div class="ai s31" style="--c:${c}" data-go='${JSON.stringify({esp:k})}' title="Ver estas OS"><span class="t">${t}<small>${sb}</small></span><b>${nf(n)}</b></div>`).join("")}</div>`;
+   a+=`<div class="sub31">${[["v31","#C2362B","Viraram +31 hoje","estavam em 15 a 30 dias na base anterior",C31.v31.length],["p31","#E07B24","Viram +31 em até 7 dias","24 a 30 dias e ainda sem OS aberta (inclui vistoriar)",C31.p31.length]].map(([k,c,t,sb,n])=>`<div class="ai s31" style="--c:${c}" data-go='${JSON.stringify({esp:k})}' title="Ver estas OS"><span class="t">${t}<small>${sb}</small></span><b>${nf(n)}</b></div>`).join("")}</div>`;
    a+=it("#0B6E99",{cat:"Novas"},"OS novas hoje",`${nf(H.comNovas)} já com tratativa`,nf(H.novas));
    {const e=hoje.novas!=null?hoje.novas:H.novas,x=hoje.executadas;
     a+=`<div class="ai med" style="--c:#0B6E99" onclick="document.getElementById('pNovasMes').scrollIntoView({behavior:'smooth',block:'center'})" title="Ver o gráfico de entradas × saídas"><span class="t">Entradas × saídas do dia<small>${dm(hoje.data)} · entraram × saíram</small></span><b><span style="color:#D9711C">${e==null?"–":nf(e)}</span><i>×</i><span style="color:#23824F">${x==null?"–":nf(x)}</span></b></div>`;}
@@ -966,7 +975,7 @@ function render(){
      $("cruzNota").textContent=`comparado com ${cz.arquivo} (${nf(cz.total)} OS)`;
      const t=(c,n,tit,sub,go)=>`<div class="ctile" style="--c:${c}" data-go='${JSON.stringify(go)}' title="Ver estas OS"><span class="t">${tit}</span><b>${nf(n)}</b><small>${sub}</small><span class="go">ver OS ›</span></div>`;
      $("cruzBox").innerHTML=`<div class="cruz">${t("#23824F",nT,"Já tratadas, continuam na base","já têm tratativa da equipe: não precisa refazer",{cat:"Já tratadas (rede)"})}${t("#D9711C",nS,"Continuam sem tratativa","estavam na planilha e ninguém tratou ainda",{cat:"Continuam sem tratativa (rede)"})}${t("#0B6E99",nN,"Entraram hoje","não estavam na planilha da rede",{cat:"Entraram hoje (rede)"})}${t("#6B7785",nO,"Saíram da base",`${nf(nOt)} tinham tratativa · ${nf(nO-nOt)} sem`,{cat:"Saíram (rede)"})}</div>`;}}
-  renderHist();renderNovasMes();renderChips(D);if(!$("v-os").hidden)renderLista(D);
+  renderHist();renderNovasMes();render31(C31);renderChips(D);if(!$("v-os").hidden)renderLista(D);
 }
 // ---- entradas × saídas do mês (zera todo dia 1º)
 function renderNovasMes(){const MES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
@@ -987,6 +996,18 @@ function renderNovasMes(){const MES=["janeiro","fevereiro","março","abril","mai
     const sd=(d.novas||0)-(d.executadas||0);
     g+=`<text x="${cx}" y="${Hh-pb+15}" text-anchor="middle" font-size="10.5" font-weight="600" fill="#33424E">${dm(d.data)}</text><text x="${cx}" y="${Hh-pb+28}" text-anchor="middle" font-size="9.5" fill="${d.novas!=null&&d.executadas!=null?(sd>0?"#C2362B":"#23824F"):"#7A8995"}">${d.novas!=null&&d.executadas!=null?(sd>0?"+":sd<0?"−":"")+Math.abs(sd):WD[new Date(d.data+"T12:00").getDay()]}</text>`;});
   $("nmChart").innerHTML=`<div class="leg2" style="margin:2px 0 4px"><span style="--c:#F0A23B">Entraram (OS novas)</span><span style="--c:#23824F">Saíram</span><span class="note" style="font-size:11.5px">embaixo de cada dia: saldo do dia</span></div><div class="scroll"><svg viewBox="0 0 ${W} ${Hh}" style="min-width:${Math.min(W,560)}px;width:100%" role="img" aria-label="Entradas e saídas por dia no mês">${g}</svg></div>`;}
+function render31(c){const L=c.p31,T=[["s","Sem tratativa","#C2362B"],["v","Para vistoriar","#8B5CF6"],["o","Outras tratativas sem OS","#E07B24"]];
+  const n=k=>L.filter(x=>x.tipo31===k).length;
+  $("p31res").innerHTML=`<div data-go='${JSON.stringify({esp:"p31"})}' style="cursor:pointer"><small>Total</small><b style="color:#C2362B">${nf(L.length)}</b></div>`+T.map(([k,l,cor])=>`<div data-go='${JSON.stringify({esp:"p31"+k})}' style="cursor:pointer"><small>${l}</small><b style="color:${cor}">${nf(n(k))}</b></div>`).join("");
+  if(!L.length){$("p31box").innerHTML=`<div class="note" style="padding:12px 2px">Nenhuma OS vai virar +31 nos próximos 7 dias sem OS aberta. 👏</div>`;return;}
+  const mx=Math.max(1,...[1,2,3,4,5,6,7].map(d=>L.filter(x=>x.falta===d).length));
+  let h=`<div class="v31g">`;for(let d=1;d<=7;d++){const Ld=L.filter(x=>x.falta===d);const tot=Ld.length;
+    h+=`<div class="v31c"${tot?` data-go='${JSON.stringify({esp:"p31d"+d})}' title="Ver estas OS"`:""}><div class="v31n">${tot||"–"}</div><div class="v31b" style="height:${(tot*100/mx).toFixed(0)}%">${T.map(([k,,cor])=>{const q=Ld.filter(x=>x.tipo31===k).length;return q?`<i style="flex:${q};background:${cor}" data-go='${JSON.stringify({esp:"p31"+k+"d"+d})}' title="${q}"></i>`:"";}).join("")}</div><div class="v31l">${d===1?"amanhã":"em "+d+" dias"}<small>${31-d} dias hoje</small></div></div>`;}
+  h+=`</div><div class="leg2" style="margin-top:8px">${T.map(([,l,cor])=>`<span style="--c:${cor}">${l}</span>`).join("")}</div>`;
+  // por polo
+  const pol=[...new Set(L.map(x=>x.polo))].sort();
+  h+=`<div class="v31p">${pol.map(p=>`<span data-go='${JSON.stringify({esp:"p31",polo:p})}'><b>${esc(poloNome(p))}</b> ${nf(L.filter(x=>x.polo===p).length)}</span>`).join("")}</div>`;
+  $("p31box").innerHTML=h;}
 function renderHist(){
   const ini=S.config.inicio;const asc=S.dias.filter(d=>d.total!=null).sort((a,b)=>a.data<b.data?-1:1);
   const pts=(ini?[{lab:"Início",total:ini}]:[]).concat(asc.map(d=>({lab:dm(d.data),total:d.total})));
@@ -1014,8 +1035,11 @@ let espSel="",espSet=new Set();
 function calc31(D){const F={};for(const s of ((ontem&&ontem.slim)||[]))F[s[0]]=s[2];const temF=Object.keys(F).length>0;
   const gap=hoje&&ontem?Math.max(1,Math.round((new Date(hoje.data+"T12:00")-new Date(ontem.data+"T12:00"))/864e5)):1;
   const v31=D.filter(x=>x.r[I.faixa]==="+31 dias"&&(temF?(F[x.os]!=null&&F[x.os]!=="+31 dias"):(Number(x.r[I.dias])>=31&&Number(x.r[I.dias])<31+gap)));
-  const p31=D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&Number(x.r[I.dias])>=24&&!clean(x.t));
+  // "sem OS aberta": a tratativa não traz número de OS (sem tratativa, "vistoriar" etc.)
+  const p31=D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&Number(x.r[I.dias])>=24&&semOS(x.t)).map(x=>(x.falta=Math.max(1,31-Number(x.r[I.dias])),x.tipo31=!clean(x.t)?"s":U(x.t).includes("VISTORI")?"v":"o",x));
   return {v31,p31};}
+const semOS=t=>!/\bOS\s*[:.Nº°-]*\s*\d{6,}/.test(U(t||""));
+function grupo31(c,k){if(k==="v31")return c.v31;if(k==="p31")return c.p31;const m=k.match(/^p31([svo])?(?:d(\d))?$/);if(!m)return [];return c.p31.filter(x=>(!m[1]||x.tipo31===m[1])&&(!m[2]||x.falta===Number(m[2])));}
 function filtrados(D){
   const q=U($("busca").value).trim(),ft=$("fTrat").value,pf=$("polo").value,fx=$("faixa").value;
   let V=D.filter(x=>!pf||x.polo===pf).filter(x=>!fx||x.r[I.faixa]===fx)
@@ -1027,12 +1051,12 @@ function filtrados(D){
   return V.sort((a,b)=>(b.dupOS-a.dupOS)||(Number(b.r[I.dias])-Number(a.r[I.dias]))||(a.r[I.end]<b.r[I.end]?-1:1));
 }
 function filtrosAtivos(){
-  const a=[];if(espSel)a.push(espSel==="v31"?"Viraram +31 hoje":"Viram +31 em até 7 dias · sem OS aberta");if(filtro!=="Todas")a.push(filtro);if($("polo").value)a.push(poloNome($("polo").value));if($("faixa").value)a.push($("faixa").value);
+  const a=[];if(espSel)a.push(espSel==="v31"?"Viraram +31 hoje":"Viram +31"+(/d\d/.test(espSel)?(espSel.slice(-1)==="1"?" amanhã":" em "+espSel.slice(-1)+" dias"):" em até 7 dias")+" · sem OS aberta"+({s:" · sem tratativa",v:" · para vistoriar",o:" · outras tratativas"}[espSel.charAt(3)]||""));if(filtro!=="Todas")a.push(filtro);if($("polo").value)a.push(poloNome($("polo").value));if($("faixa").value)a.push($("faixa").value);
   if($("fTrat").value)a.push($("fTrat").value==="sem"?"Sem tratativa":$("fTrat").value==="verif"?"Verificar (carteira)":"Com tratativa");if($("busca").value.trim())a.push(`busca: “${$("busca").value.trim()}”`);
   $("ativos").hidden=!a.length;$("ativos").innerHTML=a.length?`Mostrando: ${a.map(t=>`<span class="fa">${esc(t)}</span>`).join("")} <button type="button" id="limpar">Limpar filtros</button>`:"";
 }
 function irPara(o){
-  o=o||{};espSel=o.esp||"";espSet=new Set();if(espSel){const c=calc31(derivar());espSet=new Set((espSel==="v31"?c.v31:c.p31).map(x=>x.os));}
+  o=o||{};espSel=o.esp||"";espSet=new Set();if(espSel){const c=calc31(derivar());espSet=new Set(grupo31(c,espSel).map(x=>x.os));}
 filtro=o.cat||"Todas";$("polo").value=o.polo||"";$("faixa").value=o.faixa||"";$("fTrat").value=o.trat||"";$("busca").value=o.busca||"";
   aberto.clear();aba("os");renderChips(derivar());renderLista();window.scrollTo({top:0,behavior:"smooth"});
 }
