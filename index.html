@@ -582,7 +582,6 @@ body{background:#E8EEF7}
   <section id="v-painel" class="view">
     <div class="kpis" id="kpis"></div>
     <div class="dash" id="blocos">
-      <article class="card s12" id="p31card"><header class="ch"><div><h3>Vão virar +31 · sem OS aberta</h3><p>24 a 30 dias, sem OS aberta · clique no número para ver as OS</p></div><div class="nmres" id="p31res"></div></header><div id="p31box"></div></article>
       <article class="card s8"><header class="ch"><div><h3>Evolução das pendências</h3><p id="reducao"></p></div></header><div class="chart" id="chart"></div><details class="hist"><summary>Ver tabela do histórico</summary><div class="scroll"><table id="tbHist"></table></div></details></article>
       <article class="card s4"><header class="ch"><div><h3>Pontos de atenção</h3><p>o que pede ação hoje</p></div></header><div id="atencao"></div></article>
       <article class="card s8"><header class="ch"><div><h3>Pendências por serviço</h3><p>quantidade de OS hoje e quanto já tem tratativa</p></div><div class="leg2"><span style="--c:#2FA36B">Com tratativa</span><span style="--c:#F3C46B">Sem tratativa</span></div></header><div id="tbServ"></div></article>
@@ -986,7 +985,7 @@ function render(){
      $("cruzNota").textContent=`comparado com ${cz.arquivo} (${nf(cz.total)} OS)`;
      const t=(c,n,tit,sub,go)=>`<div class="ctile" style="--c:${c}" data-go='${JSON.stringify(go)}' title="Ver estas OS"><span class="t">${tit}</span><b>${nf(n)}</b><small>${sub}</small><span class="go">ver OS ›</span></div>`;
      $("cruzBox").innerHTML=`<div class="cruz">${t("#23824F",nT,"Já tratadas, continuam na base","já têm tratativa da equipe: não precisa refazer",{cat:"Já tratadas (rede)"})}${t("#D9711C",nS,"Continuam sem tratativa","estavam na planilha e ninguém tratou ainda",{cat:"Continuam sem tratativa (rede)"})}${t("#0B6E99",nN,"Entraram hoje","não estavam na planilha da rede",{cat:"Entraram hoje (rede)"})}${t("#6B7785",nO,"Saíram da base",`${nf(nOt)} tinham tratativa · ${nf(nO-nOt)} sem`,{cat:"Saíram (rede)"})}</div>`;}}
-  renderHist();renderNovasMes();render31(C31);renderChips(D);if(!$("v-os").hidden)renderLista(D);
+  renderHist();renderNovasMes();renderChips(D);if(!$("v-os").hidden)renderLista(D);
 }
 // ---- entradas × saídas do mês (zera todo dia 1º)
 function renderNovasMes(){const MES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
