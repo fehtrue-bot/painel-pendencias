@@ -468,6 +468,7 @@ body{background:#E8EEF7}
 }
 .nmres{display:flex;gap:10px;flex-wrap:wrap}.nmres>div{background:#F3F6F9;border:1px solid #DFE6EC;border-radius:10px;padding:6px 12px;min-width:92px}.nmres small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5E6E7B}.nmres b{font-size:18px;color:#0B2545}.nmres em{font-style:normal;font-size:11px;color:#5E6E7B;font-weight:600}.nmres>div>em{display:block}
 .ai.med{cursor:pointer}.ai.med b{display:flex;align-items:baseline;gap:6px}.ai.med b i{font-style:normal;font-size:.6em;color:#7A8995}
+.sub31{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ai.s31{padding:8px 10px}.ai.s31 .t{font-size:12.5px}.ai.s31 small{font-size:10.5px}.ai.s31 b{font-size:22px;color:var(--c)}
 </style>
 </head>
 <body>
@@ -909,7 +910,7 @@ function render(){
     $("kpis").innerHTML="";$("cruzBox").innerHTML="";$("tbFaixa").innerHTML="";$("tbServ").innerHTML="";$("poloCards").innerHTML="";$("atencao").innerHTML="";$("chart").innerHTML="";$("tbHist").innerHTML="";$("chips").innerHTML="";
     $("lista").innerHTML='<div class="empty">Sem OS para mostrar ainda. Suba o Detalhamento do dia.</div>';$("blocos").hidden=true;$("kpis").hidden=true;if(S)renderHist();return;}
   $("blocos").hidden=false;$("kpis").hidden=false;
-  const D=derivar(),H=resumoDe(D),O=resumoDia(ontem);
+  const D=derivar(),H=resumoDe(D),O=resumoDia(ontem),C31=calc31(D);
   $("sub").innerHTML=`Base de <b>${dm(hoje.data)}</b> · ${nf(linhas.length)} OS · polos ${esc(S.config.atcs.join(", "))}`+(ontem?` · comparando com ${dm(ontem.data)}`:"");
   const tO=ontem?(ontem.total||0):null;
   const dif=tO==null?null:D.length-tO,d31=O?(H.porFaixa["+31 dias"]||0)-(O.porFaixa["+31 dias"]||0):null;
@@ -920,7 +921,7 @@ function render(){
     {l:"Novas hoje",v:nf(H.novas),s:"não estavam ontem",ic:IC.ontem,go:{cat:"Novas"},t:"var(--accent)",ts:"var(--accent-soft)"},
     {l:"Com tratativa",v:nf(H.com),s:pct(H.com,D.length)+" do total",ic:IC.com,go:{trat:"com"},t:"var(--green)",ts:"var(--green-soft)"},
     {l:"Sem tratativa",v:nf(H.sem),s:pct(H.sem,D.length)+" do total",ic:IC.sem,go:{trat:"sem"},t:"var(--orange)",ts:"var(--orange-soft)"},
-    {l:"Mais de 31 dias",v:nf(H.porFaixa["+31 dias"]||0),s:"vs ontem",ic:IC.atraso,go:{faixa:"+31 dias"},t:"var(--red)",ts:"var(--red-soft)",b:d31}];
+    {l:"Mais de 31 dias",v:nf(H.porFaixa["+31 dias"]||0),s:"vs ontem · "+nf(C31.v31.length)+" viraram +31 hoje",ic:IC.atraso,go:{faixa:"+31 dias"},t:"var(--red)",ts:"var(--red-soft)",b:d31}];
   $("kpis").innerHTML=k.map(x=>`<div class="kpi${x.hl?" hl":""}"${x.go?` data-go='${JSON.stringify(x.go)}' title="Ver estas OS"`:""} style="--tone:${x.t||""};--tone-soft:${x.ts||""}"><div class="top"><span class="lbl">${x.l}</span><span class="ic">${x.ic}</span></div><b>${x.v}</b><small>${x.b!=null?dB(x.b):""}${esc(x.s)}</small></div>`).join("");
   const FXC={"+31 dias":"#C2362B","15 a 30 dias":"#E07B24","7 a 15 dias":"#E8B53D","até 7 dias":"#2FA36B"};
   // ---- serviços
@@ -951,6 +952,7 @@ function render(){
    const it=(c,go,t,sub,v,cls)=>`<div class="ai${cls?" "+cls:""}" style="--c:${c}" data-go='${JSON.stringify(go)}' title="Ver estas OS"><span class="t">${t}<small>${sub}</small></span><b>${v}</b></div>`;
    let a=it("#C2362B",{faixa:"+31 dias",trat:"sem"},"+31 dias sem tratativa","as mais urgentes",nf(D.filter(x=>x.r[I.faixa]==="+31 dias"&&!clean(x.t)).length),"forte f31");
    a+=it("#E07B24",{faixa:"15 a 30 dias",trat:"sem"},"15 a 30 dias sem tratativa","as próximas a virar +31",nf(D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&!clean(x.t)).length),"forte f15");
+   a+=`<div class="sub31">${[["v31","#C2362B","Viraram +31 hoje","estavam em 15 a 30 dias na base anterior",C31.v31.length],["p31","#E07B24","Viram +31 em até 7 dias","24 a 30 dias e ainda sem OS aberta",C31.p31.length]].map(([k,c,t,sb,n])=>`<div class="ai s31" style="--c:${c}" data-go='${JSON.stringify({esp:k})}' title="Ver estas OS"><span class="t">${t}<small>${sb}</small></span><b>${nf(n)}</b></div>`).join("")}</div>`;
    a+=it("#0B6E99",{cat:"Novas"},"OS novas hoje",`${nf(H.comNovas)} já com tratativa`,nf(H.novas));
    {const e=hoje.novas!=null?hoje.novas:H.novas,x=hoje.executadas;
     a+=`<div class="ai med" style="--c:#0B6E99" onclick="document.getElementById('pNovasMes').scrollIntoView({behavior:'smooth',block:'center'})" title="Ver o gráfico de entradas × saídas"><span class="t">Entradas × saídas do dia<small>${dm(hoje.data)} · entraram × saíram</small></span><b><span style="color:#D9711C">${e==null?"–":nf(e)}</span><i>×</i><span style="color:#23824F">${x==null?"–":nf(x)}</span></b></div>`;}
@@ -1007,22 +1009,31 @@ function renderChips(D){
   $("chips").innerHTML=nomes.map(n=>`<button type="button" class="chip${n==="Duplicidades"&&c[n]?" warn":""}" data-f="${esc(n)}" aria-pressed="${filtro===n}">${n!=="Todas"&&n!=="Duplicidades"?`<span class="cdot" style="--c:${CORES[n]||"#999"};margin-right:2px"></span>`:""}${esc(n)} <span class="c">${nf(c[n]||0)}</span></button>`).join("");
 }
 const fmtData=s=>/^\d{4}-\d{2}-\d{2}/.test(s)?s.slice(8,10)+"/"+s.slice(5,7)+"/"+s.slice(0,4):s;
+// OS que viraram +31 hoje e as que vão virar +31 em até 7 dias sem OS aberta (sem tratativa)
+let espSel="",espSet=new Set();
+function calc31(D){const F={};for(const s of ((ontem&&ontem.slim)||[]))F[s[0]]=s[2];const temF=Object.keys(F).length>0;
+  const gap=hoje&&ontem?Math.max(1,Math.round((new Date(hoje.data+"T12:00")-new Date(ontem.data+"T12:00"))/864e5)):1;
+  const v31=D.filter(x=>x.r[I.faixa]==="+31 dias"&&(temF?(F[x.os]!=null&&F[x.os]!=="+31 dias"):(Number(x.r[I.dias])>=31&&Number(x.r[I.dias])<31+gap)));
+  const p31=D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&Number(x.r[I.dias])>=24&&!clean(x.t));
+  return {v31,p31};}
 function filtrados(D){
   const q=U($("busca").value).trim(),ft=$("fTrat").value,pf=$("polo").value,fx=$("faixa").value;
   let V=D.filter(x=>!pf||x.polo===pf).filter(x=>!fx||x.r[I.faixa]===fx)
     .filter(x=>filtro==="Todas"||(filtro==="Novas"?x.nova:filtro==="Duplicidades"?x.grp!=null:filtro==="Já tratadas (rede)"?x.rede==="tratada":filtro==="Continuam sem tratativa (rede)"?x.rede==="semtrat":filtro==="Entraram hoje (rede)"?x.rede==="nova":x.cat===filtro));
+  if(espSel)V=V.filter(x=>espSet.has(x.os));
   if(ft==="sem")V=V.filter(x=>!clean(x.t));else if(ft==="com")V=V.filter(x=>!!clean(x.t));else if(ft==="verif"){const VC=(S.verifCart&&S.verifCart.itens)||{};V=V.filter(x=>VC[x.os]);}
   if(q)V=V.filter(x=>U([x.r[I.end],x.r[I.os],x.r[I.forn],x.r[I.pde],x.t,x.r[I.tss]].join(" ")).includes(q));
   if(filtro==="Duplicidades")return V.sort((a,b)=>(b.grpN-a.grpN)||(a.grp-b.grp)||(Number(b.r[I.dias])-Number(a.r[I.dias])));
   return V.sort((a,b)=>(b.dupOS-a.dupOS)||(Number(b.r[I.dias])-Number(a.r[I.dias]))||(a.r[I.end]<b.r[I.end]?-1:1));
 }
 function filtrosAtivos(){
-  const a=[];if(filtro!=="Todas")a.push(filtro);if($("polo").value)a.push(poloNome($("polo").value));if($("faixa").value)a.push($("faixa").value);
+  const a=[];if(espSel)a.push(espSel==="v31"?"Viraram +31 hoje":"Viram +31 em até 7 dias · sem OS aberta");if(filtro!=="Todas")a.push(filtro);if($("polo").value)a.push(poloNome($("polo").value));if($("faixa").value)a.push($("faixa").value);
   if($("fTrat").value)a.push($("fTrat").value==="sem"?"Sem tratativa":$("fTrat").value==="verif"?"Verificar (carteira)":"Com tratativa");if($("busca").value.trim())a.push(`busca: “${$("busca").value.trim()}”`);
   $("ativos").hidden=!a.length;$("ativos").innerHTML=a.length?`Mostrando: ${a.map(t=>`<span class="fa">${esc(t)}</span>`).join("")} <button type="button" id="limpar">Limpar filtros</button>`:"";
 }
 function irPara(o){
-  o=o||{};filtro=o.cat||"Todas";$("polo").value=o.polo||"";$("faixa").value=o.faixa||"";$("fTrat").value=o.trat||"";$("busca").value=o.busca||"";
+  o=o||{};espSel=o.esp||"";espSet=new Set();if(espSel){const c=calc31(derivar());espSet=new Set((espSel==="v31"?c.v31:c.p31).map(x=>x.os));}
+filtro=o.cat||"Todas";$("polo").value=o.polo||"";$("faixa").value=o.faixa||"";$("fTrat").value=o.trat||"";$("busca").value=o.busca||"";
   aberto.clear();aba("os");renderChips(derivar());renderLista();window.scrollTo({top:0,behavior:"smooth"});
 }
 function descGrupo(L){
