@@ -506,6 +506,7 @@ body{background:#E8EEF7}
 .ai.c31{margin-top:0}
 .trat31 .tlx{display:flex;justify-content:space-between;cursor:pointer;padding:3px 4px;border-radius:6px}.trat31 .tlx:hover{background:#FBE3E0}
 .trat31 .tr.os span{font-size:12px}.trat31 .tr.os b.on{color:#1C7444;font-weight:800;margin-right:4px}.trat31 .tr em{font-style:normal;font-size:11px;color:#8A97A3;flex:none}
+.trat31.mini{padding:4px 8px 6px;gap:0}.trat31.mini .tr{padding:2px 4px;font-size:11.5px}.trat31 .tr.os b.off{color:#B0302A;font-weight:800;margin-right:4px}
 </style>
 </head>
 <body>
@@ -993,12 +994,7 @@ function render(){
     const comOS=C31.c31.filter(x=>osDe(x.t)),semOSL=C31.c31.filter(x=>!osDe(x.t));
     const G={};for(const x of semOSL){const k=tipoTrat(x.t);G[k]=(G[k]||0)+1;}const ks=Object.keys(G).sort((a,b)=>G[b]-G[a]);
     a+=`<div class="ai s31 c31" style="--c:#8E2A22" data-go='${JSON.stringify({esp:"c31"})}' title="Ver estas OS"><span class="t">+31 com tratativa<small>já têm tratativa, mas ainda estão na base</small></span><b>${nf(C31.c31.length)}</b></div>`;
-    if(C31.c31.length){a+=`<div class="trat31 r31">`;
-      a+=`<div class="tl tlx" data-go='${JSON.stringify({esp:"c31os"})}'><span>✔ Com OS aberta</span><b>${nf(comOS.length)}</b></div>`;
-      a+=comOS.slice(0,10).map(x=>`<div class="tr os" data-go='${JSON.stringify({busca:String(x.r[I.os])})}' title="${esc(x.t)}"><span><b class="on">OS ${esc(osDe(x.t))}</b> ${esc(tipoTrat(x.t))}</span><em>${esc(x.r[I.dias])}d</em></div>`).join("");
-      if(comOS.length>10)a+=`<div class="tr" data-go='${JSON.stringify({esp:"c31os"})}'><span>+ ${comOS.length-10} outras com OS</span><b>›</b></div>`;
-      a+=`<div class="tl tlx" data-go='${JSON.stringify({esp:"c31sem"})}' style="margin-top:6px"><span>✖ Sem OS aberta</span><b>${nf(semOSL.length)}</b></div>`;
-      a+=ks.slice(0,10).map(k=>`<div class="tr" data-go='${JSON.stringify({esp:"c31t:"+k})}' title="${esc(k)}"><span>${esc(k||"(sem texto)")}</span><b>${nf(G[k])}</b></div>`).join("")+`</div>`;}}
+    if(C31.c31.length){const L=comOS.concat(semOSL);a+=`<div class="trat31 r31 mini">`+L.slice(0,8).map(x=>{const o=osDe(x.t);return `<div class="tr os" data-go='${JSON.stringify({busca:String(x.r[I.os])})}' title="${esc(x.t)}"><span>${o?`<b class="on">OS ${esc(o)}</b>`:`<b class="off">sem OS</b>`} ${esc(tipoTrat(x.t))}</span></div>`;}).join("")+(L.length>8?`<div class="tr" data-go='${JSON.stringify({esp:"c31"})}'><span>+ ${L.length-8} outras</span><b>›</b></div>`:"")+`</div>`;}}
    a+=`<div class="ai s31" style="--c:#C2362B" data-go='${JSON.stringify({esp:"v31"})}' title="Ver estas OS"><span class="t">Viraram +31 hoje<small>estavam em 15 a 30 dias na base anterior</small></span><b>${nf(C31.v31.length)}</b></div>`;
    a+=it("#E07B24",{faixa:"15 a 30 dias",trat:"sem"},"15 a 30 dias sem tratativa","as próximas a virar +31",nf(D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&!clean(x.t)).length),"forte f15");
    a+=`<div class="sub31">${[["p31","#E07B24","Viram +31 em até 7 dias","24 a 30 dias e ainda sem OS aberta (inclui vistoriar)",C31.p31.length]].map(([k,c,t,sb,n])=>`<div class="ai s31" style="--c:${c}" data-go='${JSON.stringify({esp:k})}' title="Ver estas OS"><span class="t">${t}<small>${sb}</small></span><b>${nf(n)}</b></div>`).join("")}</div>`;
