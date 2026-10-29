@@ -488,6 +488,20 @@ body{background:#E8EEF7}
 .nb3{min-width:0;padding:2px 6px;background:none;border:0;font-weight:700}.nb3:not(.z):hover{text-decoration:underline}
 .nb3.z{opacity:1;color:#C9D2DA;font-weight:500}.t31 tr.tt td{border-top:1px solid #14212B}.t31 .dt{width:8px;height:8px}
 #p31card .nmres:empty{display:none}
+/* pontos de atenção numa coluna à esquerda */
+@media (min-width:1150px){
+  .wrap.comlado{max-width:1640px;display:grid;grid-template-columns:330px minmax(0,1fr);column-gap:16px;row-gap:14px;align-items:start}
+  .wrap.comlado>*{grid-column:2}
+  .wrap.comlado>#lateral{grid-column:1;grid-row:1 / span 40;position:sticky;top:76px;max-height:calc(100vh - 90px);overflow:auto;border-radius:14px}
+}
+#lateral .ai[data-go]{cursor:pointer}#lateral .ai[data-go]:hover{background:#F6FAFC;box-shadow:0 2px 10px rgba(16,32,48,.06)}
+#lateral .vrow{cursor:pointer}
+.trat31{display:flex;flex-direction:column;gap:2px;margin:-4px 0 2px;padding:6px 10px 8px;border:1px solid #F3D9BF;border-top:0;border-radius:0 0 10px 10px;background:#FFFBF6}
+.trat31 .tl{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#9A6A2E;margin:2px 0 3px}
+.trat31 .tr{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:3px 4px;border-radius:6px;cursor:pointer}
+.trat31 .tr:hover{background:#FCEBD7}.trat31 .tr span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trat31 .tr b{color:#B9650F}
+.trat31 .tr.sem b{color:#C2362B}
+#lateral .sub31{grid-template-columns:1fr}#lateral .ai.s31 small{display:block}
 </style>
 </head>
 <body>
@@ -506,6 +520,7 @@ body{background:#E8EEF7}
   </div>
 </div></header>
 <div class="wrap">
+  <aside id="lateral" hidden><article class="card"><header class="ch"><div><h3>Pontos de atenção</h3><p>o que pede ação hoje</p></div></header><div id="atencao"></div></article></aside>
   <div class="ncab"><div class="rel"><b id="nHora">--:--:--</b><small id="nData"></small><div class="nbv" id="nBv">Ninguém conectado</div></div><div class="marca"><span class="gota"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c-3.6 4.4-6.5 8-6.5 11.6a6.5 6.5 0 0 0 13 0C18.5 10.5 15.6 6.9 12 2.5Z" fill="#fff"/><path d="M9 14.5a3 3 0 0 0 3 3" stroke="#0B2545" stroke-width="1.8" stroke-linecap="round"/></svg></span><div class="mt">DATABRICKS<span>INTERLAGOS · GRAJAÚ · EMBU GUAÇU</span></div></div><div class="nst" id="nSt">Databricks<small>atualizado</small></div></div>
   <div class="conn">
     <span class="dot" id="connDot"></span>
@@ -582,8 +597,7 @@ body{background:#E8EEF7}
   <section id="v-painel" class="view">
     <div class="kpis" id="kpis"></div>
     <div class="dash" id="blocos">
-      <article class="card s8"><header class="ch"><div><h3>Evolução das pendências</h3><p id="reducao"></p></div></header><div class="chart" id="chart"></div><details class="hist"><summary>Ver tabela do histórico</summary><div class="scroll"><table id="tbHist"></table></div></details></article>
-      <article class="card s4"><header class="ch"><div><h3>Pontos de atenção</h3><p>o que pede ação hoje</p></div></header><div id="atencao"></div></article>
+      <article class="card s12"><header class="ch"><div><h3>Evolução das pendências</h3><p id="reducao"></p></div></header><div class="chart" id="chart"></div><details class="hist"><summary>Ver tabela do histórico</summary><div class="scroll"><table id="tbHist"></table></div></details></article>
       <article class="card s8"><header class="ch"><div><h3>Pendências por serviço</h3><p>quantidade de OS hoje e quanto já tem tratativa</p></div><div class="leg2"><span style="--c:#2FA36B">Com tratativa</span><span style="--c:#F3C46B">Sem tratativa</span></div></header><div id="tbServ"></div></article>
       <article class="card s4"><header class="ch"><div><h3>Tempo de atraso</h3><p id="faixaNota">distribuição das OS por faixa</p></div></header><div id="tbFaixa"></div></article>
       <article class="card s12" id="pNovasMes"><header class="ch"><div><h3 id="nmTit">Entradas × saídas no mês</h3><p id="nmNota">OS que entraram e que saíram em cada dia do mês · começa de novo todo dia 1º</p></div><div class="nmres" id="nmRes"></div></header><div class="chart" id="nmChart"></div></article>
@@ -930,6 +944,7 @@ function render(){
     $("lista").innerHTML='<div class="empty">Sem OS para mostrar ainda. Suba o Detalhamento do dia.</div>';$("blocos").hidden=true;$("kpis").hidden=true;if(S)renderHist();return;}
   $("blocos").hidden=false;$("kpis").hidden=false;
   const D=derivar(),H=resumoDe(D),O=resumoDia(ontem),C31=calc31(D);
+  {const pv=!$("v-painel").hidden;$("lateral").hidden=!pv;document.querySelector(".wrap").classList.toggle("comlado",pv);}
   $("sub").innerHTML=`Base de <b>${dm(hoje.data)}</b> · ${nf(linhas.length)} OS · polos ${esc(S.config.atcs.join(", "))}`+(ontem?` · comparando com ${dm(ontem.data)}`:"");
   const tO=ontem?(ontem.total||0):null;
   const dif=tO==null?null:D.length-tO,d31=O?(H.porFaixa["+31 dias"]||0)-(O.porFaixa["+31 dias"]||0):null;
@@ -972,6 +987,9 @@ function render(){
    let a=it("#C2362B",{faixa:"+31 dias",trat:"sem"},"+31 dias sem tratativa","as mais urgentes",nf(D.filter(x=>x.r[I.faixa]==="+31 dias"&&!clean(x.t)).length),"forte f31");
    a+=it("#E07B24",{faixa:"15 a 30 dias",trat:"sem"},"15 a 30 dias sem tratativa","as próximas a virar +31",nf(D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&!clean(x.t)).length),"forte f15");
    a+=`<div class="sub31">${[["v31","#C2362B","Viraram +31 hoje","estavam em 15 a 30 dias na base anterior",C31.v31.length],["p31","#E07B24","Viram +31 em até 7 dias","24 a 30 dias e ainda sem OS aberta (inclui vistoriar)",C31.p31.length]].map(([k,c,t,sb,n])=>`<div class="ai s31" style="--c:${c}" data-go='${JSON.stringify({esp:k})}' title="Ver estas OS"><span class="t">${t}<small>${sb}</small></span><b>${nf(n)}</b></div>`).join("")}</div>`;
+
+   {const G={};for(const x of C31.p31){const k=tipoTrat(x.t);G[k]=(G[k]||0)+1;}const ks=Object.keys(G).sort((a,b)=>(a===""?-1:b===""?1:G[b]-G[a]));
+    if(ks.length)a+=`<div class="trat31"><div class="tl">Viram +31 em até 7 dias · o que tem hoje</div>${ks.map(k=>`<div class="tr${k?"":" sem"}" data-go='${JSON.stringify({esp:k?"p31t:"+k:"p31s"})}' title="${esc(k||"Sem tratativa")}"><span>${esc(k||"Sem tratativa")}</span><b>${nf(G[k])}</b></div>`).join("")}</div>`;}
    a+=it("#0B6E99",{cat:"Novas"},"OS novas hoje",`${nf(H.comNovas)} já com tratativa`,nf(H.novas));
    {const e=hoje.novas!=null?hoje.novas:H.novas,x=hoje.executadas;
     a+=`<div class="ai med" style="--c:#0B6E99" onclick="document.getElementById('pNovasMes').scrollIntoView({behavior:'smooth',block:'center'})" title="Ver o gráfico de entradas × saídas"><span class="t">Entradas × saídas do dia<small>${dm(hoje.data)} · entraram × saíram</small></span><b><span style="color:#D9711C">${e==null?"–":nf(e)}</span><i>×</i><span style="color:#23824F">${x==null?"–":nf(x)}</span></b></div>`;}
@@ -1022,7 +1040,7 @@ function renderHist(){
   const atual=asc.length?asc[asc.length-1].total:null;
   $("reducao").innerHTML=ini&&atual!=null?(()=>{const red=ini-atual;return `Início ${nf(ini)} → hoje ${nf(atual)} · <b>${red>=0?"−":"+"}${nf(Math.abs(red))}</b> (${pct(Math.abs(red),ini)} ${red>=0?"a menos":"a mais"})`;})():"";
   if(!pts.length){$("chart").innerHTML="";$("tbHist").innerHTML="";return;}
-  const W=Math.max(860,pts.length*110),Hh=380,pl=44,pr=12,pt=30,pb=34,max=Math.max(...pts.map(p=>p.total||0))*1.12||1,bw=(W-pl-pr)/pts.length,y=v=>pt+(Hh-pt-pb)*(1-v/max);
+  const W=Math.max(1200,pts.length*110),Hh=360,pl=44,pr=12,pt=30,pb=34,max=Math.max(...pts.map(p=>p.total||0))*1.12||1,bw=(W-pl-pr)/pts.length,y=v=>pt+(Hh-pt-pb)*(1-v/max);
   let g="";const stp=Math.max(50,Math.ceil(max/4/100)*100);for(let v=0;v<=max;v+=stp){const yy=y(v);g+=`<line x1="${pl}" x2="${W-pr}" y1="${yy}" y2="${yy}" stroke="#E6ECF1" stroke-dasharray="${v===0?"0":"3 4"}"/><text x="${pl-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="#7A8994">${nf(v)}</text>`;}
   pts.forEach((p,i)=>{const x=pl+i*bw+bw*.18,w=bw*.64,last=i===pts.length-1;g+=`<rect x="${x}" y="${y(p.total)}" width="${w}" height="${Hh-pb-y(p.total)}" rx="6" fill="${last?"url(#gUlt)":(ini&&i===0)?"#B7C3CC":"url(#gBar)"}"/><text x="${x+w/2}" y="${y(p.total)-8}" text-anchor="middle" font-size="15" font-weight="700" fill="${last?"#0B6E99":"#14212B"}">${nf(p.total)}</text><text x="${x+w/2}" y="${Hh-10}" text-anchor="middle" font-size="13" fill="#5E6E7B" font-weight="${last?"700":"400"}">${p.lab}</text>`;});
   $("chart").innerHTML=`<div class="scroll"><svg viewBox="0 0 ${W} ${Hh}" style="min-width:560px" role="img" aria-label="Pendências por dia"><defs><linearGradient id="gBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9FD3EA"/><stop offset="1" stop-color="#CFE9F4"/></linearGradient><linearGradient id="gUlt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#16A0D8"/><stop offset="1" stop-color="#0B5F86"/></linearGradient></defs>${g}</svg></div>`;
@@ -1046,8 +1064,9 @@ function calc31(D){const F={};for(const s of ((ontem&&ontem.slim)||[]))F[s[0]]=s
   // "sem OS aberta": a tratativa não traz número de OS (sem tratativa, "vistoriar" etc.)
   const p31=D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&Number(x.r[I.dias])>=24&&semOS(x.t)).map(x=>(x.falta=Math.max(1,31-Number(x.r[I.dias])),x.tipo31=!clean(x.t)?"s":U(x.t).includes("VISTORI")?"v":"o",x));
   return {v31,p31};}
+const tipoTrat=t=>{const u=U(clean(t||"")).replace(/\s+/g," ").trim();return u?u.slice(0,60):"";};
 const semOS=t=>!/\bOS\s*[:.Nº°-]*\s*\d{6,}/.test(U(t||""));
-function grupo31(c,k){if(k==="v31")return c.v31;if(k==="p31")return c.p31;const m=k.match(/^p31([svo])?(?:d(\d))?$/);if(!m)return [];return c.p31.filter(x=>(!m[1]||x.tipo31===m[1])&&(!m[2]||x.falta===Number(m[2])));}
+function grupo31(c,k){if(k==="v31")return c.v31;if(k==="p31")return c.p31;if(k.startsWith("p31t:")){const t=k.slice(5);return c.p31.filter(x=>tipoTrat(x.t)===t);}const m=k.match(/^p31([svo])?(?:d(\d))?$/);if(!m)return [];return c.p31.filter(x=>(!m[1]||x.tipo31===m[1])&&(!m[2]||x.falta===Number(m[2])));}
 function filtrados(D){
   const q=U($("busca").value).trim(),ft=$("fTrat").value,pf=$("polo").value,fx=$("faixa").value;
   let V=D.filter(x=>!pf||x.polo===pf).filter(x=>!fx||x.r[I.faixa]===fx)
@@ -1059,7 +1078,7 @@ function filtrados(D){
   return V.sort((a,b)=>(b.dupOS-a.dupOS)||(Number(b.r[I.dias])-Number(a.r[I.dias]))||(a.r[I.end]<b.r[I.end]?-1:1));
 }
 function filtrosAtivos(){
-  const a=[];if(espSel)a.push(espSel==="v31"?"Viraram +31 hoje":"Viram +31"+(/d\d/.test(espSel)?(espSel.slice(-1)==="1"?" amanhã":" em "+espSel.slice(-1)+" dias"):" em até 7 dias")+" · sem OS aberta"+({s:" · sem tratativa",v:" · para vistoriar",o:" · outras tratativas"}[espSel.charAt(3)]||""));if(filtro!=="Todas")a.push(filtro);if($("polo").value)a.push(poloNome($("polo").value));if($("faixa").value)a.push($("faixa").value);
+  const a=[];if(espSel)a.push(espSel.startsWith("p31t:")?"Viram +31 em até 7 dias · "+espSel.slice(5):espSel==="v31"?"Viraram +31 hoje":"Viram +31"+(/d\d/.test(espSel)?(espSel.slice(-1)==="1"?" amanhã":" em "+espSel.slice(-1)+" dias"):" em até 7 dias")+" · sem OS aberta"+({s:" · sem tratativa",v:" · para vistoriar",o:" · outras tratativas"}[espSel.charAt(3)]||""));if(filtro!=="Todas")a.push(filtro);if($("polo").value)a.push(poloNome($("polo").value));if($("faixa").value)a.push($("faixa").value);
   if($("fTrat").value)a.push($("fTrat").value==="sem"?"Sem tratativa":$("fTrat").value==="verif"?"Verificar (carteira)":"Com tratativa");if($("busca").value.trim())a.push(`busca: “${$("busca").value.trim()}”`);
   $("ativos").hidden=!a.length;$("ativos").innerHTML=a.length?`Mostrando: ${a.map(t=>`<span class="fa">${esc(t)}</span>`).join("")} <button type="button" id="limpar">Limpar filtros</button>`:"";
 }
@@ -1258,13 +1277,14 @@ $("bxCola").addEventListener("paste",async e=>{e.preventDefault();const cd=e.cli
 $("bxCola").addEventListener("drop",e=>e.preventDefault());
 
 /* ================= eventos ================= */
-function aba(n){if(n==="bx"&&$("t-bx").hidden)n="painel";if(n==="cz"&&$("t-cz").hidden)n="painel";$("t-cz").setAttribute("aria-selected",n==="cz");$("v-cz").hidden=n!=="cz";if(n==="cz")czRender();$("t-bx").setAttribute("aria-selected",n==="bx");$("v-bx").hidden=n!=="bx";$("t-painel").setAttribute("aria-selected",n==="painel");$("t-os").setAttribute("aria-selected",n==="os");$("v-painel").hidden=n!=="painel";$("v-os").hidden=n!=="os";if(n==="bx")bxRender();if(n==="os")renderLista();lsSet("aba",n);}
+function aba(n){setTimeout(()=>{const pv=!$("v-painel").hidden;$("lateral").hidden=!pv;document.querySelector(".wrap").classList.toggle("comlado",pv);},0);if(n==="bx"&&$("t-bx").hidden)n="painel";if(n==="cz"&&$("t-cz").hidden)n="painel";$("t-cz").setAttribute("aria-selected",n==="cz");$("v-cz").hidden=n!=="cz";if(n==="cz")czRender();$("t-bx").setAttribute("aria-selected",n==="bx");$("v-bx").hidden=n!=="bx";$("t-painel").setAttribute("aria-selected",n==="painel");$("t-os").setAttribute("aria-selected",n==="os");$("v-painel").hidden=n!=="painel";$("v-os").hidden=n!=="os";if(n==="bx")bxRender();if(n==="os")renderLista();lsSet("aba",n);}
 $("t-painel").onclick=()=>aba("painel");$("t-os").onclick=()=>aba("os");$("t-bx").onclick=()=>aba("bx");$("t-cz").onclick=()=>aba("cz");
 $("chips").addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(!b)return;filtro=b.dataset.f;renderChips(derivar());renderLista();});
 let tb;$("busca").addEventListener("input",()=>{clearTimeout(tb);tb=setTimeout(()=>renderLista(),180);});
 $("faixa").addEventListener("change",()=>renderLista());
 $("fTrat").addEventListener("change",()=>renderLista());
 $("ativos").addEventListener("click",e=>{if(e.target.id==="limpar")irPara({});});
+$("lateral").addEventListener("click",e=>{const el=e.target.closest("[data-go]");if(!el)return;try{irPara(JSON.parse(el.dataset.go));}catch(_){}});
 $("v-painel").addEventListener("click",e=>{const el=e.target.closest("[data-go]");if(!el)return;try{irPara(JSON.parse(el.dataset.go));}catch(_){}});
 $("polo").addEventListener("change",()=>renderLista());
 $("lista").addEventListener("click",e=>{const b=e.target.closest(".more");if(!b)return;const i=Number(b.dataset.i);aberto.has(i)?aberto.delete(i):aberto.add(i);renderLista();});
