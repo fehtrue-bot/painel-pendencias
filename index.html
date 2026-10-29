@@ -504,6 +504,8 @@ body{background:#E8EEF7}
 #lateral .sub31{grid-template-columns:1fr}#lateral .ai.s31 small{display:block}
 .trat31.r31{border-color:#EFC9C4;background:#FFF8F7}.trat31.r31 .tl{color:#8E2A22}.trat31.r31 .tr:hover{background:#FBE3E0}.trat31.r31 .tr b{color:#B0302A}
 .ai.c31{margin-top:0}
+.trat31 .tlx{display:flex;justify-content:space-between;cursor:pointer;padding:3px 4px;border-radius:6px}.trat31 .tlx:hover{background:#FBE3E0}
+.trat31 .tr.os span{font-size:12px}.trat31 .tr.os b.on{color:#1C7444;font-weight:800;margin-right:4px}.trat31 .tr em{font-style:normal;font-size:11px;color:#8A97A3;flex:none}
 </style>
 </head>
 <body>
@@ -987,9 +989,16 @@ function render(){
    const nGr=new Set(D.filter(x=>x.grp!=null).map(x=>x.grp)).size,nDup=D.filter(x=>x.grp!=null).length;
    const it=(c,go,t,sub,v,cls)=>`<div class="ai${cls?" "+cls:""}" style="--c:${c}" data-go='${JSON.stringify(go)}' title="Ver estas OS"><span class="t">${t}<small>${sub}</small></span><b>${v}</b></div>`;
    let a=it("#C2362B",{faixa:"+31 dias",trat:"sem"},"+31 dias sem tratativa","as mais urgentes",nf(D.filter(x=>x.r[I.faixa]==="+31 dias"&&!clean(x.t)).length),"forte f31");
-   {const G={};for(const x of C31.c31){const k=tipoTrat(x.t)||"(tratativa só com número de OS)";G[k]=(G[k]||0)+1;}const ks=Object.keys(G).sort((a,b)=>G[b]-G[a]);
+   {const osDe=t=>{const m=U(t||"").match(/\bOS\s*[:.Nº°-]*\s*(\d{6,})/);return m?m[1]:"";};
+    const comOS=C31.c31.filter(x=>osDe(x.t)),semOSL=C31.c31.filter(x=>!osDe(x.t));
+    const G={};for(const x of semOSL){const k=tipoTrat(x.t);G[k]=(G[k]||0)+1;}const ks=Object.keys(G).sort((a,b)=>G[b]-G[a]);
     a+=`<div class="ai s31 c31" style="--c:#8E2A22" data-go='${JSON.stringify({esp:"c31"})}' title="Ver estas OS"><span class="t">+31 com tratativa<small>já têm tratativa, mas ainda estão na base</small></span><b>${nf(C31.c31.length)}</b></div>`;
-    if(ks.length)a+=`<div class="trat31 r31"><div class="tl">+31 com tratativa · o que tem</div>${ks.slice(0,12).map(k=>`<div class="tr" data-go='${JSON.stringify({esp:"c31t:"+k})}' title="${esc(k)}"><span>${esc(k)}</span><b>${nf(G[k])}</b></div>`).join("")}${ks.length>12?`<div class="tr" data-go='${JSON.stringify({esp:"c31"})}'><span>+ ${ks.length-12} outras</span><b>›</b></div>`:""}</div>`;}
+    if(C31.c31.length){a+=`<div class="trat31 r31">`;
+      a+=`<div class="tl tlx" data-go='${JSON.stringify({esp:"c31os"})}'><span>✔ Com OS aberta</span><b>${nf(comOS.length)}</b></div>`;
+      a+=comOS.slice(0,10).map(x=>`<div class="tr os" data-go='${JSON.stringify({busca:String(x.r[I.os])})}' title="${esc(x.t)}"><span><b class="on">OS ${esc(osDe(x.t))}</b> ${esc(tipoTrat(x.t))}</span><em>${esc(x.r[I.dias])}d</em></div>`).join("");
+      if(comOS.length>10)a+=`<div class="tr" data-go='${JSON.stringify({esp:"c31os"})}'><span>+ ${comOS.length-10} outras com OS</span><b>›</b></div>`;
+      a+=`<div class="tl tlx" data-go='${JSON.stringify({esp:"c31sem"})}' style="margin-top:6px"><span>✖ Sem OS aberta</span><b>${nf(semOSL.length)}</b></div>`;
+      a+=ks.slice(0,10).map(k=>`<div class="tr" data-go='${JSON.stringify({esp:"c31t:"+k})}' title="${esc(k)}"><span>${esc(k||"(sem texto)")}</span><b>${nf(G[k])}</b></div>`).join("")+`</div>`;}}
    a+=`<div class="ai s31" style="--c:#C2362B" data-go='${JSON.stringify({esp:"v31"})}' title="Ver estas OS"><span class="t">Viraram +31 hoje<small>estavam em 15 a 30 dias na base anterior</small></span><b>${nf(C31.v31.length)}</b></div>`;
    a+=it("#E07B24",{faixa:"15 a 30 dias",trat:"sem"},"15 a 30 dias sem tratativa","as próximas a virar +31",nf(D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&!clean(x.t)).length),"forte f15");
    a+=`<div class="sub31">${[["p31","#E07B24","Viram +31 em até 7 dias","24 a 30 dias e ainda sem OS aberta (inclui vistoriar)",C31.p31.length]].map(([k,c,t,sb,n])=>`<div class="ai s31" style="--c:${c}" data-go='${JSON.stringify({esp:k})}' title="Ver estas OS"><span class="t">${t}<small>${sb}</small></span><b>${nf(n)}</b></div>`).join("")}</div>`;
@@ -1073,7 +1082,7 @@ function calc31(D){const F={};for(const s of ((ontem&&ontem.slim)||[]))F[s[0]]=s
   return {v31,p31,c31};}
 const tipoTrat=t=>{const u=U(clean(t||"")).replace(/\bOS\s*[:.Nº°-]*\s*\d{6,}\s*[-–:]?\s*/g,"").replace(/\s+/g," ").trim();return u?u.slice(0,60):"";};
 const semOS=t=>!/\bOS\s*[:.Nº°-]*\s*\d{6,}/.test(U(t||""));
-function grupo31(c,k){if(k==="v31")return c.v31;if(k==="p31")return c.p31;if(k==="c31")return c.c31;if(k.startsWith("c31t:")){const t=k.slice(5);return c.c31.filter(x=>tipoTrat(x.t)===t);}if(k.startsWith("p31t:")){const t=k.slice(5);return c.p31.filter(x=>tipoTrat(x.t)===t);}const m=k.match(/^p31([svo])?(?:d(\d))?$/);if(!m)return [];return c.p31.filter(x=>(!m[1]||x.tipo31===m[1])&&(!m[2]||x.falta===Number(m[2])));}
+function grupo31(c,k){if(k==="v31")return c.v31;if(k==="p31")return c.p31;if(k==="c31")return c.c31;if(k==="c31os")return c.c31.filter(x=>!semOS(x.t));if(k==="c31sem")return c.c31.filter(x=>semOS(x.t));if(k.startsWith("c31t:")){const t=k.slice(5);return c.c31.filter(x=>tipoTrat(x.t)===t);}if(k.startsWith("p31t:")){const t=k.slice(5);return c.p31.filter(x=>tipoTrat(x.t)===t);}const m=k.match(/^p31([svo])?(?:d(\d))?$/);if(!m)return [];return c.p31.filter(x=>(!m[1]||x.tipo31===m[1])&&(!m[2]||x.falta===Number(m[2])));}
 function filtrados(D){
   const q=U($("busca").value).trim(),ft=$("fTrat").value,pf=$("polo").value,fx=$("faixa").value;
   let V=D.filter(x=>!pf||x.polo===pf).filter(x=>!fx||x.r[I.faixa]===fx)
@@ -1085,7 +1094,7 @@ function filtrados(D){
   return V.sort((a,b)=>(b.dupOS-a.dupOS)||(Number(b.r[I.dias])-Number(a.r[I.dias]))||(a.r[I.end]<b.r[I.end]?-1:1));
 }
 function filtrosAtivos(){
-  const a=[];if(espSel)a.push(espSel==="c31"?"+31 com tratativa (ainda na base)":espSel.startsWith("c31t:")?"+31 com tratativa · "+espSel.slice(5):espSel.startsWith("p31t:")?"Viram +31 em até 7 dias · "+espSel.slice(5):espSel==="v31"?"Viraram +31 hoje":"Viram +31"+(/d\d/.test(espSel)?(espSel.slice(-1)==="1"?" amanhã":" em "+espSel.slice(-1)+" dias"):" em até 7 dias")+" · sem OS aberta"+({s:" · sem tratativa",v:" · para vistoriar",o:" · outras tratativas"}[espSel.charAt(3)]||""));if(filtro!=="Todas")a.push(filtro);if($("polo").value)a.push(poloNome($("polo").value));if($("faixa").value)a.push($("faixa").value);
+  const a=[];if(espSel)a.push(espSel==="c31os"?"+31 com tratativa · com OS aberta":espSel==="c31sem"?"+31 com tratativa · sem OS aberta":espSel==="c31"?"+31 com tratativa (ainda na base)":espSel.startsWith("c31t:")?"+31 com tratativa · "+espSel.slice(5):espSel.startsWith("p31t:")?"Viram +31 em até 7 dias · "+espSel.slice(5):espSel==="v31"?"Viraram +31 hoje":"Viram +31"+(/d\d/.test(espSel)?(espSel.slice(-1)==="1"?" amanhã":" em "+espSel.slice(-1)+" dias"):" em até 7 dias")+" · sem OS aberta"+({s:" · sem tratativa",v:" · para vistoriar",o:" · outras tratativas"}[espSel.charAt(3)]||""));if(filtro!=="Todas")a.push(filtro);if($("polo").value)a.push(poloNome($("polo").value));if($("faixa").value)a.push($("faixa").value);
   if($("fTrat").value)a.push($("fTrat").value==="sem"?"Sem tratativa":$("fTrat").value==="verif"?"Verificar (carteira)":"Com tratativa");if($("busca").value.trim())a.push(`busca: “${$("busca").value.trim()}”`);
   $("ativos").hidden=!a.length;$("ativos").innerHTML=a.length?`Mostrando: ${a.map(t=>`<span class="fa">${esc(t)}</span>`).join("")} <button type="button" id="limpar">Limpar filtros</button>`:"";
 }
