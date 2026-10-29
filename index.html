@@ -477,6 +477,12 @@ body{background:#E8EEF7}
 .v31b i{display:block;min-height:3px}
 .v31l{font-size:12px;font-weight:700;color:#33424E;text-align:center;line-height:1.2}.v31l small{display:block;font-size:10px;font-weight:600;color:#7A8995}
 .v31p{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.v31p span{border:1px solid #DFE6EC;background:#F3F6F9;border-radius:8px;padding:5px 10px;font-size:12.5px;cursor:pointer}.v31p span:hover{border-color:#5DA9D6}.v31p b{color:#0B2545}
+.t31{width:100%;border-collapse:collapse;font-size:13px}.t31 th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#5E6E7B;font-weight:700;text-align:left;padding:7px 10px;background:#F3F6F9;border-bottom:1px solid #DFE6EC}.t31 th.r,.t31 td.r{text-align:center}
+.t31 td{padding:6px 10px;border-bottom:1px solid #EAEFF3}.t31 td.q b{font-size:13.5px;color:#0B2545}.t31 td.q small{margin-left:8px;font-size:11px;color:#7A8995}
+.t31 .dt{display:inline-block;width:9px;height:9px;border-radius:3px;background:var(--c);margin-right:6px;vertical-align:0}
+.nb3{display:inline-block;min-width:44px;padding:4px 10px;border-radius:8px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--c);background:color-mix(in srgb,var(--c) 12%,#fff);border:1px solid color-mix(in srgb,var(--c) 30%,#fff);cursor:pointer}
+.nb3.z{opacity:.35;cursor:default}.nb3.tot{--c:#0B2545}
+.t31 tr.tt td{font-weight:800;border-top:2px solid #14212B;border-bottom:0}
 </style>
 </head>
 <body>
@@ -1000,10 +1006,11 @@ function render31(c){const L=c.p31,T=[["s","Sem tratativa","#C2362B"],["v","Para
   const n=k=>L.filter(x=>x.tipo31===k).length;
   $("p31res").innerHTML=`<div data-go='${JSON.stringify({esp:"p31"})}' style="cursor:pointer"><small>Total</small><b style="color:#C2362B">${nf(L.length)}</b></div>`+T.map(([k,l,cor])=>`<div data-go='${JSON.stringify({esp:"p31"+k})}' style="cursor:pointer"><small>${l}</small><b style="color:${cor}">${nf(n(k))}</b></div>`).join("");
   if(!L.length){$("p31box").innerHTML=`<div class="note" style="padding:12px 2px">Nenhuma OS vai virar +31 nos próximos 7 dias sem OS aberta. 👏</div>`;return;}
-  const mx=Math.max(1,...[1,2,3,4,5,6,7].map(d=>L.filter(x=>x.falta===d).length));
-  let h=`<div class="v31g">`;for(let d=1;d<=7;d++){const Ld=L.filter(x=>x.falta===d);const tot=Ld.length;
-    h+=`<div class="v31c"${tot?` data-go='${JSON.stringify({esp:"p31d"+d})}' title="Ver estas OS"`:""}><div class="v31n">${tot||"–"}</div><div class="v31b" style="height:${(tot*100/mx).toFixed(0)}%">${T.map(([k,,cor])=>{const q=Ld.filter(x=>x.tipo31===k).length;return q?`<i style="flex:${q};background:${cor}" data-go='${JSON.stringify({esp:"p31"+k+"d"+d})}' title="${q}"></i>`:"";}).join("")}</div><div class="v31l">${d===1?"amanhã":"em "+d+" dias"}<small>${31-d} dias hoje</small></div></div>`;}
-  h+=`</div><div class="leg2" style="margin-top:8px">${T.map(([,l,cor])=>`<span style="--c:${cor}">${l}</span>`).join("")}</div>`;
+  const cel=(q,cor,k)=>`<td class="r"><span class="nb3${q?"":" z"}" style="--c:${cor}"${q?` data-go='${JSON.stringify({esp:k})}' title="Ver estas OS"`:""}>${q}</span></td>`;
+  let h=`<div class="scroll"><table class="t31"><thead><tr><th>Vira +31</th>${T.map(([,l,cor])=>`<th class="r"><span class="dt" style="--c:${cor}"></span>${l}</th>`).join("")}<th class="r">Total</th></tr></thead><tbody>`;
+  for(let d=1;d<=7;d++){const Ld=L.filter(x=>x.falta===d);if(!Ld.length)continue;
+    h+=`<tr><td class="q"><b>${d===1?"Amanhã":"Em "+d+" dias"}</b><small>${31-d} dias hoje</small></td>${T.map(([k,,cor])=>cel(Ld.filter(x=>x.tipo31===k).length,cor,"p31"+k+"d"+d)).join("")}<td class="r"><span class="nb3 tot"${` data-go='${JSON.stringify({esp:"p31d"+d})}'`}>${Ld.length}</span></td></tr>`;}
+  h+=`<tr class="tt"><td>Total</td>${T.map(([k,,cor])=>cel(n(k),cor,"p31"+k)).join("")}<td class="r"><span class="nb3 tot" data-go='${JSON.stringify({esp:"p31"})}'>${L.length}</span></td></tr></tbody></table></div>`;
   // por polo
   const pol=[...new Set(L.map(x=>x.polo))].sort();
   h+=`<div class="v31p">${pol.map(p=>`<span data-go='${JSON.stringify({esp:"p31",polo:p})}'><b>${esc(poloNome(p))}</b> ${nf(L.filter(x=>x.polo===p).length)}</span>`).join("")}</div>`;
