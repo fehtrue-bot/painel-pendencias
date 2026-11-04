@@ -1523,7 +1523,7 @@ $("baixar").onclick=()=>{
   // ONTEM (base anterior completa, quando disponível)
   if(ontem&&S.linhas[ontem.data]){const LO=S.linhas[ontem.data].map((r,i)=>({r,i,t:trat(key(r[I.os])),polo:poloDe(r),dupOS:false,dupF:false}));sheets.push(abaDados("ONTEM",LO));}
   else if(ontem){const f=folha("ONTEM",{widths:[90]});f.put("A1",`A base completa de ${fmtData(ontem.data)} não está guardada no painel (só o resumo). A partir da próxima base que subir, esta aba vem completa.`,st({f:{i:true,c:"595959"}}));sheets.push(f);}
-  baixarBlob(gerarXlsx(L,sheets),`DATABRICKS - PAINEL ${dm(hoje.data).replace("/","-")}.xlsx`);msg("Excel gerado no formato da planilha da rede.");
+  baixarBlob(gerarXlsx(L,sheets),`DATABRICKS - PAINEL ${dm(hojeLocal()).replace("/","-")}.xlsx`);msg("Excel gerado no formato da planilha da rede.");
 };
 
 
