@@ -649,7 +649,7 @@ body{background:#E8EEF7}
     </div>
   </section>
   <section id="v-db" class="view" hidden>
-    <article class="card dbw"><header class="ch"><div><h3>Escrever “DATABRICKS” na planilha de trabalho</h3><p>Suba a planilha que a equipe está trabalhando. O painel confere na carteira cada OS citada no Status e, onde a OS está <b>aberta e aguardando execução</b>, escreve <b>DATABRICKS - OS número - serviço</b>. Depois é só baixar a planilha pronta.</p></div><button type="button" id="dbZerar">Zerar</button></header>
+    <article class="card dbw"><header class="ch"><div><h3>Escrever “DATABRICKS” na planilha de trabalho</h3><p>Suba a planilha que a equipe está trabalhando. O painel confere na carteira cada OS citada no Status e, onde a OS está <b>aberta e aguardando execução</b>, escreve <b>DATABRICKS - OS número - serviço</b>. Depois é só baixar a planilha pronta: ela sai com o mesmo nome do arquivo que você subiu.</p></div><button type="button" id="dbZerar">Zerar</button></header>
       <div class="czup"><label class="czslot" for="dbArq"><b>Planilha de trabalho (.xlsx)</b><small id="dbNome">clique para escolher</small><input type="file" id="dbArq" accept=".xlsx" hidden></label></div>
       <div class="row" style="margin-top:12px"><button type="button" class="primary" id="dbOk" disabled>Conferir e escrever</button><span class="msg" id="dbMsg"></span></div>
     </article>
@@ -1319,7 +1319,7 @@ $("dbBaixar").onclick=()=>{if(!DBW)return;const td=new TextDecoder(),te=new Text
   const files=DBW.ents.filter(e=>e[0]!=="xl/calcChain.xml").map(([n,d])=>[n,novos.get(n)||d]);
   {const i=files.findIndex(f=>f[0]==="[Content_Types].xml");if(i>=0)files[i]=[files[i][0],te.encode(td.decode(files[i][1]).replace(/<Override[^>]*calcChain[^>]*\/>/,""))];}
   {const i=files.findIndex(f=>f[0]==="xl/_rels/workbook.xml.rels");if(i>=0)files[i]=[files[i][0],te.encode(td.decode(files[i][1]).replace(/<Relationship[^>]*calcChain[^>]*\/>/,""))];}
-  baixarBlob(zipStore(files),DBW.nome.replace(/\.xlsx$/i,"")+" - DATABRICKS.xlsx");agendarSalvar();aplicar();dbMsgT("Planilha baixada. As tratativas também foram atualizadas no painel.");};
+  baixarBlob(zipStore(files),DBW.nome);agendarSalvar();aplicar();dbMsgT("Planilha baixada. As tratativas também foram atualizadas no painel.");};
 
 /* ================= baixas indevidas (só Fernanda) ================= */
 let BX=null;
