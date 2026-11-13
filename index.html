@@ -317,7 +317,7 @@ body{font-size:15px}
 .ai.forte{border:0;color:#fff;padding:14px 16px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
 .ai.forte.f31{background:linear-gradient(110deg,#B02A20,#D9473B)}.tag.bxa{background:#FFF33B;color:#3A3300}.tag.osa{background:#DCEBFA;color:#0B4F8A}
 .ai.forte.fos{background:linear-gradient(110deg,#0B4F8A,#2A7FD4)}.ai.forte.fbx{background:linear-gradient(110deg,#E6D600,#FFF33B);color:#3A3300}.ai.forte.fbx .t small{color:#5C5200}.ai.forte.fbx b{color:#3A3300}
-.osbx{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}.ai.forte.f15{background:linear-gradient(110deg,#C9630F,#EE8A2E)}
+.osbx{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}.agf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:-4px}.agf>div{background:#fff;border:1px solid var(--line);border-top:4px solid var(--c);border-radius:10px;padding:8px 6px;text-align:center;cursor:pointer}.agf>div:hover{background:#F3F7FC}.agf>div.z{cursor:default;opacity:.55}.agf b{display:block;font-size:22px;color:var(--c);line-height:1.1}.agf span{display:block;font-size:11px;font-weight:600;color:#55606B;margin-top:2px}.ai.forte.f15{background:linear-gradient(110deg,#C9630F,#EE8A2E)}
 .ai.forte .t{font-size:16px;font-weight:700}.ai.forte .t small{color:rgba(255,255,255,.88)}.ai.forte b{color:#fff;font-size:32px}
 .at .lbl{margin-top:4px}
 .vrow{padding:8px 4px}
@@ -1002,7 +1002,10 @@ function render(){
     const nAg=(cS.ag||0)+(cS["ag?"]||0),oe=S.osExec;
     const subAg=oe?`OS aberta na carteira de ${dm(oe.dc)} e ainda não executada`+(cS["ag?"]?` · ${nf(cS["ag?"])} ainda conferindo`:""):"tratativa com OS aberta · conferência com a carteira só no login da Fernanda";
     const mini=[["ex","#23824F","já executadas, ainda na base"],["sx","#6B7785","baixadas sem execução"],["nf","#C2362B","OS não está na carteira"]].filter(([k])=>cS[k]).map(([k,c,l])=>`<div class="tr" data-go='${JSON.stringify({esp:"os:"+k})}' title="Ver estas OS"><span><b style="color:${c}">●</b> ${l}</span><b>${nf(cS[k])}</b></div>`).join("");
-    a+=`<div class="osbx">${it("#0B4F8A",{esp:"osab"},"Aguardando execução",subAg,nf(nAg),"forte fos")}${mini?`<div class="trat31 mini"><div class="tl">OS da tratativa · outras situações</div>${mini}</div>`:""}${bx?it("#C9B800",{esp:"bx"},"Baixadas",`em amarelo na rede · ainda na base`,nf(nBx),"forte fbx"):""}</div>`;}
+    const agF={};for(const x of D){const k=sitOS(x);if(k==="ag"||k==="ag?"){const f=x.r[I.faixa];agF[f]=(agF[f]||0)+1;}}
+    const FXc={"+31 dias":"#C2362B","15 a 30 dias":"#E07B24","7 a 15 dias":"#C9A227","até 7 dias":"#2FA36B"};
+    const porF=`<div class="agf">${FAIXAS.map(([k2,l])=>`<div class="${agF[k2]?"":"z"}" style="--c:${FXc[k2]}"${agF[k2]?` data-go='${JSON.stringify({esp:"osab",faixa:k2})}' title="Ver as OS aguardando execução com ${l}"`:""}><b>${nf(agF[k2]||0)}</b><span>${l}</span></div>`).join("")}</div>`;
+    a+=`<div class="osbx">${it("#0B4F8A",{esp:"osab"},"Aguardando execução",subAg,nf(nAg),"forte fos")}${porF}${mini?`<div class="trat31 mini"><div class="tl">OS da tratativa · outras situações</div>${mini}</div>`:""}${bx?it("#C9B800",{esp:"bx"},"Baixadas",`em amarelo na rede · ainda na base`,nf(nBx),"forte fbx"):""}</div>`;}
    a+=it("#C2362B",{faixa:"+31 dias",trat:"sem"},"+31 dias sem tratativa","as mais urgentes",nf(n31s),"forte f31");
    {const osDe=t=>{if(!osAberta(t))return "";const m=U(t||"").replace(/\bEX[\s.-]*OS\b/g,"EXOS").match(/(?:^|[^A-Z])OS\s*[:.Nº°-]*\s*(\d{6,})/);return m?m[1]:"";};
     const comOS=C31.c31.filter(x=>osDe(x.t)),semOSL=C31.c31.filter(x=>!osDe(x.t));
