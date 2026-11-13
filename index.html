@@ -1287,13 +1287,23 @@ function dbRender(){const tem=!!DBW;$("dbRes").hidden=!tem;if(!tem)return;const 
   $("dbT").innerHTML=`<thead><tr><th>Aba</th><th>OS</th><th>Endereço</th><th>Status antes</th><th>Status depois</th></tr></thead><tbody>`+ord.map(x=>`<tr class="${x.ok?"":"dbno"}"><td>${esc(x.aba)}</td><td class="mono">${esc(x.os)}</td><td>${esc(x.end)}</td><td><small>${esc(x.de)}</small></td><td>${x.ok?`<b style="color:#0B4F8A">${esc(x.para)}</b>`:x.para?'<span class="note">já está assim</span>':`<span class="note">fica igual · ${esc(x.sit||"")}</span>`}</td></tr>`).join("")+"</tbody>";}
 $("dbBaixar").onclick=()=>{if(!DBW)return;const td=new TextDecoder(),te=new TextEncoder();const porAba=new Map();for(const x of DBW.linhas)if(x.ok){if(!porAba.has(x.a))porAba.set(x.a,[]);porAba.get(x.a).push(x);}
   const novos=new Map();
+  // estilo verde (mesmo tom da planilha): clona o estilo da célula trocando só o preenchimento
+  let stDoc=null,verde=null;const xfVerde=new Map();{const e=DBW.ents.find(e=>e[0]==="xl/styles.xml");if(e){stDoc=xmlp(td.decode(e[1]));}}
+  const estiloVerde=s0=>{if(!stDoc)return null;if(xfVerde.has(s0))return xfVerde.get(s0);const SN=stDoc.documentElement.namespaceURI;
+    if(verde==null){let fills=tags(stDoc,"fills")[0];if(!fills){fills=stDoc.createElementNS(SN,"fills");stDoc.documentElement.insertBefore(fills,tags(stDoc,"borders")[0]||null);}
+      const f=stDoc.createElementNS(SN,"fill"),pf=stDoc.createElementNS(SN,"patternFill"),fg=stDoc.createElementNS(SN,"fgColor"),bg=stDoc.createElementNS(SN,"bgColor");
+      pf.setAttribute("patternType","solid");fg.setAttribute("rgb","FF92D050");bg.setAttribute("indexed","64");pf.appendChild(fg);pf.appendChild(bg);f.appendChild(pf);fills.appendChild(f);
+      verde=tags(fills,"fill").length-1;fills.setAttribute("count",String(verde+1));}
+    const xfs=tags(stDoc,"cellXfs")[0];if(!xfs)return null;const lista=tags(xfs,"xf");const base=lista[s0]||lista[0];const nx=base.cloneNode(true);nx.setAttribute("fillId",String(verde));nx.setAttribute("applyFill","1");
+    xfs.appendChild(nx);const id=lista.length;xfs.setAttribute("count",String(id+1));xfVerde.set(s0,id);return id;};
   for(const [a,X] of porAba){const ent=DBW.ents.find(e=>e[0]===a.path);if(!ent)continue;const doc=xmlp(td.decode(ent[1]));const NS=doc.documentElement.namespaceURI;const col=colName(a.iT);
     const rows=new Map();for(const row of tags(doc,"row"))rows.set(Number(row.getAttribute("r")),row);
     for(const x of X){const rn=x.ri+1;const row=rows.get(rn);if(!row)continue;const ref=col+rn;let c=tags(row,"c").find(c=>c.getAttribute("r")===ref);
       if(!c){c=doc.createElementNS(NS,"c");c.setAttribute("r",ref);const depois=tags(row,"c").find(o=>colIdx(o.getAttribute("r")||"")>a.iT);row.insertBefore(c,depois||null);}
-      while(c.firstChild)c.removeChild(c.firstChild);c.setAttribute("t","inlineStr");const is=doc.createElementNS(NS,"is"),t=doc.createElementNS(NS,"t");t.textContent=x.para;t.setAttributeNS("http://www.w3.org/XML/1998/namespace","xml:space","preserve");is.appendChild(t);c.appendChild(is);
+      while(c.firstChild)c.removeChild(c.firstChild);c.setAttribute("t","inlineStr");{const sv=estiloVerde(Number(c.getAttribute("s")||0));if(sv!=null)c.setAttribute("s",String(sv));}const is=doc.createElementNS(NS,"is"),t=doc.createElementNS(NS,"t");t.textContent=x.para;t.setAttributeNS("http://www.w3.org/XML/1998/namespace","xml:space","preserve");is.appendChild(t);c.appendChild(is);
       S.trat[x.os]={texto:x.para,em:Date.now(),por:"DATABRICKS (planilha)"};}
     novos.set(a.path,te.encode(new XMLSerializer().serializeToString(doc)));}
+  if(stDoc&&verde!=null)novos.set("xl/styles.xml",te.encode(new XMLSerializer().serializeToString(stDoc)));
   const files=DBW.ents.filter(e=>e[0]!=="xl/calcChain.xml").map(([n,d])=>[n,novos.get(n)||d]);
   {const i=files.findIndex(f=>f[0]==="[Content_Types].xml");if(i>=0)files[i]=[files[i][0],te.encode(td.decode(files[i][1]).replace(/<Override[^>]*calcChain[^>]*\/>/,""))];}
   {const i=files.findIndex(f=>f[0]==="xl/_rels/workbook.xml.rels");if(i>=0)files[i]=[files[i][0],te.encode(td.decode(files[i][1]).replace(/<Relationship[^>]*calcChain[^>]*\/>/,""))];}
