@@ -202,7 +202,7 @@ label.ck{display:flex;gap:6px;align-items:center;color:var(--muted);font-weight:
 .list td.mono{font-variant-numeric:tabular-nums;white-space:nowrap;color:#33424E}
 .list td.os{font-family:Consolas,"Cascadia Mono",monospace;font-size:12px;color:var(--muted)}
 .dias{font-family:var(--f-display);font-size:16px;font-weight:600}
-input.trat{width:210px;padding:7px 9px;font-size:13px;border-color:#C9D5DE}
+input.trat{width:clamp(300px,30vw,440px);padding:7px 9px;font-size:13.5px;border-color:#C9D5DE;text-overflow:ellipsis}
 input.trat.vazio{background:#FFFBEB;border:1px dashed #E2C77A}
 input.trat.vazio::placeholder{color:#A88A3A}
 input.trat.ok{border-color:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
