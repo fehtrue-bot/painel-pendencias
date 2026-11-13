@@ -1290,12 +1290,24 @@ $("dbBaixar").onclick=()=>{if(!DBW)return;const td=new TextDecoder(),te=new Text
   // estilo verde (mesmo tom da planilha): clona o estilo da célula trocando só o preenchimento
   let stDoc=null,verde=null;const xfVerde=new Map();{const e=DBW.ents.find(e=>e[0]==="xl/styles.xml");if(e){stDoc=xmlp(td.decode(e[1]));}}
   const estiloVerde=s0=>{if(!stDoc)return null;if(xfVerde.has(s0))return xfVerde.get(s0);const SN=stDoc.documentElement.namespaceURI;
+    if(verde==null)verde=verdeDaPlanilha();
     if(verde==null){let fills=tags(stDoc,"fills")[0];if(!fills){fills=stDoc.createElementNS(SN,"fills");stDoc.documentElement.insertBefore(fills,tags(stDoc,"borders")[0]||null);}
       const f=stDoc.createElementNS(SN,"fill"),pf=stDoc.createElementNS(SN,"patternFill"),fg=stDoc.createElementNS(SN,"fgColor"),bg=stDoc.createElementNS(SN,"bgColor");
       pf.setAttribute("patternType","solid");fg.setAttribute("rgb","FF92D050");bg.setAttribute("indexed","64");pf.appendChild(fg);pf.appendChild(bg);f.appendChild(pf);fills.appendChild(f);
       verde=tags(fills,"fill").length-1;fills.setAttribute("count",String(verde+1));}
     const xfs=tags(stDoc,"cellXfs")[0];if(!xfs)return null;const lista=tags(xfs,"xf");const base=lista[s0]||lista[0];const nx=base.cloneNode(true);nx.setAttribute("fillId",String(verde));nx.setAttribute("applyFill","1");
     xfs.appendChild(nx);const id=lista.length;xfs.setAttribute("count",String(id+1));xfVerde.set(s0,id);return id;};
+  // acha o verde que a equipe já usa na coluna Status (o preenchimento mais usado que for verde)
+  function verdeDaPlanilha(){try{const fills=tags(tags(stDoc,"fills")[0],"fill");const xfs=tags(tags(stDoc,"cellXfs")[0],"xf");
+    let tema=[];{const e=DBW.ents.find(e=>/^xl\/theme\/theme\d*\.xml$/.test(e[0]));if(e){const T=xmlp(td.decode(e[1]));const cs=tags(T,"clrScheme")[0];if(cs){const ord=["lt1","dk1","lt2","dk2","accent1","accent2","accent3","accent4","accent5","accent6"];
+      tema=ord.map(n=>{const el=tags(cs,n)[0];if(!el)return null;const c=el.firstElementChild;return c?(c.getAttribute("val")||c.getAttribute("lastClr")):null;});}}}
+    const rgbDe=c=>{if(!c)return null;let h=c.getAttribute("rgb");if(h)h=h.slice(-6);else if(c.getAttribute("theme")!=null)h=tema[Number(c.getAttribute("theme"))];if(!h)return null;
+      let [r,g,b]=[0,2,4].map(i=>parseInt(h.slice(i,i+2),16));const t=Number(c.getAttribute("tint")||0);const f=v=>t<0?v*(1+t):v+(255-v)*t;return [f(r),f(g),f(b)];};
+    const eVerde=fid=>{const pf=fills[fid]&&tags(fills[fid],"patternFill")[0];if(!pf||(pf.getAttribute("patternType")||"none")==="none")return false;const c=rgbDe(tags(pf,"fgColor")[0]);if(!c)return false;const [r,g,b]=c;return g>110&&g>r+20&&g>b+40;};
+    const cont=new Map();
+    for(const a of DBW.abas){const ent=DBW.ents.find(e=>e[0]===a.path);if(!ent)continue;const doc=xmlp(td.decode(ent[1]));const col=colName(a.iT);
+      for(const c of tags(doc,"c")){const ref=c.getAttribute("r")||"";if(ref.replace(/\d+/g,"")!==col)continue;const xf=xfs[Number(c.getAttribute("s")||0)];if(!xf)continue;const fid=Number(xf.getAttribute("fillId")||0);if(eVerde(fid))cont.set(fid,(cont.get(fid)||0)+1);}}
+    const m=[...cont].sort((a,b)=>b[1]-a[1])[0];return m?m[0]:null;}catch(e){return null;}}
   for(const [a,X] of porAba){const ent=DBW.ents.find(e=>e[0]===a.path);if(!ent)continue;const doc=xmlp(td.decode(ent[1]));const NS=doc.documentElement.namespaceURI;const col=colName(a.iT);
     const rows=new Map();for(const row of tags(doc,"row"))rows.set(Number(row.getAttribute("r")),row);
     for(const x of X){const rn=x.ri+1;const row=rows.get(rn);if(!row)continue;const ref=col+rn;let c=tags(row,"c").find(c=>c.getAttribute("r")===ref);
