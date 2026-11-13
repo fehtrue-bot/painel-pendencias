@@ -316,6 +316,7 @@ body{font-size:15px}
 .ai b{font-family:var(--f-display);font-size:28px;font-weight:600;color:var(--c);white-space:nowrap}
 .ai.forte{border:0;color:#fff;padding:14px 16px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
 .ai.forte.f31{background:linear-gradient(110deg,#B02A20,#D9473B)}.tag.bxa{background:#FFF33B;color:#3A3300}.tag.osa{background:#DCEBFA;color:#0B4F8A}
+.dbw .czup{grid-template-columns:minmax(0,1fr)}#dbT tr.dbno td{color:#7A8794}#dbT td small{font-size:12px}
 .ai.forte.fos{background:linear-gradient(110deg,#0B4F8A,#2A7FD4)}.ai.forte.fbx{background:linear-gradient(110deg,#E6D600,#FFF33B);color:#3A3300}.ai.forte.fbx .t small{color:#5C5200}.ai.forte.fbx b{color:#3A3300}
 .osbx{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}.agf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:-4px}.agf>div{background:#fff;border:1px solid var(--line);border-top:4px solid var(--c);border-radius:10px;padding:8px 6px;text-align:center;cursor:pointer}.agf>div:hover{background:#F3F7FC}.agf>div.z{cursor:default;opacity:.55}.agf b{display:block;font-size:22px;color:var(--c);line-height:1.1}.agf span{display:block;font-size:11px;font-weight:600;color:#55606B;margin-top:2px}.ai.forte.f15{background:linear-gradient(110deg,#C9630F,#EE8A2E)}
 .ai.forte .t{font-size:16px;font-weight:700}.ai.forte .t small{color:rgba(255,255,255,.88)}.ai.forte b{color:#fff;font-size:32px}
@@ -519,6 +520,7 @@ body{background:#E8EEF7}
     <button class="tab" role="tab" id="t-painel" aria-selected="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg> Painel</button>
     <button class="tab" role="tab" id="t-os" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg> OS e tratativas</button>
     <button class="tab" role="tab" id="t-cz" aria-selected="false" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg> Cruzar com a carteira</button>
+    <button class="tab" role="tab" id="t-db" aria-selected="false" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/></svg> Escrever na planilha</button>
     <button class="tab" role="tab" id="t-bx" aria-selected="false" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Baixas indevidas</button>
   </nav>
   <div class="actions">
@@ -646,6 +648,16 @@ body{background:#E8EEF7}
       <article class="card" id="czTrabBox" hidden><header class="ch"><div><h3>Já trabalhadas × carteira</h3><p>a OS que está escrita na tratativa continua aberta na carteira?</p></div><button type="button" id="czCopiar2">📋 Copiar lista</button></header><div class="scroll"><table class="bxt" id="czT2"></table></div></article>
     </div>
   </section>
+  <section id="v-db" class="view" hidden>
+    <article class="card dbw"><header class="ch"><div><h3>Escrever “DATABRICKS” na planilha de trabalho</h3><p>Suba a planilha que a equipe está trabalhando. O painel confere na carteira cada OS citada no Status e, onde a OS está <b>aberta e aguardando execução</b>, escreve <b>DATABRICKS - OS número - serviço</b>. Depois é só baixar a planilha pronta.</p></div><button type="button" id="dbZerar">Zerar</button></header>
+      <div class="czup"><label class="czslot" for="dbArq"><b>Planilha de trabalho (.xlsx)</b><small id="dbNome">clique para escolher</small><input type="file" id="dbArq" accept=".xlsx" hidden></label></div>
+      <div class="row" style="margin-top:12px"><button type="button" class="primary" id="dbOk" disabled>Conferir e escrever</button><span class="msg" id="dbMsg"></span></div>
+    </article>
+    <div id="dbRes" hidden>
+      <div class="bxk" id="dbK"></div>
+      <article class="card"><header class="ch"><div><h3>O que vai ser escrito</h3><p id="dbNota"></p></div><button type="button" class="primary" id="dbBaixar">⬇ Baixar planilha pronta</button></header><div class="scroll"><table class="bxt" id="dbT"></table></div></article>
+    </div>
+  </section>
   <section id="v-bx" class="view" hidden>
     <article class="card bxin"><header class="ch"><div><h3>Possíveis baixas indevidas</h3><p>Cole aqui a lista que chega da diretoria. O painel confere cada OS e PDE no Databricks e na carteira e já monta a resposta do e-mail.</p></div><button type="button" id="bxLimpar">Limpar</button></header>
       <div class="bxcola" id="bxCola" tabindex="0" contenteditable="true" spellcheck="false" aria-label="Cole aqui a tabela do e-mail"></div>
@@ -750,7 +762,7 @@ function lerCsv(txt){const sep=(txt.split("\n")[0].match(/;/g)||[]).length>(txt.
 const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
 function crc32(u){let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRC[(c^u[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
 function zipStore(files){const te=new TextEncoder();const parts=[],cent=[];let off=0;
-  for(const [name,str] of files){const nb=te.encode(name),data=te.encode(str),crc=crc32(data);
+  for(const [name,str] of files){const nb=te.encode(name),data=str instanceof Uint8Array?str:te.encode(str),crc=crc32(data);
     const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);
     h.setUint32(14,crc,true);h.setUint32(18,data.length,true);h.setUint32(22,data.length,true);h.setUint16(26,nb.length,true);
     parts.push(new Uint8Array(h.buffer),nb,data);
@@ -1234,6 +1246,59 @@ $("czGravar").onclick=()=>{const L=czMarcadas();if(!L.length){$("czMsg").textCon
   for(const x of L)S.trat[x.os]={texto:czTexto(x.achou),em:Date.now(),por:clean($("nome").value)||AC.nome||"cruzamento com a carteira"};
   agendarSalvar();$("czMsg").className="";$("czMsg").textContent=`✔ ${L.length} tratativa(s) gravada(s) no padrão "OS ... - SERVIÇO". Já aparecem em OS e tratativas e na coordenação.`;aplicar();czRender();};
 
+/* ================= escrever DATABRICKS na planilha de trabalho (só Fernanda) ================= */
+let DBW=null,dbArqF=null;
+async function unzipTodos(buf){const u=new Uint8Array(buf),v=new DataView(buf);let e=-1;
+  for(let i=u.length-22;i>=0;i--){if(v.getUint32(i,true)===0x06054b50){e=i;break;}}if(e<0)throw new Error("zip");
+  const n=v.getUint16(e+10,true);let p=v.getUint32(e+16,true);const td=new TextDecoder();const out=[];
+  for(let k=0;k<n;k++){const method=v.getUint16(p+10,true),csize=v.getUint32(p+20,true),nl=v.getUint16(p+28,true),xl=v.getUint16(p+30,true),cl=v.getUint16(p+32,true),off=v.getUint32(p+42,true);
+    const name=td.decode(u.subarray(p+46,p+46+nl));p+=46+nl+xl+cl;const ln=v.getUint16(off+26,true),lx=v.getUint16(off+28,true);
+    const data=u.subarray(off+30+ln+lx,off+30+ln+lx+csize);out.push([name,method===8?await inflateRaw(data):data.slice()]);}
+  return out;}
+const dbMsgT=(t,err)=>{$("dbMsg").textContent=t||"";$("dbMsg").className="msg"+(err?" err":"");};
+$("dbArq").onchange=e=>{dbArqF=e.target.files[0]||null;$("dbNome").textContent=dbArqF?"✔ "+dbArqF.name:"clique para escolher";$("dbArq").closest(".czslot").classList.toggle("ok",!!dbArqF);$("dbOk").disabled=!dbArqF;dbMsgT("");};
+$("dbZerar").onclick=()=>{DBW=null;dbArqF=null;$("dbArq").value="";$("dbNome").textContent="clique para escolher";$("dbArq").closest(".czslot").classList.remove("ok");$("dbOk").disabled=true;$("dbRes").hidden=true;dbMsgT("");};
+$("dbOk").onclick=async()=>{if(!dbArqF)return;$("dbOk").disabled=true;dbMsgT("Lendo a planilha…");
+  try{const buf=await dbArqF.arrayBuffer();const ents=await unzipTodos(buf);const td=new TextDecoder(),te=new TextEncoder();const get=nm=>{const x=ents.find(e=>e[0]===nm);return x?td.decode(x[1]):null;};
+    const wbx=xmlp(get("xl/workbook.xml")),rels=xmlp(get("xl/_rels/workbook.xml.rels"));const alvo={};for(const r of tags(rels,"Relationship"))alvo[r.getAttribute("Id")]=r.getAttribute("Target");
+    const sst=[];{const x=get("xl/sharedStrings.xml");if(x)for(const si of tags(xmlp(x),"si"))sst.push(tags(si,"t").map(t=>t.textContent).join(""));}
+    const wb=await abrirXlsx(buf);
+    const abas=[];
+    for(const sh of tags(wbx,"sheet")){const rid=sh.getAttribute("r:id")||sh.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships","id");
+      let t=(alvo[rid]||"").replace(/^\/?xl\//,"").replace(/^\//,"");if(!t)continue;const nome=sh.getAttribute("name");if(/^ONTEM/.test(U(nome).trim()))continue;const g=await wb.ler(nome);if(!g)continue;
+      const hi=g.findIndex((r,i)=>i<30&&r&&r.some(c=>U(clean(c))==="OS")&&r.some(c=>U(clean(c))==="STATUS"));if(hi<0)continue;
+      const h=g[hi].map(c=>U(clean(c)));abas.push({nome,path:"xl/"+t,g,hi,iT:h.indexOf("STATUS"),iOS:h.indexOf("OS"),iE:h.findIndex(c=>/^ENDERECO/.test(c)),am:g.amarelo||new Set()});}
+    if(!abas.length)throw new Error("não achei nenhuma aba com as colunas OS e Status");
+    // OS citadas no Status (linhas não amarelas)
+    const nums=new Set();for(const a of abas)a.g.forEach((r,i)=>{if(i<=a.hi||!r||a.am.has(i))return;for(const n of osDaTrat(r[a.iT]))nums.add(n);});
+    dbMsgT(`Conferindo ${nums.size} OS na carteira…`);const L=[...nums],info={};let dc="";
+    for(let i=0;i<L.length;i+=400){const r=await api("POST",{itens:L.slice(i,i+400).map(os=>({os,end:""}))},"","baixas");if(!r||!r.carteira)throw new Error("a carteira ainda não está publicada pelo painel da Carteira de Serviços");dc=r.carteira.dc||dc;
+      for(const n of L.slice(i,i+400)){const X=(r.res[n]&&r.res[n].os)||[];const ab=X.find(o=>o.fonte==="ca")||X.find(o=>o.fonte==="ac");info[n]=ab?{ag:true,tss:semAc(ab.tss||"")}:{ag:false,st:X.some(o=>o.fonte==="ex"&&o.conta)?"executada":X.some(o=>o.fonte==="ex")?"baixada sem execução":"não está na carteira"};}}
+    // monta as trocas
+    const linhas=[];const novoTxt=t=>{const ns=osDaTrat(t).filter(n=>info[n]&&info[n].ag);if(!ns.length)return null;return ns.map(n=>`DATABRICKS - OS ${n}${info[n].tss?" - "+info[n].tss:""}`).join(" / ");};
+    for(const a of abas)a.g.forEach((r,i)=>{if(i<=a.hi||!r||a.am.has(i))return;const t=clean(r[a.iT]);const ns=osDaTrat(t);if(!ns.length)return;const nv=novoTxt(t);
+      linhas.push({aba:a.nome,a,ri:i,os:key(r[a.iOS]),end:a.iE>=0?clean(String(r[a.iE]??"").replace(/\.0{6,}/,"")):"",de:t,para:nv,ok:!!nv&&nv!==t,sit:nv?"aguardando execução":ns.map(n=>info[n]?info[n].st:"").filter(Boolean).join(" / ")});});
+    DBW={nome:dbArqF.name,ents,abas,linhas,dc,em:Date.now()};dbRender();dbMsgT(`Pronto: ${linhas.filter(x=>x.ok).length} linhas vão receber DATABRICKS.`);}
+  catch(err){dbMsgT("Não consegui: "+err.message,true);}finally{$("dbOk").disabled=!dbArqF;}};
+function dbRender(){const tem=!!DBW;$("dbRes").hidden=!tem;if(!tem)return;const L=DBW.linhas;const nOk=L.filter(x=>x.ok).length,nJa=L.filter(x=>x.para&&!x.ok).length,nNao=L.filter(x=>!x.para).length;
+  $("dbK").innerHTML=[["Vão receber DATABRICKS",nOk,"#0B4F8A"],["Já estavam escritas",nJa,"#23824F"],["OS não aguardando (ficam como estão)",nNao,"#6B7785"]].map(([l,v,c])=>`<div style="--c:${c}"><small>${l}</small><b>${nf(v)}</b></div>`).join("");
+  $("dbNota").textContent=`${DBW.nome} · carteira de ${dm(DBW.dc)} · as linhas em amarelo (baixadas) não são mexidas`;
+  const ord=L.slice().sort((a,b)=>(b.ok-a.ok)||(!!b.para-!!a.para));
+  $("dbT").innerHTML=`<thead><tr><th>Aba</th><th>OS</th><th>Endereço</th><th>Status antes</th><th>Status depois</th></tr></thead><tbody>`+ord.map(x=>`<tr class="${x.ok?"":"dbno"}"><td>${esc(x.aba)}</td><td class="mono">${esc(x.os)}</td><td>${esc(x.end)}</td><td><small>${esc(x.de)}</small></td><td>${x.ok?`<b style="color:#0B4F8A">${esc(x.para)}</b>`:x.para?'<span class="note">já está assim</span>':`<span class="note">fica igual · ${esc(x.sit||"")}</span>`}</td></tr>`).join("")+"</tbody>";}
+$("dbBaixar").onclick=()=>{if(!DBW)return;const td=new TextDecoder(),te=new TextEncoder();const porAba=new Map();for(const x of DBW.linhas)if(x.ok){if(!porAba.has(x.a))porAba.set(x.a,[]);porAba.get(x.a).push(x);}
+  const novos=new Map();
+  for(const [a,X] of porAba){const ent=DBW.ents.find(e=>e[0]===a.path);if(!ent)continue;const doc=xmlp(td.decode(ent[1]));const NS=doc.documentElement.namespaceURI;const col=colName(a.iT);
+    const rows=new Map();for(const row of tags(doc,"row"))rows.set(Number(row.getAttribute("r")),row);
+    for(const x of X){const rn=x.ri+1;const row=rows.get(rn);if(!row)continue;const ref=col+rn;let c=tags(row,"c").find(c=>c.getAttribute("r")===ref);
+      if(!c){c=doc.createElementNS(NS,"c");c.setAttribute("r",ref);const depois=tags(row,"c").find(o=>colIdx(o.getAttribute("r")||"")>a.iT);row.insertBefore(c,depois||null);}
+      while(c.firstChild)c.removeChild(c.firstChild);c.setAttribute("t","inlineStr");const is=doc.createElementNS(NS,"is"),t=doc.createElementNS(NS,"t");t.textContent=x.para;t.setAttributeNS("http://www.w3.org/XML/1998/namespace","xml:space","preserve");is.appendChild(t);c.appendChild(is);
+      S.trat[x.os]={texto:x.para,em:Date.now(),por:"DATABRICKS (planilha)"};}
+    novos.set(a.path,te.encode(new XMLSerializer().serializeToString(doc)));}
+  const files=DBW.ents.filter(e=>e[0]!=="xl/calcChain.xml").map(([n,d])=>[n,novos.get(n)||d]);
+  {const i=files.findIndex(f=>f[0]==="[Content_Types].xml");if(i>=0)files[i]=[files[i][0],te.encode(td.decode(files[i][1]).replace(/<Override[^>]*calcChain[^>]*\/>/,""))];}
+  {const i=files.findIndex(f=>f[0]==="xl/_rels/workbook.xml.rels");if(i>=0)files[i]=[files[i][0],te.encode(td.decode(files[i][1]).replace(/<Relationship[^>]*calcChain[^>]*\/>/,""))];}
+  baixarBlob(zipStore(files),DBW.nome.replace(/\.xlsx$/i,"")+" - DATABRICKS.xlsx");agendarSalvar();aplicar();dbMsgT("Planilha baixada. As tratativas também foram atualizadas no painel.");};
+
 /* ================= baixas indevidas (só Fernanda) ================= */
 let BX=null;
 try{BX=JSON.parse(lsGet("bx")||"null");}catch(e){}
@@ -1327,8 +1392,8 @@ $("bxCola").addEventListener("paste",async e=>{e.preventDefault();const cd=e.cli
 $("bxCola").addEventListener("drop",e=>e.preventDefault());
 
 /* ================= eventos ================= */
-function aba(n){setTimeout(()=>{const pv=!$("v-painel").hidden;$("lateral").hidden=!pv;document.querySelector(".wrap").classList.toggle("comlado",pv);},0);if(n==="bx"&&$("t-bx").hidden)n="painel";if(n==="cz"&&$("t-cz").hidden)n="painel";$("t-cz").setAttribute("aria-selected",n==="cz");$("v-cz").hidden=n!=="cz";if(n==="cz")czRender();$("t-bx").setAttribute("aria-selected",n==="bx");$("v-bx").hidden=n!=="bx";$("t-painel").setAttribute("aria-selected",n==="painel");$("t-os").setAttribute("aria-selected",n==="os");$("v-painel").hidden=n!=="painel";$("v-os").hidden=n!=="os";if(n==="bx")bxRender();if(n==="os")renderLista();lsSet("aba",n);}
-$("t-painel").onclick=()=>aba("painel");$("t-os").onclick=()=>aba("os");$("t-bx").onclick=()=>aba("bx");$("t-cz").onclick=()=>aba("cz");
+function aba(n){setTimeout(()=>{const pv=!$("v-painel").hidden;$("lateral").hidden=!pv;document.querySelector(".wrap").classList.toggle("comlado",pv);},0);if(n==="bx"&&$("t-bx").hidden)n="painel";if(n==="db"&&$("t-db").hidden)n="painel";$("t-db").setAttribute("aria-selected",n==="db");$("v-db").hidden=n!=="db";if(n==="cz"&&$("t-cz").hidden)n="painel";$("t-cz").setAttribute("aria-selected",n==="cz");$("v-cz").hidden=n!=="cz";if(n==="cz")czRender();$("t-bx").setAttribute("aria-selected",n==="bx");$("v-bx").hidden=n!=="bx";$("t-painel").setAttribute("aria-selected",n==="painel");$("t-os").setAttribute("aria-selected",n==="os");$("v-painel").hidden=n!=="painel";$("v-os").hidden=n!=="os";if(n==="bx")bxRender();if(n==="os")renderLista();lsSet("aba",n);}
+$("t-painel").onclick=()=>aba("painel");$("t-os").onclick=()=>aba("os");$("t-bx").onclick=()=>aba("bx");$("t-db").onclick=()=>aba("db");$("t-cz").onclick=()=>aba("cz");
 $("chips").addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(!b)return;filtro=b.dataset.f;renderChips(derivar());renderLista();});
 let tb;$("busca").addEventListener("input",()=>{clearTimeout(tb);tb=setTimeout(()=>renderLista(),180);});
 $("faixa").addEventListener("change",()=>renderLista());
@@ -1580,7 +1645,7 @@ async function api(metodo,corpo,q,rota){const o={method:metodo,headers:hdr(),cac
   const r=await fetch("/api/"+(rota||"estado")+(q||""),o);let j={};try{j=await r.json();}catch(e){}
   if(!r.ok){const e=new Error(j.erro||("erro "+r.status));e.status=r.status;e.dados=j;throw e;}return j;}
 const horaTxt=t=>t?new Date(t).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
-function modo(){document.body.classList.toggle("editor",editor);{const bv=$("nBv");if(bv){const nm=AC.nome||"";bv.innerHTML=editor&&nm?`${/^fernanda$/i.test(nm)?"Bem-vinda":"Bem-vindo"}, <b>${esc(nm)}</b>`:(AC.k?"Modo visualização":"Ninguém conectado");}}{const f=editor&&/^fernanda$/i.test(AC.nome);$("t-bx").hidden=!f;$("t-cz").hidden=!f;if(!f&&(!$("v-bx").hidden||!$("v-cz").hidden))aba("painel");}document.body.classList.toggle("leitor",!editor);
+function modo(){document.body.classList.toggle("editor",editor);{const bv=$("nBv");if(bv){const nm=AC.nome||"";bv.innerHTML=editor&&nm?`${/^fernanda$/i.test(nm)?"Bem-vinda":"Bem-vindo"}, <b>${esc(nm)}</b>`:(AC.k?"Modo visualização":"Ninguém conectado");}}{const f=editor&&/^fernanda$/i.test(AC.nome);$("t-bx").hidden=!f;$("t-cz").hidden=!f;$("t-db").hidden=!f;if(!f&&(!$("v-bx").hidden||!$("v-cz").hidden||!$("v-db").hidden))aba("painel");}document.body.classList.toggle("leitor",!editor);
   $("btnAnalista").hidden=editor;$("btnSairAn").hidden=!editor;$("btnConfig").hidden=!editor;$("btnConfig").textContent=/^fernanda$/i.test(AC.nome)?"Senhas e link":"Link dos coordenadores";const q=$("quem");q.hidden=false;q.textContent=editor?(/^fernanda$/i.test(AC.nome)?"Analista: ":"Técnico: ")+AC.nome:"Modo visualização";
   if(editor){$("nome").value=AC.nome;lsSet("nome",AC.nome);}}
 function statusNuvem(){setConn("on",editor?"Painel online · você pode atualizar":"Painel online",(remotoEm?"atualizado por "+(remotoPor||"equipe")+" em "+horaTxt(remotoEm):"ainda sem atualização"));}
