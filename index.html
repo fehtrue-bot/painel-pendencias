@@ -998,8 +998,11 @@ function render(){
    const it=(c,go,t,sub,v,cls)=>`<div class="ai${cls?" "+cls:""}" style="--c:${c}" data-go='${JSON.stringify(go)}' title="Ver estas OS"><span class="t">${t}<small>${sub}</small></span><b>${v}</b></div>`;
    // só aparece o que tem número (zerado não entra)
    const n31s=D.filter(x=>x.r[I.faixa]==="+31 dias"&&!clean(x.t)).length;let a="";
-   {const nAg=D.filter(x=>osAberta(x.t)&&!baixada(x.os)).length,nBx=D.filter(x=>baixada(x.os)).length,bx=S.baixadas;
-    a+=`<div class="osbx">${it("#0B4F8A",{esp:"osab"},"Aguardando execução","com OS aberta na tratativa",nf(nAg),"forte fos")}${bx?it("#C9B800",{esp:"bx"},"Baixadas",`em amarelo na rede · ainda na base`,nf(nBx),"forte fbx"):""}</div>`;}
+   {const nBx=D.filter(x=>baixada(x.os)).length,bx=S.baixadas;const cS={};for(const x of D){const k=sitOS(x);if(k)cS[k]=(cS[k]||0)+1;}
+    const nAg=(cS.ag||0)+(cS["ag?"]||0),oe=S.osExec;
+    const subAg=oe?`OS aberta na carteira de ${dm(oe.dc)} e ainda não executada`+(cS["ag?"]?` · ${nf(cS["ag?"])} ainda conferindo`:""):"tratativa com OS aberta · conferência com a carteira só no login da Fernanda";
+    const mini=[["ex","#23824F","já executadas, ainda na base"],["sx","#6B7785","baixadas sem execução"],["nf","#C2362B","OS não está na carteira"]].filter(([k])=>cS[k]).map(([k,c,l])=>`<div class="tr" data-go='${JSON.stringify({esp:"os:"+k})}' title="Ver estas OS"><span><b style="color:${c}">●</b> ${l}</span><b>${nf(cS[k])}</b></div>`).join("");
+    a+=`<div class="osbx">${it("#0B4F8A",{esp:"osab"},"Aguardando execução",subAg,nf(nAg),"forte fos")}${mini?`<div class="trat31 mini"><div class="tl">OS da tratativa · outras situações</div>${mini}</div>`:""}${bx?it("#C9B800",{esp:"bx"},"Baixadas",`em amarelo na rede · ainda na base`,nf(nBx),"forte fbx"):""}</div>`;}
    a+=it("#C2362B",{faixa:"+31 dias",trat:"sem"},"+31 dias sem tratativa","as mais urgentes",nf(n31s),"forte f31");
    {const osDe=t=>{if(!osAberta(t))return "";const m=U(t||"").replace(/\bEX[\s.-]*OS\b/g,"EXOS").match(/(?:^|[^A-Z])OS\s*[:.Nº°-]*\s*(\d{6,})/);return m?m[1]:"";};
     const comOS=C31.c31.filter(x=>osDe(x.t)),semOSL=C31.c31.filter(x=>!osDe(x.t));
@@ -1018,6 +1021,7 @@ function render(){
     if(e||x)a+=`<div class="ai med" style="--c:#0B6E99" onclick="document.getElementById('pNovasMes').scrollIntoView({behavior:'smooth',block:'center'})" title="Ver o gráfico de entradas × saídas"><span class="t">Entradas × saídas do dia<small>${dm(hoje.data)} · entraram × saíram</small></span><b><span style="color:#D9711C">${e==null?"–":nf(e)}</span><i>×</i><span style="color:#23824F">${x==null?"–":nf(x)}</span></b></div>`;}
    if(velhas.length)a+=`<div class="lbl">Mais antigas sem tratativa</div>`+velhas.map(x=>`<div class="vrow" data-go='${JSON.stringify({busca:String(x.r[I.os])})}' title="Abrir esta OS"><span class="vd">${esc(x.r[I.dias])}<small>dias</small></span><span class="va"><b>${esc(String(x.r[I.end]).replace(/\.0{6,}/,"").split(" / ")[0])}</b><small>${esc(x.r[I.tss])} · ${esc(poloNome(x.polo))}</small></span></div>`).join("");
    {const VC=(S.verifCart&&S.verifCart.itens)||{};const nv=D.filter(x=>VC[x.os]).length;if(nv)a+=it("#C9A227",{trat:"verif"},"Verificar: OS não está na carteira",`a OS da tratativa sumiu da carteira de ${new Date(S.verifCart.em).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}`,nf(nv));}
+   setTimeout(()=>conferirOSExec(D),0);
    $("atencao").innerHTML=a?`<div class="at">${a}</div>`:`<div class="empty">Nada pedindo atenção hoje.</div>`;}
   // ---- cruzamento com a rede
   {const cz=hoje.cruz;
@@ -1092,6 +1096,22 @@ const tipoTrat=t=>{const u=U(clean(t||"")).replace(/\bOS\s*[:.Nº°-]*\s*\d{6,}\
 // OS aberta = tratativa com "OS <número>" (não conta EX OS nem vistoria); baixada = linha em amarelo na planilha da rede
 const osAberta=t=>{const u=U(t||"");if(u.includes("VISTORI"))return false;return /(^|[^A-Z])OS\s*[:.Nº°-]*\s*\d{6,}/.test(u.replace(/\bEX[\s.-]*OS\b/g,"EXOS"));};
 const baixada=os=>!!(S&&S.baixadas&&S.baixadas.os&&S.baixadas.os[os]);
+// números de OS citados na tratativa (sem EX OS)
+const osDaTrat=t=>{if(!osAberta(t))return [];const u=U(t||"").replace(/\bEX[\s.-]*OS\s*[:.Nº°-]*\s*\d{6,}/g," ");return [...new Set([...u.matchAll(/(?:^|[^A-Z])OS\s*[:.Nº°-]*\s*(\d{6,})/g)].map(m=>key(m[1])))];};
+// situação da OS da tratativa na carteira publicada: ag = aberta aguardando execução · ex = executada · sx = baixada sem execução · nf = não achada · "" = ainda não conferida
+function sitOS(x){if(baixada(x.os))return "bxa";const ns=osDaTrat(x.t);if(!ns.length)return null;const st=(S.osExec&&S.osExec.st)||{};const v=ns.map(n=>st[n]);
+  if(v.some(e=>e==="ca"||e==="ac"))return "ag";if(v.some(e=>e===undefined))return "ag?";if(v.every(e=>e==="ex"))return "ex";if(v.some(e=>e==="ex"))return "ex";if(v.some(e=>e==="sx"))return "sx";return "nf";}
+const SIT={ag:"Aguardando execução (OS aberta na carteira)","ag?":"OS aberta · ainda não conferida",ex:"OS da tratativa já executada",sx:"OS da tratativa baixada sem execução",nf:"OS da tratativa não está na carteira"};
+let osExecRodando=false;
+async function conferirOSExec(D){
+  if(osExecRodando||!editor||U(AC.nome).trim()!=="FERNANDA")return;
+  const st=(S.osExec&&S.osExec.st)||{};const velho=!S.osExec||Date.now()-(S.osExec.em||0)>30*60000;
+  const ns=[...new Set(D.flatMap(x=>baixada(x.os)?[]:osDaTrat(x.t)))];const falta=velho?ns:ns.filter(n=>!(n in st));if(!falta.length)return;
+  osExecRodando=true;try{const novo=velho?{}:Object.assign({},st);let dc="";
+    for(let i=0;i<falta.length;i+=400){const r=await api("POST",{itens:falta.slice(i,i+400).map(os=>({os,end:""}))},"","baixas");if(!r||!r.carteira)return;dc=r.carteira.dc||dc;
+      for(const n of falta.slice(i,i+400)){const L=(r.res[n]&&r.res[n].os)||[];novo[n]=L.some(o=>o.fonte==="ca")?"ca":L.some(o=>o.fonte==="ex"&&o.conta)?"ex":L.some(o=>o.fonte==="ex")?"sx":L.some(o=>o.fonte==="ac")?"ac":"x";}}
+    S.osExec={em:Date.now(),dc,st:novo};agendarSalvar();render();}
+  catch(e){}finally{osExecRodando=false;}}
 const semOS=t=>!osAberta(t);
 function grupo31(c,k){if(k==="v31")return c.v31;if(k==="p31")return c.p31;if(k==="c31")return c.c31;if(k==="c31os")return c.c31.filter(x=>!semOS(x.t));if(k==="c31sem")return c.c31.filter(x=>semOS(x.t));if(k.startsWith("c31t:")){const t=k.slice(5);return c.c31.filter(x=>tipoTrat(x.t)===t);}if(k.startsWith("p31t:")){const t=k.slice(5);return c.p31.filter(x=>tipoTrat(x.t)===t);}const m=k.match(/^p31([svo])?(?:d(\d))?$/);if(!m)return [];return c.p31.filter(x=>(!m[1]||x.tipo31===m[1])&&(!m[2]||x.falta===Number(m[2])));}
 function filtrados(D){
@@ -1105,12 +1125,12 @@ function filtrados(D){
   return V.sort((a,b)=>(b.dupOS-a.dupOS)||(Number(b.r[I.dias])-Number(a.r[I.dias]))||(a.r[I.end]<b.r[I.end]?-1:1));
 }
 function filtrosAtivos(){
-  const a=[];if(espSel)a.push(espSel==="osab"?"Aguardando execução (OS aberta)":espSel==="bx"?"Baixadas (amarelo na planilha da rede)":espSel==="c31os"?"+31 com tratativa · com OS aberta":espSel==="c31sem"?"+31 com tratativa · sem OS aberta":espSel==="c31"?"+31 com tratativa (ainda na base)":espSel.startsWith("c31t:")?"+31 com tratativa · "+espSel.slice(5):espSel.startsWith("p31t:")?"Viram +31 em até 7 dias · "+espSel.slice(5):espSel==="v31"?"Viraram +31 hoje":"Viram +31"+(/d\d/.test(espSel)?(espSel.slice(-1)==="1"?" amanhã":" em "+espSel.slice(-1)+" dias"):" em até 7 dias")+" · sem OS aberta"+({s:" · sem tratativa",v:" · para vistoriar",o:" · outras tratativas"}[espSel.charAt(3)]||""));if(filtro!=="Todas")a.push(filtro);if($("polo").value)a.push(poloNome($("polo").value));if($("faixa").value)a.push($("faixa").value);
+  const a=[];if(espSel)a.push(espSel==="osab"?"Aguardando execução (OS aberta, não executada)":espSel.startsWith("os:")?SIT[espSel.slice(3)]:espSel==="bx"?"Baixadas (amarelo na planilha da rede)":espSel==="c31os"?"+31 com tratativa · com OS aberta":espSel==="c31sem"?"+31 com tratativa · sem OS aberta":espSel==="c31"?"+31 com tratativa (ainda na base)":espSel.startsWith("c31t:")?"+31 com tratativa · "+espSel.slice(5):espSel.startsWith("p31t:")?"Viram +31 em até 7 dias · "+espSel.slice(5):espSel==="v31"?"Viraram +31 hoje":"Viram +31"+(/d\d/.test(espSel)?(espSel.slice(-1)==="1"?" amanhã":" em "+espSel.slice(-1)+" dias"):" em até 7 dias")+" · sem OS aberta"+({s:" · sem tratativa",v:" · para vistoriar",o:" · outras tratativas"}[espSel.charAt(3)]||""));if(filtro!=="Todas")a.push(filtro);if($("polo").value)a.push(poloNome($("polo").value));if($("faixa").value)a.push($("faixa").value);
   if($("fTrat").value)a.push($("fTrat").value==="sem"?"Sem tratativa":$("fTrat").value==="verif"?"Verificar (carteira)":"Com tratativa");if($("busca").value.trim())a.push(`busca: “${$("busca").value.trim()}”`);
   $("ativos").hidden=!a.length;$("ativos").innerHTML=a.length?`Mostrando: ${a.map(t=>`<span class="fa">${esc(t)}</span>`).join("")} <button type="button" id="limpar">Limpar filtros</button>`:"";
 }
 function irPara(o){
-  o=o||{};espSel=o.esp||"";espSet=new Set();if(espSel==="osab")espSet=new Set(derivar().filter(x=>osAberta(x.t)&&!baixada(x.os)).map(x=>x.os));else if(espSel==="bx")espSet=new Set(derivar().filter(x=>baixada(x.os)).map(x=>x.os));else if(espSel){const c=calc31(derivar());espSet=new Set(grupo31(c,espSel).map(x=>x.os));}
+  o=o||{};espSel=o.esp||"";espSet=new Set();if(espSel==="osab")espSet=new Set(derivar().filter(x=>{const k=sitOS(x);return k==="ag"||k==="ag?";}).map(x=>x.os));else if(espSel.startsWith("os:"))espSet=new Set(derivar().filter(x=>sitOS(x)===espSel.slice(3)).map(x=>x.os));else if(espSel==="bx")espSet=new Set(derivar().filter(x=>baixada(x.os)).map(x=>x.os));else if(espSel){const c=calc31(derivar());espSet=new Set(grupo31(c,espSel).map(x=>x.os));}
 filtro=o.cat||"Todas";$("polo").value=o.polo||"";$("faixa").value=o.faixa||"";$("fTrat").value=o.trat||"";$("busca").value=o.busca||"";
   aberto.clear();aba("os");renderChips(derivar());renderLista();window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -1139,7 +1159,7 @@ function renderLista(D){
   const VC=(S.verifCart&&S.verifCart.itens)||{};
   for(const x of V){const r=x.r,op=aberto.has(x.i),d=S.trat[x.os];const vc=VC[x.os]||"";
     if(filtro==="Duplicidades"&&x.grp!==gAtual){gAtual=x.grp;gNum++;const L=grupos[x.grp];h+=`<tr class="grp"><td colspan="9"><b>Grupo ${gNum}</b> ${L.length} OS · <span class="gm">${descGrupo(L)}</span></td></tr>`;}
-    const tg=(x.dupOS?'<span class="tag dos">OS REPETIDA</span>':"")+(x.dupF?'<span class="tag df">FORNEC. REPETIDO</span>':"")+(x.dupE&&!x.dupF&&!x.dupOS?'<span class="tag de">MESMO ENDEREÇO</span>':"")+(x.nova?'<span class="tag nova">NOVA</span>':"")+(baixada(x.os)?'<span class="tag bxa">BAIXADA</span>':osAberta(x.t)?'<span class="tag osa">OS ABERTA</span>':"")+(x.rede==="tratada"?'<span class="tag rede">JÁ TRATADA ONTEM</span>':"")+(["Todas","Novas","Duplicidades"].includes(filtro)?`<span class="tag cat" style="--c:${CORES[x.cat]||"#999"}">${esc(x.cat)}</span>`:"")+(poloNome(x.polo)!==x.cat?`<span class="tag pol">${esc(poloNome(x.polo))}</span>`:"");
+    const tg=(x.dupOS?'<span class="tag dos">OS REPETIDA</span>':"")+(x.dupF?'<span class="tag df">FORNEC. REPETIDO</span>':"")+(x.dupE&&!x.dupF&&!x.dupOS?'<span class="tag de">MESMO ENDEREÇO</span>':"")+(x.nova?'<span class="tag nova">NOVA</span>':"")+(()=>{const k=sitOS(x);return k==="bxa"?'<span class="tag bxa">BAIXADA</span>':k==="ag"||k==="ag?"?'<span class="tag osa">OS AGUARDANDO EXECUÇÃO</span>':k==="ex"?'<span class="tag rede">OS JÁ EXECUTADA</span>':k==="sx"?'<span class="tag osa">OS BAIXADA S/ EXECUÇÃO</span>':k==="nf"?'<span class="tag dos">OS NÃO ESTÁ NA CARTEIRA</span>':"";})()+(x.rede==="tratada"?'<span class="tag rede">JÁ TRATADA ONTEM</span>':"")+(["Todas","Novas","Duplicidades"].includes(filtro)?`<span class="tag cat" style="--c:${CORES[x.cat]||"#999"}">${esc(x.cat)}</span>`:"")+(poloNome(x.polo)!==x.cat?`<span class="tag pol">${esc(poloNome(x.polo))}</span>`:"");
     const end=String(r[I.end]).replace(/\.0{6,}/,"");const ep=end.split(" / ");
     h+=`<tr class="${x.dupOS?"dupOS":x.dupF?"dupF":x.dupE?"dupE":""}"><td><button class="more" type="button" data-i="${x.i}" aria-expanded="${op}" aria-label="Detalhes">${op?"▾":"▸"}</button></td><td class="mono"><b>${esc(r[I.forn])}</b><br><span class="note">PDE ${esc(r[I.pde])}</span><br><span class="note">OS ${esc(r[I.os])}</span></td><td><input class="trat${clean(x.t)?"":" vazio"}${vc?" vcart":""}"${vc?` data-vc="${esc(vc)}"`:""} list="sugestoes" data-os="${esc(x.os)}" value="${esc(x.t)}" title="${esc(x.t)}${vc?" · verificar: "+esc(vc):""}" placeholder="sem tratativa: clique para escrever" aria-label="Tratativa da OS ${esc(r[I.os])}"${ro}>${tg?"<div>"+tg+"</div>":""}</td><td class="addr">${esc(ep[0])}${ep[1]?`<small>${esc(ep.slice(1).join(" / "))} · ${esc(r[I.mun])}</small>`:`<small>${esc(r[I.mun])}</small>`}</td><td class="tss">${esc(r[I.tss])}</td><td class="sit">${situ(r[I.st])}</td><td class="r"><span class="dias">${esc(r[I.dias])}</span></td><td><span class="pill ${faixaCls(r[I.faixa])}">${esc(r[I.faixa])}</span></td><td class="mne">${esc(r[I.mne])}</td></tr>`;
     if(op)h+=`<tr class="det"><td></td><td colspan="8"><dl><dt>Nota OS</dt><dd>${esc(r[I.nota])||"–"}</dd><dt>Nota de baixa</dt><dd>${esc(r[I.baixa])||"–"}</dd><dt>Abertura</dt><dd>${esc(fmtData(r[I.data]))} · Iniciativa ${esc(r[I.inic])} · Qtd OS ${esc(r[I.qtd])} · ${esc(r[I.mun])} · ATC ${esc(r[I.atc])}</dd><dt>Tratativa</dt><dd>${d&&d.em?`alterada por ${esc(d.por||"alguém")} em ${new Date(d.em).toLocaleString("pt-BR")}`:"vinda da planilha"}</dd></dl></td></tr>`;}
