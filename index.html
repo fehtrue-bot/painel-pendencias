@@ -311,6 +311,18 @@ body{font-size:15px}
 /* atenção */
 .at{display:flex;flex-direction:column;gap:10px}
 .pa-w{gap:6px}
+.re-k{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}
+.re-kk{background:#fff;border-radius:10px;box-shadow:var(--shadow);padding:14px 16px;border-top:4px solid var(--c)}.re-kk small{display:block;font-size:12px;font-weight:700;color:#5C6B76;text-transform:uppercase;letter-spacing:.04em}.re-kk b{display:block;font-size:30px;font-weight:800;color:var(--c);line-height:1.15;margin:4px 0 2px;font-variant-numeric:tabular-nums}.re-kk span{font-size:12px;color:#7A8794}
+.re-c{padding:0;overflow:hidden}.re-h{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}.re-h h3{margin:0;font-size:16px}.re-h p{margin:2px 0 0;font-size:12.5px;color:#7A8794}
+.re-f{display:flex;flex-wrap:wrap;gap:8px}.re-f .seg2{display:flex;flex-wrap:wrap;gap:2px;background:#EEF2F5;border-radius:9px;padding:3px}.re-f .seg2:empty{display:none}
+.re-f button{all:unset;cursor:pointer;font-size:12.5px;font-weight:600;color:#3E5163;padding:6px 10px;border-radius:7px;display:inline-flex;align-items:center;gap:5px}.re-f button b{font-weight:800;color:#0B2545}.re-f button[aria-pressed="true"]{background:#0B2545;color:#fff}.re-f button[aria-pressed="true"] b{color:#fff}
+.re-d{width:8px;height:8px;border-radius:50%;display:inline-block}
+.re-t{width:100%;border-collapse:collapse;font-size:13px}.re-t th{text-align:left;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:#6B7A86;background:#FAFBFC;padding:9px 12px;position:sticky;top:0}
+.re-t td{padding:9px 12px;border-top:1px solid #EEF1F4;vertical-align:middle}.re-t td small{display:block;font-size:11px;color:#8A99A6}.re-t tbody tr{cursor:pointer}.re-t tbody tr:hover{background:#F2F8FB}
+.re-q{display:inline-block;min-width:34px;text-align:center;font-weight:800;border-radius:6px;padding:3px 6px;background:#EEF2F5;color:#3E5163}.re-q.q2{background:#FFF1E0;color:#B36200}.re-q.q3{background:#FDE3D3;color:#B0480F}.re-q.q4{background:#FBD5D1;color:#A3271C}
+.re-fx{font-weight:700;color:var(--c);font-size:12.5px}
+@media (max-width:900px){.re-k{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 .pa-tag.ag{color:#0B4F8A}
 .pa-os{margin:6px 2px 2px;border:1px solid #CFE0EF;border-radius:10px;background:#F4F9FD;overflow:hidden}
 .pa-osh{display:flex;align-items:center;gap:8px;padding:9px 10px}.pa-osh[data-go]{cursor:pointer}.pa-osh[data-go]:hover{background:#E8F2FB}
@@ -413,6 +425,7 @@ body{background:var(--bg)}
 .appbar .brand{display:none}
 .appbar-in{padding-top:6px!important;grid-template-columns:minmax(0,1fr) auto!important}
 .appbar .tabs{justify-self:start;grid-column:auto!important;order:0!important;min-width:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.appbar .tabs::-webkit-scrollbar{display:none}.appbar .tab{white-space:nowrap;flex:none}
+@media (max-width:1560px){.appbar .tab{padding-left:12px!important;padding-right:12px!important}}
 @media (max-width:1320px){.appbar .tab{padding-left:10px!important;padding-right:10px!important;font-size:13.5px!important}.appbar .actions button{padding-left:12px!important;padding-right:12px!important}}
 @media (max-width:1180px){.appbar .tab svg{display:none}.ncab .marca{font-size:34px!important}.ncab .marca span{letter-spacing:.2em!important}.ncab .rel b{font-size:32px!important}}
 @media (max-width:1000px){.ncab .marca{font-size:28px!important}.ncab .marca span{font-size:10px!important;letter-spacing:.12em!important}.ncab .rel b{font-size:26px!important}}
@@ -547,9 +560,10 @@ body{background:#E8EEF7}
   <div class="brand"><span class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c-3.6 4.4-6.5 8-6.5 11.6a6.5 6.5 0 0 0 13 0C18.5 10.5 15.6 6.9 12 2.5Z" fill="#fff" fill-opacity=".95"/><path d="M9 14.5a3 3 0 0 0 3 3" stroke="#0B6E99" stroke-width="1.8" stroke-linecap="round"/></svg></span><div style="min-width:0"><div class="brand-t">Painel de Pendências - Databricks</div><div class="brand-s" id="sub">Conecte o arquivo de dados da equipe para começar.</div></div></div>
   <nav class="tabs" role="tablist">
     <button class="tab" role="tab" id="t-painel" aria-selected="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg> Painel</button>
+    <button class="tab" role="tab" id="t-re" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg> Reincidências</button>
     <button class="tab" role="tab" id="t-os" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg> OS e tratativas</button>
-    <button class="tab" role="tab" id="t-cz" aria-selected="false" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg> Cruzar com a carteira</button>
-    <button class="tab" role="tab" id="t-db" aria-selected="false" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/></svg> Escrever na planilha</button>
+    <button class="tab" role="tab" id="t-cz" aria-selected="false" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg> Cruzar carteira</button>
+    <button class="tab" role="tab" id="t-db" aria-selected="false" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/></svg> Escrever planilha</button>
     <button class="tab" role="tab" id="t-bx" aria-selected="false" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Baixas indevidas</button>
   </nav>
   <div class="actions">
@@ -644,6 +658,12 @@ body{background:#E8EEF7}
     </div>
   </section>
 
+  <section id="v-re" class="view" hidden>
+    <div class="re-k" id="reK"></div>
+    <article class="card re-c"><header class="re-h"><div><h3>Reincidências por fornecimento</h3><p id="reNota"></p></div>
+      <div class="re-f"><div class="seg2" id="reFx"></div><div class="seg2" id="reQt"></div><div class="seg2" id="rePo"></div></div></header>
+      <div class="scroll"><table class="re-t" id="reT"></table></div><p class="note" id="reMais"></p></article>
+  </section>
   <section id="v-os" class="view" hidden>
     <div class="toolbar">
       <div class="chips" id="chips"></div>
@@ -1279,6 +1299,28 @@ $("czGravar").onclick=()=>{const L=czMarcadas();if(!L.length){$("czMsg").textCon
   for(const x of L)S.trat[x.os]={texto:czTexto(x.achou),em:Date.now(),por:clean($("nome").value)||AC.nome||"cruzamento com a carteira"};
   agendarSalvar();$("czMsg").className="";$("czMsg").textContent=`✔ ${L.length} tratativa(s) gravada(s) no padrão "OS ... - SERVIÇO". Já aparecem em OS e tratativas e na coordenação.`;aplicar();czRender();};
 
+/* ================= reincidências (coluna Qtd OS) ================= */
+let reFx="",reQt="",rePo="";
+function reRender(){const D0=derivar();const qn=x=>Number(String(x.r[I.qtd]??"").replace(",","."))||0;
+  const R=D0.filter(x=>qn(x)>=1);const FXc={"+31 dias":"#C2362B","15 a 30 dias":"#E07B24","7 a 15 dias":"#C9A227","até 7 dias":"#2FA36B"};
+  const qb=n=>n>=4?"4":String(n);
+  const tot=R.reduce((s,x)=>s+qn(x),0),forn=new Set(R.map(x=>key(x.r[I.forn]))).size,n31=R.filter(x=>x.r[I.faixa]==="+31 dias").length,rep2=R.filter(x=>qn(x)>=2).length;
+  $("reK").innerHTML=[["Total de reincidências",nf(tot),"soma da coluna Qtd OS","#0B2545"],["Fornecimentos",nf(forn),`${nf(R.length)} OS com Qtd OS 1 ou mais`,"#0B4F8A"],["2 vezes ou mais",nf(rep2),"mesmo fornecimento com Qtd OS ≥ 2","#E07F00"],["Com mais de 31 dias",nf(n31),"reincidências na faixa +31","#C2362B"]].map(([l,v,sb,c])=>`<div class="re-kk" style="--c:${c}"><small>${l}</small><b>${v}</b><span>${sb}</span></div>`).join("");
+  const cont=(f)=>{const m={};for(const x of R){const k=f(x);m[k]=(m[k]||0)+1;}return m;};
+  const cF=cont(x=>x.r[I.faixa]),cQ=cont(x=>qb(qn(x))),cP=cont(x=>poloNome(x.polo));
+  $("reFx").innerHTML=`<button type="button" data-ref="" aria-pressed="${!reFx}">Todos os prazos</button>`+FAIXAS.map(([k,l])=>`<button type="button" data-ref="${k}" aria-pressed="${reFx===k}"><i class="re-d" style="background:${FXc[k]}"></i>${l} <b>${nf(cF[k]||0)}</b></button>`).join("");
+  $("reQt").innerHTML=`<button type="button" data-req="" aria-pressed="${!reQt}">Todas as vezes</button>`+["1","2","3","4"].map(k=>`<button type="button" data-req="${k}" aria-pressed="${reQt===k}">${k==="4"?"4x ou mais":k+"x"} <b>${nf(cQ[k]||0)}</b></button>`).join("");
+  const pols=Object.keys(cP).sort();$("rePo").innerHTML=pols.length>1?`<button type="button" data-rep="" aria-pressed="${!rePo}">Todos os polos</button>`+pols.map(k=>`<button type="button" data-rep="${esc(k)}" aria-pressed="${rePo===k}">${esc(k)} <b>${nf(cP[k])}</b></button>`).join(""):"";
+  const L=R.filter(x=>(!reFx||x.r[I.faixa]===reFx)&&(!reQt||qb(qn(x))===reQt)&&(!rePo||poloNome(x.polo)===rePo)).sort((a,b)=>qn(b)-qn(a)||(Number(b.r[I.dias])||0)-(Number(a.r[I.dias])||0));
+  const tL=L.reduce((s,x)=>s+qn(x),0);
+  $("reNota").textContent=`${nf(L.length)} OS · ${nf(tL)} reincidências${reFx||reQt||rePo?" com os filtros":""} · clique na linha para abrir a OS`;
+  const cap=v=>{v=String(v||"");return v.charAt(0)+v.slice(1).toLowerCase();};
+  $("reT").innerHTML=`<thead><tr><th>Vezes</th><th>Fornecimento</th><th>Endereço</th><th>Serviço</th><th>Prazo</th><th>OS</th></tr></thead><tbody>${L.slice(0,600).map(x=>{const r=x.r,q=qn(x),f=r[I.faixa];
+    return `<tr data-reos="${esc(x.os)}" title="Abrir esta OS"><td><span class="re-q q${qb(q)}">${nf(q)}x</span></td><td class="mono">${esc(r[I.forn])}</td><td>${esc(String(r[I.end]).replace(/\.0{1,}(?=\b|\s|$)/,"").split(" / ")[0])}<small>${esc(poloNome(x.polo))}</small></td><td>${esc(cap(r[I.tss]))}</td><td><span class="re-fx" style="--c:${FXc[f]||"#6B7785"}">${esc(f||"")}</span><small>${esc(r[I.dias])} dias</small></td><td class="mono">${esc(x.os)}</td></tr>`;}).join("")}</tbody>`;
+  $("reMais").textContent=L.length>600?`Mostrando 600 de ${nf(L.length)}. Use os filtros para ver o resto.`:"";}
+$("v-re").addEventListener("click",e=>{const b=e.target.closest("[data-ref],[data-req],[data-rep]");if(b){if(b.dataset.ref!=null)reFx=b.dataset.ref;if(b.dataset.req!=null)reQt=b.dataset.req;if(b.dataset.rep!=null)rePo=b.dataset.rep;reRender();return;}
+  const t=e.target.closest("[data-reos]");if(t)irPara({busca:t.dataset.reos});});
+
 /* ================= escrever DATABRICKS na planilha de trabalho (só Fernanda) ================= */
 let DBW=null,dbArqF=null;
 async function unzipTodos(buf){const u=new Uint8Array(buf),v=new DataView(buf);let e=-1;
@@ -1447,8 +1489,8 @@ $("bxCola").addEventListener("paste",async e=>{e.preventDefault();const cd=e.cli
 $("bxCola").addEventListener("drop",e=>e.preventDefault());
 
 /* ================= eventos ================= */
-function aba(n){setTimeout(()=>{const pv=!$("v-painel").hidden;$("lateral").hidden=!pv;document.querySelector(".wrap").classList.toggle("comlado",pv);},0);if(n==="bx"&&$("t-bx").hidden)n="painel";if(n==="db"&&$("t-db").hidden)n="painel";$("t-db").setAttribute("aria-selected",n==="db");$("v-db").hidden=n!=="db";if(n==="cz"&&$("t-cz").hidden)n="painel";$("t-cz").setAttribute("aria-selected",n==="cz");$("v-cz").hidden=n!=="cz";if(n==="cz")czRender();$("t-bx").setAttribute("aria-selected",n==="bx");$("v-bx").hidden=n!=="bx";$("t-painel").setAttribute("aria-selected",n==="painel");$("t-os").setAttribute("aria-selected",n==="os");$("v-painel").hidden=n!=="painel";$("v-os").hidden=n!=="os";if(n==="bx")bxRender();if(n==="os")renderLista();lsSet("aba",n);}
-$("t-painel").onclick=()=>aba("painel");$("t-os").onclick=()=>aba("os");$("t-bx").onclick=()=>aba("bx");$("t-db").onclick=()=>aba("db");$("t-cz").onclick=()=>aba("cz");
+function aba(n){setTimeout(()=>{const pv=!$("v-painel").hidden;$("lateral").hidden=!pv;document.querySelector(".wrap").classList.toggle("comlado",pv);},0);if(n==="bx"&&$("t-bx").hidden)n="painel";if(n==="db"&&$("t-db").hidden)n="painel";$("t-db").setAttribute("aria-selected",n==="db");$("v-db").hidden=n!=="db";if(n==="cz"&&$("t-cz").hidden)n="painel";$("t-cz").setAttribute("aria-selected",n==="cz");$("v-cz").hidden=n!=="cz";if(n==="cz")czRender();$("t-bx").setAttribute("aria-selected",n==="bx");$("v-bx").hidden=n!=="bx";$("t-re").setAttribute("aria-selected",n==="re");$("v-re").hidden=n!=="re";if(n==="re")reRender();$("t-painel").setAttribute("aria-selected",n==="painel");$("t-os").setAttribute("aria-selected",n==="os");$("v-painel").hidden=n!=="painel";$("v-os").hidden=n!=="os";if(n==="bx")bxRender();if(n==="os")renderLista();lsSet("aba",n);}
+$("t-painel").onclick=()=>aba("painel");$("t-re").onclick=()=>aba("re");$("t-os").onclick=()=>aba("os");$("t-bx").onclick=()=>aba("bx");$("t-db").onclick=()=>aba("db");$("t-cz").onclick=()=>aba("cz");
 $("chips").addEventListener("click",e=>{const b=e.target.closest("[data-f]");if(!b)return;filtro=b.dataset.f;renderChips(derivar());renderLista();});
 let tb;$("busca").addEventListener("input",()=>{clearTimeout(tb);tb=setTimeout(()=>renderLista(),180);});
 $("faixa").addEventListener("change",()=>renderLista());
