@@ -313,6 +313,10 @@ body{font-size:15px}
 .pa-w{gap:6px}
 .re-k{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:12px}
 .re-kk{background:#fff;border-radius:10px;box-shadow:var(--shadow);padding:14px 16px;border-top:4px solid var(--c)}.re-kk small{display:block;font-size:12px;font-weight:700;color:#5C6B76;text-transform:uppercase;letter-spacing:.04em}.re-kk b{display:block;font-size:30px;font-weight:800;color:var(--c);line-height:1.15;margin:4px 0 2px;font-variant-numeric:tabular-nums}.re-kk span{font-size:12px;color:#7A8794}
+.re-hc{margin-bottom:12px}.re-vz{padding:14px 16px;font-size:13px;color:#8A99A6}
+.re-ch{display:flex;align-items:flex-end;gap:10px;padding:16px 16px 6px;overflow-x:auto;min-height:170px}
+.re-cb{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:44px}.re-cb i{display:block;width:28px;background:#0B4F8A;border-radius:5px 5px 0 0}.re-cb b{font-size:12px;color:#0B2545}.re-cb span{font-size:10.5px;color:#7A8794}.re-cb small{font-size:10.5px;font-weight:700;color:#7A8794;height:13px}
+.re-cb small.dn,.re-ht td.dn{color:#23824F}.re-cb small.up,.re-ht td.up{color:#C2362B}.re-ht tbody tr{cursor:default}.re-ht td{padding:7px 12px}
 .re-c{padding:0;overflow:hidden}.re-h{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}.re-h h3{margin:0;font-size:16px}.re-h p{margin:2px 0 0;font-size:12.5px;color:#7A8794}
 .re-f{display:flex;flex-wrap:wrap;gap:8px}.re-f .seg2{display:flex;flex-wrap:wrap;gap:2px;background:#EEF2F5;border-radius:9px;padding:3px}.re-f .seg2:empty{display:none}
 .re-f button{all:unset;cursor:pointer;font-size:12.5px;font-weight:600;color:#3E5163;padding:6px 10px;border-radius:7px;display:inline-flex;align-items:center;gap:5px}.re-f button b{font-weight:800;color:#0B2545}.re-f button[aria-pressed="true"]{background:#0B2545;color:#fff}.re-f button[aria-pressed="true"] b{color:#fff}
@@ -660,6 +664,7 @@ body{background:#E8EEF7}
 
   <section id="v-re" class="view" hidden>
     <div class="re-k" id="reK"></div>
+    <article class="card re-c re-hc"><header class="re-h"><div><h3>Histórico das reincidências</h3><p id="reHnota"></p></div></header><div id="reH"></div></article>
     <article class="card re-c"><header class="re-h"><div><h3>Reincidências por fornecimento</h3><p id="reNota"></p></div>
       <div class="re-f"><div class="seg2" id="reFx"></div><div class="seg2" id="reQt"></div><div class="seg2" id="rePo"></div></div></header>
       <div class="scroll"><table class="re-t" id="reT"></table></div><p class="note" id="reMais"></p></article>
@@ -927,7 +932,7 @@ async function idbGet(k){const d=await idb();return await new Promise((res,rej)=
 async function idbSet(k,v){const d=await idb();return await new Promise((res,rej)=>{const t=d.transaction("d","readwrite");t.objectStore("d").put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error);});}
 function normalizar(o){const s=Object.assign(vazio(),o||{});s.config=Object.assign(vazio().config,s.config||{});s.config.atcs=(s.config.atcs||[]).map(String);s.dias=s.dias||[];s.linhas=s.linhas||{};s.tratBase=s.tratBase||{};s.trat=s.trat||{};return s;}
 function mesclar(disco,meu){
-  const r=normalizar(JSON.parse(JSON.stringify(disco)));
+  const r=normalizar(JSON.parse(JSON.stringify(disco)));r.reHist=Object.assign({},disco.reHist||{},meu.reHist||{});
   for(const [os,t] of Object.entries(meu.trat||{})){const d=r.trat[os];if(!d||(t.em||0)>(d.em||0))r.trat[os]=t;}
   const porData={};for(const d of r.dias)porData[d.data]=d;
   for(const d of meu.dias||[]){const x=porData[d.data];
@@ -1300,12 +1305,21 @@ $("czGravar").onclick=()=>{const L=czMarcadas();if(!L.length){$("czMsg").textCon
   agendarSalvar();$("czMsg").className="";$("czMsg").textContent=`✔ ${L.length} tratativa(s) gravada(s) no padrão "OS ... - SERVIÇO". Já aparecem em OS e tratativas e na coordenação.`;aplicar();czRender();};
 
 /* ================= reincidências (coluna Qtd OS) ================= */
-let reFx="",reQt="",rePo="";
-function reRender(){const D0=derivar();const qn=x=>Number(String(x.r[I.qtd]??"").replace(",","."))||0;
+let reFx="",reQt="",rePo="";const RE_INICIO="2026-11-17";
+const reStats=rows=>{const qn=r=>Number(String(r[I.qtd]??"").replace(",","."))||0;let tot=0,n=0,r2=0,n31=0;const F=new Set();for(const r of rows){const q=qn(r);if(q<1)continue;tot+=q;n++;if(q>=2)r2++;if(r[I.faixa]==="+31 dias")n31++;F.add(key(r[I.forn]));}return {tot,n,forn:F.size,r2,n31};};
+function reGuardar(){if(!S)return;S.reHist=S.reHist||{};let mud=false;for(const d of Object.keys(S.linhas||{})){if(d<RE_INICIO)continue;const st=reStats(S.linhas[d]||[]);const v=S.reHist[d];if(!v||v.tot!==st.tot||v.n!==st.n||v.n31!==st.n31||v.r2!==st.r2){S.reHist[d]=st;mud=true;}}if(mud&&editor)agendarSalvar();}
+function reHistRender(){const H=(S&&S.reHist)||{};const ds=Object.keys(H).filter(d=>d>=RE_INICIO).sort();
+  if(!ds.length){$("reHnota").textContent="começa a contar a partir de hoje: cada planilha do dia que você subir vira um ponto aqui";$("reH").innerHTML='<div class="re-vz">Ainda sem dias guardados.</div>';return;}
+  const pri=H[ds[0]],ult=H[ds[ds.length-1]];const dv=ult.tot-pri.tot;
+  $("reHnota").textContent=ds.length===1?`começou em ${dm(ds[0])} · amanhã já dá para comparar`:`desde ${dm(ds[0])}: ${dv>0?"+":""}${nf(dv)} reincidências (${dv<0?"baixando":dv>0?"subindo":"igual"})`;
+  const mx=Math.max(1,...ds.map(d=>H[d].tot));const U2=ds.slice(-30);
+  $("reH").innerHTML=`<div class="re-ch">${U2.map((d,i)=>{const v=H[d],pv=i?H[U2[i-1]]:null,df=pv?v.tot-pv.tot:0;return `<div class="re-cb" title="${dm(d)}: ${nf(v.tot)} reincidências · ${nf(v.n)} OS · ${nf(v.n31)} com +31"><small class="${df<0?"dn":df>0?"up":""}">${pv?(df>0?"+":"")+nf(df):""}</small><b>${nf(v.tot)}</b><i style="height:${Math.max(4,v.tot*110/mx).toFixed(0)}px"></i><span>${dm(d)}</span></div>`;}).join("")}</div>
+   <div class="scroll"><table class="re-t re-ht"><thead><tr><th>Dia</th><th>Reincidências</th><th>vs dia anterior</th><th>OS</th><th>2x ou mais</th><th>+31 dias</th></tr></thead><tbody>${ds.slice().reverse().map((d,i,A)=>{const v=H[d],p=A[i+1]?H[A[i+1]]:null;const df=p?v.tot-p.tot:null;return `<tr><td>${dm(d)}</td><td><b>${nf(v.tot)}</b></td><td class="${df==null?"":df<0?"dn":df>0?"up":""}">${df==null?"–":(df>0?"▲ +":df<0?"▼ ":"= ")+nf(df)}</td><td>${nf(v.n)}</td><td>${nf(v.r2)}</td><td>${nf(v.n31)}</td></tr>`;}).join("")}</tbody></table></div>`;}
+function reRender(){reGuardar();reHistRender();const D0=derivar();const qn=x=>Number(String(x.r[I.qtd]??"").replace(",","."))||0;
   const R=D0.filter(x=>qn(x)>=1);const FXc={"+31 dias":"#C2362B","15 a 30 dias":"#E07B24","7 a 15 dias":"#C9A227","até 7 dias":"#2FA36B"};
   const qb=n=>n>=4?"4":String(n);
   const tot=R.reduce((s,x)=>s+qn(x),0),forn=new Set(R.map(x=>key(x.r[I.forn]))).size,n31=R.filter(x=>x.r[I.faixa]==="+31 dias").length,rep2=R.filter(x=>qn(x)>=2).length;
-  $("reK").innerHTML=[["Total de reincidências",nf(tot),"soma da coluna Qtd OS","#0B2545"],["Fornecimentos",nf(forn),`${nf(R.length)} OS com Qtd OS 1 ou mais`,"#0B4F8A"],["2 vezes ou mais",nf(rep2),"mesmo fornecimento com Qtd OS ≥ 2","#E07F00"],["Com mais de 31 dias",nf(n31),"reincidências na faixa +31","#C2362B"]].map(([l,v,sb,c])=>`<div class="re-kk" style="--c:${c}"><small>${l}</small><b>${v}</b><span>${sb}</span></div>`).join("");
+  $("reK").innerHTML=[["Total de reincidências",nf(tot),`soma da Qtd OS · planilha de ${hoje?dm(hoje.data):"–"}`,"#0B2545"],["Fornecimentos",nf(forn),`${nf(R.length)} OS com Qtd OS 1 ou mais`,"#0B4F8A"],["2 vezes ou mais",nf(rep2),"mesmo fornecimento com Qtd OS ≥ 2","#E07F00"],["Com mais de 31 dias",nf(n31),"reincidências na faixa +31","#C2362B"]].map(([l,v,sb,c])=>`<div class="re-kk" style="--c:${c}"><small>${l}</small><b>${v}</b><span>${sb}</span></div>`).join("");
   const cont=(f)=>{const m={};for(const x of R){const k=f(x);m[k]=(m[k]||0)+1;}return m;};
   const cF=cont(x=>x.r[I.faixa]),cQ=cont(x=>qb(qn(x))),cP=cont(x=>poloNome(x.polo));
   $("reFx").innerHTML=`<button type="button" data-ref="" aria-pressed="${!reFx}">Todos os prazos</button>`+FAIXAS.map(([k,l])=>`<button type="button" data-ref="${k}" aria-pressed="${reFx===k}"><i class="re-d" style="background:${FXc[k]}"></i>${l} <b>${nf(cF[k]||0)}</b></button>`).join("");
