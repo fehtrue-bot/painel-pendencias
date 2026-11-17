@@ -317,6 +317,13 @@ body{font-size:15px}
 .re-ch{display:flex;align-items:flex-end;gap:10px;padding:16px 16px 6px;overflow-x:auto;min-height:170px}
 .re-cb{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:44px}.re-cb i{display:block;width:28px;background:#0B4F8A;border-radius:5px 5px 0 0}.re-cb b{font-size:12px;color:#0B2545}.re-cb span{font-size:10.5px;color:#7A8794}.re-cb small{font-size:10.5px;font-weight:700;color:#7A8794;height:13px}
 .re-cb small.dn,.re-ht td.dn{color:#23824F}.re-cb small.up,.re-ht td.up{color:#C2362B}.re-ht tbody tr{cursor:default}.re-ht td{padding:7px 12px}
+.re-l{margin-top:14px}.re-lh{display:flex;align-items:center;justify-content:space-between;gap:10px}.re-l .re-big b{font-size:32px}
+.re-l .re-f{margin:8px 0 6px}.re-l .re-f .seg2{width:100%}.re-l .re-f button{padding:5px 8px;font-size:12px}
+.re-l #reH{margin:4px 0 8px}.re-l .re-hd{padding:3px 7px}
+.re-li{display:flex;flex-direction:column;max-height:520px;overflow:auto;margin:0 -4px}
+.re-r{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 6px;border-top:1px solid #EEF1F4;cursor:pointer;border-radius:8px}.re-r:hover{background:#F2F8FB}
+.re-rt{min-width:0}.re-rt b{display:block;font-size:13px;color:#0B2545;font-variant-numeric:tabular-nums}.re-rt small{display:block;font-size:11px;color:#7A8794;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.re-rf{text-align:right}.re-rf b{display:block;font-size:12.5px;color:var(--c)}.re-rf small{font-size:11px;color:#8A99A6}
 .re-c{padding:0;overflow:hidden}.re-hl{display:flex;align-items:center;justify-content:space-between;gap:16px}.re-big{display:flex;align-items:center;gap:10px}.re-big b{font-size:40px;font-weight:800;color:#0B2545;line-height:1;font-variant-numeric:tabular-nums}.re-big span{font-size:12px;color:#6B7A86;line-height:1.25}
 .re-sc{max-height:440px;overflow:auto}.re-t td.mono b{display:block;color:#0B2545}
 .re-hh{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.re-hl2{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8A99A6;margin-right:4px}.re-hd{display:inline-flex;align-items:baseline;gap:5px;background:#F4F7FA;border-radius:8px;padding:4px 9px}.re-hd small{font-size:11px;color:#7A8794}.re-hd b{font-size:13.5px;color:#0B2545}.re-hd em{font-style:normal;font-size:11px;font-weight:700;color:#7A8794}.re-hd em.dn{color:#23824F}.re-hd em.up{color:#C2362B}.re-h{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}.re-h h3{margin:0;font-size:16px}.re-h p{margin:2px 0 0;font-size:12.5px;color:#7A8794}
@@ -577,7 +584,9 @@ body{background:#E8EEF7}
   </div>
 </div></header>
 <div class="wrap">
-  <aside id="lateral" hidden><article class="card"><header class="ch"><div><h3>Pontos de atenção</h3><p>o que pede ação hoje</p></div></header><div id="atencao"></div></article></aside>
+  <aside id="lateral" hidden><article class="card"><header class="ch"><div><h3>Pontos de atenção</h3><p>o que pede ação hoje</p></div></header><div id="atencao"></div></article>
+    <article class="card re-l" id="pRe"><header class="ch re-lh"><div><h3>Reincidências</h3><p id="reNota"></p></div><div class="re-big"><b id="reN">–</b><span>fornecimentos</span></div></header>
+      <div class="re-f"><div class="seg2" id="reFx"></div></div><div id="reH"></div><div class="re-li" id="reT"></div></article></aside>
   <div class="ncab"><div class="rel"><b id="nHora">--:--:--</b><small id="nData"></small><div class="nbv" id="nBv">Ninguém conectado</div></div><div class="marca"><span class="gota"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c-3.6 4.4-6.5 8-6.5 11.6a6.5 6.5 0 0 0 13 0C18.5 10.5 15.6 6.9 12 2.5Z" fill="#fff"/><path d="M9 14.5a3 3 0 0 0 3 3" stroke="#0B2545" stroke-width="1.8" stroke-linecap="round"/></svg></span><div class="mt">DATABRICKS<span>INTERLAGOS · GRAJAÚ · EMBU GUAÇU</span></div></div><div class="nst" id="nSt">Databricks<small>atualizado</small></div></div>
   <div class="conn">
     <span class="dot" id="connDot"></span>
@@ -657,9 +666,6 @@ body{background:#E8EEF7}
       <article class="card s12"><header class="ch"><div><h3>Evolução das pendências</h3><p id="reducao"></p></div></header><div class="chart" id="chart"></div><details class="hist"><summary>Ver tabela do histórico</summary><div class="scroll"><table id="tbHist"></table></div></details></article>
       <article class="card s8"><header class="ch"><div><h3>Pendências por serviço</h3><p>quantidade de OS hoje e quanto já tem tratativa</p></div><div class="leg2"><span style="--c:#2FA36B">Com tratativa</span><span style="--c:#F3C46B">Sem tratativa</span></div></header><div id="tbServ"></div></article>
       <article class="card s4"><header class="ch"><div><h3>Tempo de atraso</h3><p id="faixaNota">distribuição das OS por faixa</p></div></header><div id="tbFaixa"></div></article>
-      <article class="card s12 re-c" id="pRe"><header class="re-h"><div class="re-hl"><div><h3>Reincidências por fornecimento</h3><p id="reNota"></p></div><div class="re-big"><b id="reN">–</b><span>fornecimentos<br>com reincidência</span></div></div>
-        <div class="re-f"><div class="seg2" id="reFx"></div></div><div id="reH"></div></header>
-        <div class="scroll re-sc"><table class="re-t" id="reT"></table></div></article>
       <article class="card s12" id="pNovasMes"><header class="ch"><div><h3 id="nmTit">Entradas × saídas no mês</h3><p id="nmNota">OS que entraram e que saíram em cada dia do mês · começa de novo todo dia 1º</p></div><div class="nmres" id="nmRes"></div></header><div class="chart" id="nmChart"></div></article>
       <article class="card s12"><header class="ch"><div><h3>Por polo</h3><p>Interlagos, Grajaú e Embu Guaçu</p></div><span class="dica">Clique em qualquer número, barra ou cartão para ver as OS</span></header><div class="polos" id="poloCards"></div></article>
       <article class="card s12" id="pCruz"><header class="ch"><div><h3>Cruzamento com a planilha da rede</h3><p id="cruzNota">o que a equipe tratou, o que saiu e o que entrou</p></div></header><div id="cruzBox"></div></article>
@@ -1305,21 +1311,21 @@ $("czGravar").onclick=()=>{const L=czMarcadas();if(!L.length){$("czMsg").textCon
 let reFx="";const RE_INICIO="2026-11-17";
 const reQn=r=>Number(String(r[I.qtd]??"").replace(",","."))||0;
 // agrupa por fornecimento: reincidências = Qtd OS (a maior das linhas), dias = o mais antigo
-function reGrupos(rows,polo){const M=new Map();for(const x of rows){const r=x.r||x;const q=reQn(r);if(q<1)continue;const f=key(r[I.forn]);if(!f)continue;const d=Number(r[I.dias])||0;
+function reGrupos(rows,polo){const M=new Map();for(const x of rows){const r=x.r||x;const q=reQn(r);if(q<2)continue;const f=key(r[I.forn]);if(!f)continue;const d=Number(r[I.dias])||0;
   let g=M.get(f);if(!g){g={f,forn:r[I.forn],end:r[I.end],q:0,d:-1,fx:"",tss:new Set(),os:[],polo:x.polo};M.set(f,g);}g.q=Math.max(g.q,q);if(d>g.d){g.d=d;g.fx=r[I.faixa];g.end=r[I.end];}g.tss.add(r[I.tss]);g.os.push(key(r[I.os]));}
   return [...M.values()];}
 function reGuardar(){if(!S)return;S.reHist=S.reHist||{};let mud=false;for(const d of Object.keys(S.linhas||{})){if(d<RE_INICIO)continue;const G=reGrupos(S.linhas[d]||[]);const st={n:G.length,n31:G.filter(g=>g.fx==="+31 dias").length};const v=S.reHist[d];if(!v||v.n!==st.n||v.n31!==st.n31){S.reHist[d]=st;mud=true;}}if(mud&&editor)agendarSalvar();}
 function reRender(){if(!$("pRe"))return;reGuardar();const FXc={"+31 dias":"#C2362B","15 a 30 dias":"#E07B24","7 a 15 dias":"#C9A227","até 7 dias":"#2FA36B"};
   const G=reGrupos(derivar());$("reN").textContent=nf(G.length);
   const cF={};for(const g of G)cF[g.fx]=(cF[g.fx]||0)+1;
-  $("reFx").innerHTML=`<button type="button" data-ref="" aria-pressed="${!reFx}">Todos <b>${nf(G.length)}</b></button>`+FAIXAS.map(([k,l])=>`<button type="button" data-ref="${k}" aria-pressed="${reFx===k}"><i class="re-d" style="background:${FXc[k]}"></i>${l} <b>${nf(cF[k]||0)}</b></button>`).join("");
+  $("reFx").innerHTML=`<button type="button" data-ref="" aria-pressed="${!reFx}">Todos <b>${nf(G.length)}</b></button>`+FAIXAS.filter(([k])=>cF[k]).map(([k,l])=>`<button type="button" data-ref="${k}" aria-pressed="${reFx===k}"><i class="re-d" style="background:${FXc[k]}"></i>${l.replace(" dias","")} <b>${nf(cF[k])}</b></button>`).join("");
   // histórico compacto
   {const H=(S&&S.reHist)||{};const ds=Object.keys(H).filter(d=>d>=RE_INICIO).sort().slice(-10);
    $("reH").innerHTML=ds.length?`<div class="re-hh"><span class="re-hl2">Histórico</span>${ds.map((d,i)=>{const v=H[d].n,p=i?H[ds[i-1]].n:null,df=p==null?0:v-p;return `<span class="re-hd" title="${dm(d)}: ${nf(v)} fornecimentos com reincidência · ${nf(H[d].n31)} com +31"><small>${dm(d)}</small><b>${nf(v)}</b>${p==null?"":`<em class="${df<0?"dn":df>0?"up":""}">${df<0?"▼":df>0?"▲":"="}${df?Math.abs(df):""}</em>`}</span>`;}).join("")}</div>`:"";}
   const L=G.filter(g=>!reFx||g.fx===reFx).sort((a,b)=>b.q-a.q||b.d-a.d);
-  $("reNota").textContent=`planilha de ${hoje?dm(hoje.data):"–"} · reincidências pela coluna Qtd OS · clique no fornecimento para abrir as OS`;
+  $("reNota").textContent=`Qtd OS 2 ou mais · planilha de ${hoje?dm(hoje.data):"–"}`;
   const cap=v=>{v=String(v||"");return v.charAt(0)+v.slice(1).toLowerCase();};
-  $("reT").innerHTML=L.length?`<thead><tr><th>Fornecimento</th><th>Endereço</th><th>Reincidências</th><th>Há quanto tempo</th></tr></thead><tbody>${L.map(g=>`<tr data-go='${JSON.stringify({busca:String(g.forn)})}' title="Abrir as OS deste fornecimento"><td class="mono"><b>${esc(g.forn)}</b><small>${esc([...g.tss].map(cap).join(" · "))}</small></td><td>${esc(String(g.end).replace(/\.0+(?=\s|$|\s*\/)/,"").split(" / ")[0])}<small>${esc(poloNome(g.polo))}</small></td><td><span class="re-q q${g.q>=4?4:g.q}">${nf(g.q)}x</span></td><td><span class="re-fx" style="--c:${FXc[g.fx]||"#6B7785"}">${esc(g.fx||"")}</span><small>${nf(g.d)} dias</small></td></tr>`).join("")}</tbody>`:'<tbody><tr><td class="re-vz">Nenhum fornecimento com reincidência nesta planilha.</td></tr></tbody>';}
+  $("reT").innerHTML=L.length?L.map(g=>`<div class="re-r" data-go='${JSON.stringify({busca:String(g.forn)})}' title="Abrir as OS deste fornecimento"><span class="re-q q${g.q>=4?4:g.q}">${nf(g.q)}x</span><span class="re-rt"><b>${esc(g.forn)}</b><small>${esc(String(g.end).replace(/\.0+(?=\s|$|\s*\/)/,"").split(" / ")[0])}</small><small>${esc([...g.tss].map(cap).join(" · "))}</small></span><span class="re-rf" style="--c:${FXc[g.fx]||"#6B7785"}"><b>${esc((g.fx||"").replace(" dias",""))}</b><small>${nf(g.d)} dias</small></span></div>`).join(""):'<div class="re-vz">Nenhum fornecimento com reincidência nesta planilha.</div>';}
 $("pRe").addEventListener("click",e=>{const b=e.target.closest("[data-ref]");if(b){e.stopPropagation();reFx=b.dataset.ref;reRender();}},true);
 
 /* ================= escrever DATABRICKS na planilha de trabalho (só Fernanda) ================= */
