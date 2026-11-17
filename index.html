@@ -310,6 +310,24 @@ body{font-size:15px}
 .pcard .meta{font-size:13px}
 /* atenção */
 .at{display:flex;flex-direction:column;gap:10px}
+.pa-w{gap:6px}
+.pa-bar{display:flex;height:8px;border-radius:5px;overflow:hidden;gap:2px;margin:2px 0 4px}.pa-bar i{display:block;min-width:4px}
+.pa-g{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#7A8794;margin:10px 2px 0}
+.pa{border:1px solid #E3E8EE;border-left:4px solid var(--c);border-radius:10px;background:#fff;overflow:hidden}
+.pa>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer}.pa>summary::-webkit-details-marker{display:none}.pa>summary:hover{background:#F6F9FC}
+.pa-t{flex:1;min-width:0;font-weight:700;font-size:14px;color:#0B2545}.pa-t small{display:block;font-weight:500;font-size:11.5px;color:#7A8794;margin-top:1px}
+.pa-tag{font-size:11px;font-weight:700;color:#B3261E;white-space:nowrap}.pa-tag.ok{color:#1E7A46}
+.pa-v{font-size:22px;font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;white-space:nowrap}.pa-x{font-style:normal;color:#A3AEB8;font-size:14px;margin:0 4px}
+.pa-ch{width:8px;height:8px;border-right:2px solid #8A99A6;border-bottom:2px solid #8A99A6;transform:rotate(45deg);margin:-4px 2px 0 4px;transition:transform .15s;flex:none}.pa[open] .pa-ch{transform:rotate(-135deg);margin-top:4px}
+.pa[open]>summary{border-bottom:1px solid #EEF1F4;background:#FAFCFE}
+.pa-c{padding:6px 8px 8px;display:flex;flex-direction:column;gap:2px}
+.pa-l{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;font-size:13px;color:#24384C}.pa-l:hover{background:#EEF5FB}
+.pa-l span{flex:1;min-width:0;line-height:1.3}.pa-l>i{width:8px;height:8px;border-radius:50%;flex:none}.pa-l>i.nd{background:transparent}.pa-l small{display:block;font-size:11px;color:#8A99A6}
+.pa-l b{font-size:15px;font-weight:800;color:#0B2545;font-variant-numeric:tabular-nums}.pa-l em{font-style:normal;color:#8A99A6;font-weight:700}
+.pa-s{padding-top:4px;padding-bottom:4px;font-size:12.5px;color:#5B6B7A}.pa-s span{padding-left:6px}.pa-s b{font-size:13px;color:#3E5163}
+.pa-sub{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8A99A6;margin:8px 8px 2px}.pa-vz{font-size:12.5px;color:#8A99A6;padding:6px 8px}
+.pa .agf{margin:4px 0 6px;gap:4px}.pa .agf b{font-size:18px}.pa .agf span{font-size:10.5px}.pa .agf>div{padding:6px 2px}
+
 .ai{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-left:4px solid var(--c);border-radius:12px;padding:12px 14px;background:#fff}
 .ai .t{font-weight:600;font-size:15px}
 .ai .t small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
@@ -826,6 +844,7 @@ function baixarBlob(blob,nome){const a=document.createElement("a");a.href=URL.cr
 
 /* ================= regras do painel ================= */
 const CATS=["Vazamento","Esgoto","Desobstrução","Cavalete","Embu Guaçu","Hidro","Vistorias"];
+const PA_ABERTOS=new Set();document.addEventListener("toggle",e=>{const d=e.target;if(d&&d.dataset&&d.dataset.pa){d.open?PA_ABERTOS.add(d.dataset.pa):PA_ABERTOS.delete(d.dataset.pa);}},true);
 const FAIXAS=[["+31 dias","+31 dias"],["15 a 30 dias","15 a 30 dias"],["7 a 15 dias","7 a 15 dias"],["até 7 dias","Até 7 dias"]];
 const COLS=["Fornecimento","PDE","Endereço OS","Serviço (Família)","Serviço (TSS)","Status","Município","Regional","ATC","ATP","Data Abertura","Dias Pendente","Faixa","MNE","Nota OS","Nota de Baixa","Iniciativa","Qtd OS","OS"];
 const I={forn:0,pde:1,end:2,fam:3,tss:4,st:5,mun:6,reg:7,atc:8,atp:9,data:10,dias:11,faixa:12,mne:13,nota:14,baixa:15,inic:16,qtd:17,os:18};
@@ -1008,36 +1027,39 @@ function render(){
   {const velhas=D.filter(x=>!clean(x.t)).sort((a,b)=>Number(b.r[I.dias])-Number(a.r[I.dias])).slice(0,3);
    const nGr=new Set(D.filter(x=>x.grp!=null).map(x=>x.grp)).size,nDup=D.filter(x=>x.grp!=null).length;
    const it=(c,go,t,sub,v,cls)=>`<div class="ai${cls?" "+cls:""}" style="--c:${c}" data-go='${JSON.stringify(go)}' title="Ver estas OS"><span class="t">${t}<small>${sub}</small></span><b>${v}</b></div>`;
-   // só aparece o que tem número (zerado não entra)
-   const n31s=D.filter(x=>x.r[I.faixa]==="+31 dias"&&!clean(x.t)).length;let a="";
-   {const nBx=D.filter(x=>baixada(x.os)).length,bx=S.baixadas;const cS={};for(const x of D){const k=sitOS(x);if(k)cS[k]=(cS[k]||0)+1;}
-    const nAg=(cS.ag||0)+(cS["ag?"]||0),oe=S.osExec;
-    const subAg=oe?`OS aberta na carteira de ${dm(oe.dc)} e ainda não executada`+(cS["ag?"]?` · ${nf(cS["ag?"])} ainda conferindo`:""):"tratativa com OS aberta · conferência com a carteira só no login da Fernanda";
-    const mini=[["ex","#23824F","já executadas, ainda na base"],["sx","#6B7785","baixadas sem execução"],["nf","#C2362B","OS não está na carteira"]].filter(([k])=>cS[k]).map(([k,c,l])=>`<div class="tr" data-go='${JSON.stringify({esp:"os:"+k})}' title="Ver estas OS"><span><b style="color:${c}">●</b> ${l}</span><b>${nf(cS[k])}</b></div>`).join("");
+   // ---- pontos de atenção: blocos simples, cada um abre com a seta
+   const FXc={"+31 dias":"#C2362B","15 a 30 dias":"#E07B24","7 a 15 dias":"#C9A227","até 7 dias":"#2FA36B"};
+   const ln=(go,t,v,c,sub)=>`<div class="pa-l" data-go='${JSON.stringify(go)}' title="Ver estas OS">${c?`<i style="background:${c}"></i>`:'<i class="nd"></i>'}<span>${t}${sub?`<small>${sub}</small>`:""}</span><b>${nf(v)}</b><em>›</em></div>`;
+   const bloco=(id,c,t,sub,v,corpo,extra)=>`<details class="pa" data-pa="${id}" style="--c:${c}"${PA_ABERTOS.has(id)?" open":""}><summary><span class="pa-t">${t}<small>${sub}${extra?" "+extra:""}</small></span><b class="pa-v">${v}</b><span class="pa-ch"></span></summary><div class="pa-c">${corpo}</div></details>`;
+   const cap1=v=>{v=String(v);return v.charAt(0)+v.slice(1).toLowerCase();};
+   const osDe=t=>{if(!osAberta(t))return "";const m=U(t||"").replace(/\bEX[\s.-]*OS\b/g,"EXOS").match(/(?:^|[^A-Z])OS\s*[:.Nº°-]*\s*(\d{6,})/);return m?m[1]:"";};
+   // 1) prazos: uma linha por faixa
+   const fx={};for(const [k2] of FAIXAS)fx[k2]={sem:0,com:0};for(const x of D){const f=fx[x.r[I.faixa]];if(f)clean(x.t)?f.com++:f.sem++;}
+   const barra=`<div class="pa-bar">${FAIXAS.map(([k2])=>{const n=fx[k2].sem+fx[k2].com;return n?`<i style="flex:${n};background:${FXc[k2]}" title="${k2}: ${n}"></i>`:"";}).join("")}</div>`;
+   let a=`<div class="pa-g">Prazos</div>`;
+   for(const [k2,l] of FAIXAS){const f=fx[k2],n=f.sem+f.com;const c31=k2==="+31 dias";const comOS=c31?C31.c31.filter(x=>osDe(x.t)).length:0;
+     let corpo=ln({faixa:k2,trat:"sem"},"Sem tratativa",f.sem,"#C2362B")+ln(c31?{esp:"c31"}:{faixa:k2,trat:"com"},"Com tratativa",f.com,"#23824F",c31&&f.com?`${nf(comOS)} com OS aberta · ${nf(f.com-comOS)} sem OS aberta`:"");
+     if(c31&&C31.v31.length)corpo+=ln({esp:"v31"},"Viraram +31 hoje",C31.v31.length,"#8E2A22","estavam em 15 a 30 dias ontem");
+     if(k2==="15 a 30 dias"&&C31.p31.length){corpo+=ln({esp:"p31"},"Viram +31 em até 7 dias",C31.p31.length,"#E07B24","24 a 30 dias e sem OS aberta");
+       const G={};for(const x of C31.p31){const k=tipoTrat(x.t);G[k]=(G[k]||0)+1;}Object.keys(G).sort((a,b)=>(a===""?-1:b===""?1:G[b]-G[a])).forEach(k=>{corpo+=`<div class="pa-l pa-s" data-go='${JSON.stringify({esp:k?"p31t:"+k:"p31s"})}' title="Ver estas OS"><i class="nd"></i><span>↳ ${esc(k?cap1(k):"sem tratativa")}</span><b>${nf(G[k])}</b><em>›</em></div>`;});}
+     const ex=f.sem?`· <span class="pa-tag">${nf(f.sem)} sem tratativa</span>`:`· <span class="pa-tag ok">todas com tratativa</span>`;
+     a+=bloco("fx:"+k2,FXc[k2],l,!n?"nenhuma OS":f.sem?`${nf(f.com)} com tratativa`:"",nf(n),corpo,!n?"":f.sem?ex:'<span class="pa-tag ok">todas com tratativa</span>');}
+   // 2) OS abertas
+   {const cS={};for(const x of D){const k=sitOS(x);if(k)cS[k]=(cS[k]||0)+1;}const nAg=(cS.ag||0)+(cS["ag?"]||0),oe=S.osExec,bx=S.baixadas,nBx=D.filter(x=>baixada(x.os)).length;
     const agF={};for(const x of D){const k=sitOS(x);if(k==="ag"||k==="ag?"){const f=x.r[I.faixa];agF[f]=(agF[f]||0)+1;}}
-    const FXc={"+31 dias":"#C2362B","15 a 30 dias":"#E07B24","7 a 15 dias":"#C9A227","até 7 dias":"#2FA36B"};
-    const porF=`<div class="agf">${FAIXAS.map(([k2,l])=>`<div class="${agF[k2]?"":"z"}" style="--c:${FXc[k2]}"${agF[k2]?` data-go='${JSON.stringify({esp:"osab",faixa:k2})}' title="Ver as OS aguardando execução com ${l}"`:""}><b>${nf(agF[k2]||0)}</b><span>${l}</span></div>`).join("")}</div>`;
-    a+=`<div class="osbx">${it("#0B4F8A",{esp:"osab"},"Aguardando execução",subAg,nf(nAg),"forte fos")}${porF}${mini?`<div class="trat31 mini"><div class="tl">OS da tratativa · outras situações</div>${mini}</div>`:""}${bx?it("#C9B800",{esp:"bx"},"Baixadas",`em amarelo na rede · ainda na base`,nf(nBx),"forte fbx"):""}</div>`;}
-   a+=it("#C2362B",{faixa:"+31 dias",trat:"sem"},"+31 dias sem tratativa","as mais urgentes",nf(n31s),"forte f31");
-   {const osDe=t=>{if(!osAberta(t))return "";const m=U(t||"").replace(/\bEX[\s.-]*OS\b/g,"EXOS").match(/(?:^|[^A-Z])OS\s*[:.Nº°-]*\s*(\d{6,})/);return m?m[1]:"";};
-    const comOS=C31.c31.filter(x=>osDe(x.t)),semOSL=C31.c31.filter(x=>!osDe(x.t));
-    const G={};for(const x of semOSL){const k=tipoTrat(x.t);G[k]=(G[k]||0)+1;}const ks=Object.keys(G).sort((a,b)=>G[b]-G[a]);
-    a+=`<div class="ai s31 c31" style="--c:#8E2A22" data-go='${JSON.stringify({esp:"c31"})}' title="Ver estas OS"><span class="t">+31 com tratativa<small>já têm tratativa, mas ainda estão na base</small></span><b>${nf(C31.c31.length)}</b></div>`;
-    if(C31.c31.length){const L=comOS.concat(semOSL);a+=`<div class="trat31 r31 mini">`+L.slice(0,8).map(x=>{const o=osDe(x.t);return `<div class="tr os" data-go='${JSON.stringify({busca:String(x.r[I.os])})}' title="${esc(x.t)}"><span>${o?`<b class="on">OS ${esc(o)}</b>`:`<b class="off">sem OS aberta</b>`} ${esc(tipoTrat(x.t))}</span></div>`;}).join("")+(L.length>8?`<div class="tr" data-go='${JSON.stringify({esp:"c31"})}'><span>+ ${L.length-8} outras</span><b>›</b></div>`:"")+`</div>`;}}
-   if(C31.v31.length)a+=`<div class="ai s31" style="--c:#C2362B" data-go='${JSON.stringify({esp:"v31"})}' title="Ver estas OS"><span class="t">Viraram +31 hoje<small>estavam em 15 a 30 dias na base anterior</small></span><b>${nf(C31.v31.length)}</b></div>`;
-   {const n15=D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&!clean(x.t)).length;a+=it("#E07B24",{faixa:"15 a 30 dias",trat:"sem"},"15 a 30 dias sem tratativa","as próximas a virar +31",nf(n15),"forte f15");
-    const n15c=D.filter(x=>x.r[I.faixa]==="15 a 30 dias"&&clean(x.t)).length;a+=it("#B9650F",{faixa:"15 a 30 dias",trat:"com"},"15 a 30 dias com tratativa","já têm tratativa, ainda na base",nf(n15c),"s31");}
-   if(C31.p31.length)a+=`<div class="sub31">${[["p31","#E07B24","Viram +31 em até 7 dias","24 a 30 dias e ainda sem OS aberta (inclui vistoriar)",C31.p31.length]].map(([k,c,t,sb,n])=>`<div class="ai s31" style="--c:${c}" data-go='${JSON.stringify({esp:k})}' title="Ver estas OS"><span class="t">${t}<small>${sb}</small></span><b>${nf(n)}</b></div>`).join("")}</div>`;
-
-   {const G={};for(const x of C31.p31){const k=tipoTrat(x.t);G[k]=(G[k]||0)+1;}const ks=Object.keys(G).sort((a,b)=>(a===""?-1:b===""?1:G[b]-G[a]));
-    if(ks.length)a+=`<div class="trat31"><div class="tl">Viram +31 em até 7 dias · o que tem hoje</div>${ks.map(k=>`<div class="tr${k?"":" sem"}" data-go='${JSON.stringify({esp:k?"p31t:"+k:"p31s"})}' title="${esc(k||"Sem tratativa")}"><span>${esc(k||"Sem tratativa")}</span><b>${nf(G[k])}</b></div>`).join("")}</div>`;}
-   if(H.novas)a+=it("#0B6E99",{cat:"Novas"},"OS novas hoje",`${nf(H.comNovas)} já com tratativa`,nf(H.novas));
-   {const e=hoje.novas!=null?hoje.novas:H.novas,x=hoje.executadas;
-    if(e||x)a+=`<div class="ai med" style="--c:#0B6E99" onclick="document.getElementById('pNovasMes').scrollIntoView({behavior:'smooth',block:'center'})" title="Ver o gráfico de entradas × saídas"><span class="t">Entradas × saídas do dia<small>${dm(hoje.data)} · entraram × saíram</small></span><b><span style="color:#D9711C">${e==null?"–":nf(e)}</span><i>×</i><span style="color:#23824F">${x==null?"–":nf(x)}</span></b></div>`;}
-   if(velhas.length)a+=`<div class="lbl">Mais antigas sem tratativa</div>`+velhas.map(x=>`<div class="vrow" data-go='${JSON.stringify({busca:String(x.r[I.os])})}' title="Abrir esta OS"><span class="vd">${esc(x.r[I.dias])}<small>dias</small></span><span class="va"><b>${esc(String(x.r[I.end]).replace(/\.0{6,}/,"").split(" / ")[0])}</b><small>${esc(x.r[I.tss])} · ${esc(poloNome(x.polo))}</small></span></div>`).join("");
-   {const VC=(S.verifCart&&S.verifCart.itens)||{};const nv=D.filter(x=>VC[x.os]).length;if(nv)a+=it("#C9A227",{trat:"verif"},"Verificar: OS não está na carteira",`a OS da tratativa sumiu da carteira de ${new Date(S.verifCart.em).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}`,nf(nv));}
+    let corpo=`<div class="agf">${FAIXAS.map(([k2,l])=>`<div class="${agF[k2]?"":"z"}" style="--c:${FXc[k2]}"${agF[k2]?` data-go='${JSON.stringify({esp:"osab",faixa:k2})}'`:""}><b>${nf(agF[k2]||0)}</b><span>${l}</span></div>`).join("")}</div>`;
+    corpo+=[["ex","Já executadas","#23824F","a OS da tratativa foi executada, mas a pendência segue na base"],["sx","Baixadas sem execução","#6B7785",""],["nf","OS não está na carteira","#C2362B","conferir o número da OS na tratativa"]].filter(([k])=>cS[k]).map(([k,l,c,sb])=>ln({esp:"os:"+k},l,cS[k],c,sb)).join("");
+    if(bx&&nBx)corpo+=ln({esp:"bx"},"Baixadas (amarelo na rede)",nBx,"#C9B800","ainda na base de hoje");
+    a+=`<div class="pa-g">OS abertas</div>`+bloco("os","#0B4F8A","Aguardando execução",oe?`OS aberta na carteira de ${dm(oe.dc)}`:"tratativa com OS aberta",nf(nAg),corpo);}
+   // 3) hoje
+   {const e=hoje.novas!=null?hoje.novas:H.novas,x=hoje.executadas;let corpo="";
+    if(H.novas)corpo+=ln({cat:"Novas"},"OS novas hoje",H.novas,"#0B6E99",`${nf(H.comNovas)} já com tratativa`);
+    if(velhas.length)corpo+=`<div class="pa-sub">Mais antigas sem tratativa</div>`+velhas.map(x=>`<div class="vrow" data-go='${JSON.stringify({busca:String(x.r[I.os])})}' title="Abrir esta OS"><span class="vd">${esc(x.r[I.dias])}<small>dias</small></span><span class="va"><b>${esc(String(x.r[I.end]).replace(/\.0{6,}/,"").split(" / ")[0])}</b><small>${esc(x.r[I.tss])} · ${esc(poloNome(x.polo))}</small></span></div>`).join("");
+    {const VC=(S.verifCart&&S.verifCart.itens)||{};const nv=D.filter(x=>VC[x.os]).length;if(nv)corpo+=ln({trat:"verif"},"Verificar: OS não está na carteira",nv,"#C9A227");}
+    a+=`<div class="pa-g">Hoje · ${dm(hoje.data)}</div>`+bloco("hoje","#0B6E99","Entradas × saídas","entraram × saíram da base",`<span style="color:#D9711C">${e==null?"–":nf(e)}</span><i class="pa-x">×</i><span style="color:#23824F">${x==null?"–":nf(x)}</span>`,corpo||'<div class="pa-vz">Nada a mais hoje.</div>');}
+   a=barra+a;
    setTimeout(()=>conferirOSExec(D),0);
-   $("atencao").innerHTML=a?`<div class="at">${a}</div>`:`<div class="empty">Nada pedindo atenção hoje.</div>`;}
+   $("atencao").innerHTML=`<div class="at pa-w">${a}</div>`;}
   // ---- cruzamento com a rede
   {const cz=hoje.cruz;
    if(!cz){$("cruzNota").textContent="o que a equipe tratou, o que saiu e o que entrou";$("cruzBox").innerHTML=`<div class="note">Para cruzar com o trabalho da equipe, clique em <b>Atualizar com os arquivos do dia</b> e escolha também a <b>planilha da rede</b> no campo 2.</div>`;}
