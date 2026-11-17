@@ -317,6 +317,10 @@ body{font-size:15px}
 .re-ch{display:flex;align-items:flex-end;gap:10px;padding:16px 16px 6px;overflow-x:auto;min-height:170px}
 .re-cb{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:44px}.re-cb i{display:block;width:28px;background:#0B4F8A;border-radius:5px 5px 0 0}.re-cb b{font-size:12px;color:#0B2545}.re-cb span{font-size:10.5px;color:#7A8794}.re-cb small{font-size:10.5px;font-weight:700;color:#7A8794;height:13px}
 .re-cb small.dn,.re-ht td.dn{color:#23824F}.re-cb small.up,.re-ht td.up{color:#C2362B}.re-ht tbody tr{cursor:default}.re-ht td{padding:7px 12px}
+.re-gp{border-top:1px solid #E3E8EE}.re-gp>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:9px 6px;cursor:pointer;background:#F7F9FB}.re-gp>summary::-webkit-details-marker{display:none}
+.re-gt{flex:1;font-size:13px;font-weight:700;color:#0B2545}.re-gt em{font-style:normal;font-size:11px;font-weight:700;color:#7A8794;margin-left:4px}.re-gp>summary b{font-size:15px;color:#0B2545}
+.re-gch{width:7px;height:7px;border-right:2px solid #8A99A6;border-bottom:2px solid #8A99A6;transform:rotate(45deg);margin:-3px 2px 0 2px}.re-gp[open] .re-gch{transform:rotate(-135deg);margin-top:3px}
+.re-gp .re-r{grid-template-columns:minmax(0,1fr) auto;padding-left:14px}.re-gp .re-r .re-q{display:none}
 .re-l{margin-top:14px}.re-lh{display:flex;align-items:center;justify-content:space-between;gap:10px}.re-l .re-big b{font-size:32px}
 .re-l .re-f{margin:8px 0 6px}.re-l .re-f .seg2{width:100%}.re-l .re-f button{padding:5px 8px;font-size:12px}
 .re-l #reH{margin:4px 0 8px}.re-l .re-hd{padding:3px 7px}
@@ -1325,7 +1329,10 @@ function reRender(){if(!$("pRe"))return;reGuardar();const FXc={"+31 dias":"#C236
   const L=G.filter(g=>!reFx||g.fx===reFx).sort((a,b)=>b.q-a.q||b.d-a.d);
   $("reNota").textContent=`Qtd OS 2 ou mais · planilha de ${hoje?dm(hoje.data):"–"}`;
   const cap=v=>{v=String(v||"");return v.charAt(0)+v.slice(1).toLowerCase();};
-  $("reT").innerHTML=L.length?L.map(g=>`<div class="re-r" data-go='${JSON.stringify({busca:String(g.forn)})}' title="Abrir as OS deste fornecimento"><span class="re-q q${g.q>=4?4:g.q}">${nf(g.q)}x</span><span class="re-rt"><b>${esc(g.forn)}</b><small>${esc(String(g.end).replace(/\.0+(?=\s|$|\s*\/)/,"").split(" / ")[0])}</small><small>${esc([...g.tss].map(cap).join(" · "))}</small></span><span class="re-rf" style="--c:${FXc[g.fx]||"#6B7785"}"><b>${esc((g.fx||"").replace(" dias",""))}</b><small>${nf(g.d)} dias</small></span></div>`).join(""):'<div class="re-vz">Nenhum fornecimento com reincidência nesta planilha.</div>';}
+  const rowR=g=>`<div class="re-r" data-go='${JSON.stringify({busca:String(g.forn)})}' title="Abrir as OS deste fornecimento"><span class="re-q q${g.q>=4?4:g.q}">${nf(g.q)}x</span><span class="re-rt"><b>${esc(g.forn)}</b><small>${esc(String(g.end).replace(/\.0+(?=\s|$|\s*\/)/,"").split(" / ")[0])}</small><small>${esc([...g.tss].map(cap).join(" · "))}</small></span><span class="re-rf" style="--c:${FXc[g.fx]||"#6B7785"}"><b>${esc((g.fx||"").replace(" dias",""))}</b><small>${nf(g.d)} dias</small></span></div>`;
+  const nivs=[...new Set(L.map(g=>g.q))].sort((a,b)=>b-a);const mxq=nivs[0]||0;
+  $("reT").innerHTML=L.length?nivs.map((q,i)=>{const gs=L.filter(g=>g.q===q);const lab=i===0&&nivs.length>1?"Mais reincidências":i===nivs.length-1&&nivs.length>1?"Menos reincidências":"";
+    return `<details class="re-gp" open><summary><span class="re-q q${q>=4?4:q}">${nf(q)}x</span><span class="re-gt">${nf(q)} vezes${lab?` <em>${lab}</em>`:""}</span><b>${nf(gs.length)}</b><span class="re-gch"></span></summary>${gs.map(rowR).join("")}</details>`;}).join(""):'<div class="re-vz">Nenhum fornecimento com reincidência nesta planilha.</div>';}
 $("pRe").addEventListener("click",e=>{const b=e.target.closest("[data-ref]");if(b){e.stopPropagation();reFx=b.dataset.ref;reRender();}},true);
 
 /* ================= escrever DATABRICKS na planilha de trabalho (só Fernanda) ================= */
