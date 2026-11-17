@@ -411,8 +411,11 @@ body{background:var(--bg)}
 .nfaixa{height:28px;background:#0B2545;color:#fff;font-weight:800;font-size:12px;letter-spacing:.08em;display:flex;align-items:center;justify-content:space-between;padding:0 18px}
 .appbar{background:#fff!important;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);border-bottom:1px solid var(--line)}
 .appbar .brand{display:none}
-.appbar-in{padding-top:6px!important;grid-template-columns:1fr auto!important}
-.appbar .tabs{justify-self:start;grid-column:auto!important;order:0!important}
+.appbar-in{padding-top:6px!important;grid-template-columns:minmax(0,1fr) auto!important}
+.appbar .tabs{justify-self:start;grid-column:auto!important;order:0!important;min-width:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.appbar .tabs::-webkit-scrollbar{display:none}.appbar .tab{white-space:nowrap;flex:none}
+@media (max-width:1320px){.appbar .tab{padding-left:10px!important;padding-right:10px!important;font-size:13.5px!important}.appbar .actions button{padding-left:12px!important;padding-right:12px!important}}
+@media (max-width:1180px){.appbar .tab svg{display:none}.ncab .marca{font-size:34px!important}.ncab .marca span{letter-spacing:.2em!important}.ncab .rel b{font-size:32px!important}}
+@media (max-width:1000px){.ncab .marca{font-size:28px!important}.ncab .marca span{font-size:10px!important;letter-spacing:.12em!important}.ncab .rel b{font-size:26px!important}}
 .tab{color:#5C6B66!important}.tab:hover{background:#EEF2F8!important;color:#0B2545!important}
 .tab[aria-selected="true"]{background:#0B2545!important;color:#fff!important;border-radius:6px 6px 0 0}
 .appbar .ghost{background:#fff;color:#0B2545;border-color:#C5D1E3}
