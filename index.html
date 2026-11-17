@@ -317,6 +317,8 @@ body{font-size:15px}
 .re-ch{display:flex;align-items:flex-end;gap:10px;padding:16px 16px 6px;overflow-x:auto;min-height:170px}
 .re-cb{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:44px}.re-cb i{display:block;width:28px;background:#0B4F8A;border-radius:5px 5px 0 0}.re-cb b{font-size:12px;color:#0B2545}.re-cb span{font-size:10.5px;color:#7A8794}.re-cb small{font-size:10.5px;font-weight:700;color:#7A8794;height:13px}
 .re-cb small.dn,.re-ht td.dn{color:#23824F}.re-cb small.up,.re-ht td.up{color:#C2362B}.re-ht tbody tr{cursor:default}.re-ht td{padding:7px 12px}
+.re-sv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0 4px 10px}.re-sv button{all:unset;cursor:pointer;border:1px solid #DCE4EB;border-radius:10px;padding:8px 6px;text-align:center;background:#fff}.re-sv button:hover{background:#F2F8FB}.re-sv button b{display:block;font-size:20px;font-weight:800;color:#0B2545;line-height:1.1}.re-sv button span{font-size:11px;font-weight:600;color:#5C6B76}
+.re-sv button[aria-pressed="true"]{background:#0B2545;border-color:#0B2545}.re-sv button[aria-pressed="true"] b,.re-sv button[aria-pressed="true"] span{color:#fff}.re-sv button.z{opacity:.5}
 .re-mod{display:flex;gap:3px;background:#EEF2F5;border-radius:9px;padding:3px;margin:0 4px 8px}.re-mod button{all:unset;flex:1;text-align:center;cursor:pointer;font-size:12.5px;font-weight:600;color:#3E5163;padding:5px 8px;border-radius:7px}.re-mod button[aria-pressed="true"]{background:#fff;color:#0B2545;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 .re-gs .re-gt em{display:block;margin:1px 0 0}.re-rs{grid-template-columns:36px minmax(0,1fr) auto!important;padding-left:6px!important}.re-rs .re-q{display:inline-block!important}
 .re-gp{border-top:1px solid #E3E8EE}.re-gp>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:9px 6px;cursor:pointer;background:#F7F9FB}.re-gp>summary::-webkit-details-marker{display:none}
@@ -591,7 +593,7 @@ body{background:#E8EEF7}
 </div></header>
 <div class="wrap">
   <aside id="lateral" hidden><article class="card"><header class="ch"><div><h3>Pontos de atenção</h3><p>o que pede ação hoje</p></div></header><div id="atencao"></div></article>
-    <article class="card re-l" id="pRe"><header class="ch re-lh"><div><h3>Reincidências</h3><p id="reNota"></p></div><div class="re-big"><b id="reN">–</b><span>fornecimentos</span></div></header>
+    <article class="card re-l" id="pRe"><header class="ch re-lh"><div><h3>Reincidências</h3><p id="reNota"></p></div><div class="re-big"><b id="reN">–</b><span id="reBig">fornecimentos</span></div></header>
       <div class="re-f"><div class="seg2" id="reFx"></div></div><div id="reH"></div><div class="re-li" id="reT"></div></article></aside>
   <div class="ncab"><div class="rel"><b id="nHora">--:--:--</b><small id="nData"></small><div class="nbv" id="nBv">Ninguém conectado</div></div><div class="marca"><span class="gota"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c-3.6 4.4-6.5 8-6.5 11.6a6.5 6.5 0 0 0 13 0C18.5 10.5 15.6 6.9 12 2.5Z" fill="#fff"/><path d="M9 14.5a3 3 0 0 0 3 3" stroke="#0B2545" stroke-width="1.8" stroke-linecap="round"/></svg></span><div class="mt">DATABRICKS<span>INTERLAGOS · GRAJAÚ · EMBU GUAÇU</span></div></div><div class="nst" id="nSt">Databricks<small>atualizado</small></div></div>
   <div class="conn">
@@ -1314,33 +1316,36 @@ $("czGravar").onclick=()=>{const L=czMarcadas();if(!L.length){$("czMsg").textCon
   agendarSalvar();$("czMsg").className="";$("czMsg").textContent=`✔ ${L.length} tratativa(s) gravada(s) no padrão "OS ... - SERVIÇO". Já aparecem em OS e tratativas e na coordenação.`;aplicar();czRender();};
 
 /* ================= reincidências (coluna Qtd OS) ================= */
-let reFx="",reAgr="srv";const RE_INICIO="2026-11-17";
+let reFx="",reAgr="vez",reSrv="";const RE_INICIO="2026-11-17";
 const reQn=r=>Number(String(r[I.qtd]??"").replace(",","."))||0;
 // agrupa por fornecimento: reincidências = Qtd OS (a maior das linhas), dias = o mais antigo
 function reGrupos(rows,polo){const M=new Map();for(const x of rows){const r=x.r||x;const q=reQn(r);if(q<2)continue;const f=key(r[I.forn]);if(!f)continue;const d=Number(r[I.dias])||0;
-  let g=M.get(f);if(!g){g={f,forn:r[I.forn],end:r[I.end],q:0,d:-1,fx:"",tss:new Set(),fam:clean(r[I.fam])||"Outros",os:[],polo:x.polo};M.set(f,g);}g.q=Math.max(g.q,q);if(d>g.d){g.d=d;g.fx=r[I.faixa];g.end=r[I.end];}g.tss.add(r[I.tss]);g.os.push(key(r[I.os]));}
+  let g=M.get(f);if(!g){g={f,forn:r[I.forn],end:r[I.end],q:0,d:-1,fx:"",tss:new Set(),fam:(()=>{const t=U(r[I.tss]),f=U(r[I.fam]);return t.includes("HIDROMETRO")||f.includes("HIDROMETRO")?"Hidro vazando":f.includes("OBSTRUCAO")||t.includes("DESOBSTRU")?"Obstrução":f.includes("VAZAMENTO")||t.includes("VAZAMENTO")?"Vazamento de água":"Outros";})(),os:[],polo:x.polo};M.set(f,g);}g.q=Math.max(g.q,q);if(d>g.d){g.d=d;g.fx=r[I.faixa];g.end=r[I.end];}g.tss.add(r[I.tss]);g.os.push(key(r[I.os]));}
   return [...M.values()];}
 function reGuardar(){if(!S)return;S.reHist=S.reHist||{};let mud=false;for(const d of Object.keys(S.linhas||{})){if(d<RE_INICIO)continue;const G=reGrupos(S.linhas[d]||[]);const st={n:G.length,n31:G.filter(g=>g.fx==="+31 dias").length};const v=S.reHist[d];if(!v||v.n!==st.n||v.n31!==st.n31){S.reHist[d]=st;mud=true;}}if(mud&&editor)agendarSalvar();}
 function reRender(){if(!$("pRe"))return;reGuardar();const FXc={"+31 dias":"#C2362B","15 a 30 dias":"#E07B24","7 a 15 dias":"#C9A227","até 7 dias":"#2FA36B"};
-  const G=reGrupos(derivar());$("reN").textContent=nf(G.length);
+  const G=reGrupos(derivar());
   const cF={};for(const g of G)cF[g.fx]=(cF[g.fx]||0)+1;
   $("reFx").innerHTML=`<button type="button" data-ref="" aria-pressed="${!reFx}">Todos <b>${nf(G.length)}</b></button>`+FAIXAS.filter(([k])=>cF[k]).map(([k,l])=>`<button type="button" data-ref="${k}" aria-pressed="${reFx===k}"><i class="re-d" style="background:${FXc[k]}"></i>${l.replace(" dias","")} <b>${nf(cF[k])}</b></button>`).join("");
   // histórico compacto
   {const H=(S&&S.reHist)||{};const ds=Object.keys(H).filter(d=>d>=RE_INICIO).sort().slice(-10);
    $("reH").innerHTML=ds.length?`<div class="re-hh"><span class="re-hl2">Histórico</span>${ds.map((d,i)=>{const v=H[d].n,p=i?H[ds[i-1]].n:null,df=p==null?0:v-p;return `<span class="re-hd" title="${dm(d)}: ${nf(v)} fornecimentos com reincidência · ${nf(H[d].n31)} com +31"><small>${dm(d)}</small><b>${nf(v)}</b>${p==null?"":`<em class="${df<0?"dn":df>0?"up":""}">${df<0?"▼":df>0?"▲":"="}${df?Math.abs(df):""}</em>`}</span>`;}).join("")}</div>`:"";}
-  const L=G.filter(g=>!reFx||g.fx===reFx).sort((a,b)=>b.q-a.q||b.d-a.d);
+  const SRV=["Vazamento de água","Obstrução","Hidro vazando","Outros"];const cS={};for(const g of G.filter(g=>!reFx||g.fx===reFx))cS[g.fam]=(cS[g.fam]||0)+1;
+  const srvBar=`<div class="re-sv">${SRV.filter(k=>cS[k]||k!=="Outros").map(k=>`<button type="button" data-resrv="${reSrv===k?"":k}" aria-pressed="${reSrv===k}" class="${cS[k]?"":"z"}"><b>${nf(cS[k]||0)}</b><span>${k}</span></button>`).join("")}</div>`;
+  const L=G.filter(g=>(!reFx||g.fx===reFx)&&(!reSrv||g.fam===reSrv)).sort((a,b)=>b.q-a.q||b.d-a.d);$("reN").textContent=nf(L.length);
+  $("reBig").textContent=reSrv||reFx?[reSrv,reFx].filter(Boolean).join(" · "):"fornecimentos";
   $("reNota").textContent=`Qtd OS 2 ou mais · planilha de ${hoje?dm(hoje.data):"–"}`;
   const cap=v=>{v=String(v||"");return v.charAt(0)+v.slice(1).toLowerCase();};
   const rowR=g=>`<div class="re-r" data-go='${JSON.stringify({busca:String(g.forn)})}' title="Abrir as OS deste fornecimento"><span class="re-q q${g.q>=4?4:g.q}">${nf(g.q)}x</span><span class="re-rt"><b>${esc(g.forn)}</b><small>${esc(String(g.end).replace(/\.0+(?=\s|$|\s*\/)/,"").split(" / ")[0])}</small><small>${esc([...g.tss].map(cap).join(" · "))}</small></span><span class="re-rf" style="--c:${FXc[g.fx]||"#6B7785"}"><b>${esc((g.fx||"").replace(" dias",""))}</b><small>${nf(g.d)} dias</small></span></div>`;
   const nivs=[...new Set(L.map(g=>g.q))].sort((a,b)=>b-a);const mxq=nivs[0]||0;
-  const modo=`<div class="re-mod">${[["srv","Por serviço"],["vez","Por vezes"]].map(([k,l])=>`<button type="button" data-reagr="${k}" aria-pressed="${reAgr===k}">${l}</button>`).join("")}</div>`;
+  const modo=srvBar;
   if(reAgr==="srv"&&L.length){const F=new Map();for(const g of L){if(!F.has(g.fam))F.set(g.fam,[]);F.get(g.fam).push(g);}
     const FL=[...F].sort((a,b)=>b[1].length-a[1].length||a[0].localeCompare(b[0],"pt-BR"));
     $("reT").innerHTML=modo+FL.map(([fam,gs])=>{const mx=Math.max(...gs.map(g=>g.q));const n31=gs.filter(g=>g.fx==="+31 dias").length;
       return `<details class="re-gp re-gs" open><summary><span class="re-gt">${esc(fam)}<em>até ${nf(mx)}x${n31?` · ${nf(n31)} com +31`:""}</em></span><b>${nf(gs.length)}</b><span class="re-gch"></span></summary>${gs.map(g=>rowR(g).replace('<div class="re-r"','<div class="re-r re-rs"')).join("")}</details>`;}).join("");return;}
   $("reT").innerHTML=L.length?modo+nivs.map((q,i)=>{const gs=L.filter(g=>g.q===q);const lab=i===0&&nivs.length>1?"Mais reincidências":i===nivs.length-1&&nivs.length>1?"Menos reincidências":"";
     return `<details class="re-gp" open><summary><span class="re-q q${q>=4?4:q}">${nf(q)}x</span><span class="re-gt">${nf(q)} vezes${lab?` <em>${lab}</em>`:""}</span><b>${nf(gs.length)}</b><span class="re-gch"></span></summary>${gs.map(rowR).join("")}</details>`;}).join(""):'<div class="re-vz">Nenhum fornecimento com reincidência nesta planilha.</div>';}
-$("pRe").addEventListener("click",e=>{const m=e.target.closest("[data-reagr]");if(m){e.stopPropagation();reAgr=m.dataset.reagr;reRender();return;}const b=e.target.closest("[data-ref]");if(b){e.stopPropagation();reFx=b.dataset.ref;reRender();}},true);
+$("pRe").addEventListener("click",e=>{const sv=e.target.closest("[data-resrv]");if(sv){e.stopPropagation();reSrv=sv.dataset.resrv;reRender();return;}const b=e.target.closest("[data-ref]");if(b){e.stopPropagation();reFx=b.dataset.ref;reRender();}},true);
 
 /* ================= escrever DATABRICKS na planilha de trabalho (só Fernanda) ================= */
 let DBW=null,dbArqF=null;
