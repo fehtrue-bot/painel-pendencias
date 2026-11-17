@@ -330,6 +330,8 @@ body{font-size:15px}
 .re-gp>summary{padding:11px 8px!important}.re-gt{font-size:14.5px!important}.re-gp>summary b{font-size:17px!important}
 .re-r{padding:11px 8px!important}.re-rt b{font-size:15px!important}.re-rt small{font-size:12px!important}.re-rf b{font-size:14px!important}.re-rf small{font-size:12px!important}
 .re-q{font-size:14px;min-width:38px}.re-li{max-height:640px!important}
+.re-bigc{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:2px;margin:6px 0 12px}.re-bigc b{font-size:56px!important;line-height:1}.re-bigc span{max-width:none!important;font-size:14px!important}
+.re-gp>summary .re-gch{margin-left:6px}.re-gp:not([open])>summary{background:#fff}
 .re-l{margin-top:14px}.re-lh{display:flex;align-items:center;justify-content:space-between;gap:10px}.re-l .re-big b{font-size:32px}
 .re-l .re-f{margin:8px 0 6px}.re-l .re-f .seg2{width:100%}.re-l .re-f button{padding:5px 8px;font-size:12px}
 .re-l #reH{margin:4px 0 8px}.re-l .re-hd{padding:3px 7px}
@@ -598,7 +600,7 @@ body{background:#E8EEF7}
 </div></header>
 <div class="wrap">
   <aside id="lateral" hidden><article class="card"><header class="ch"><div><h3>Pontos de atenção</h3><p>o que pede ação hoje</p></div></header><div id="atencao"></div></article>
-    <article class="card re-l" id="pRe"><header class="ch re-lh"><div><h3>Reincidências</h3><p id="reNota"></p></div><div class="re-big"><b id="reN">–</b><span id="reBig">fornecimentos</span></div></header>
+    <article class="card re-l" id="pRe"><header class="ch re-lh"><h3>Reincidências</h3><p id="reNota" hidden></p></header><div class="re-big re-bigc"><b id="reN">–</b><span id="reBig">fornecimentos</span></div>
       <div class="re-f"><div class="seg2" id="reFx"></div></div><div id="reH"></div><div class="re-li" id="reT"></div></article></aside>
   <div class="ncab"><div class="rel"><b id="nHora">--:--:--</b><small id="nData"></small><div class="nbv" id="nBv">Ninguém conectado</div></div><div class="marca"><span class="gota"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.5c-3.6 4.4-6.5 8-6.5 11.6a6.5 6.5 0 0 0 13 0C18.5 10.5 15.6 6.9 12 2.5Z" fill="#fff"/><path d="M9 14.5a3 3 0 0 0 3 3" stroke="#0B2545" stroke-width="1.8" stroke-linecap="round"/></svg></span><div class="mt">DATABRICKS<span>INTERLAGOS · GRAJAÚ · EMBU GUAÇU</span></div></div><div class="nst" id="nSt">Databricks<small>atualizado</small></div></div>
   <div class="conn">
@@ -1321,7 +1323,7 @@ $("czGravar").onclick=()=>{const L=czMarcadas();if(!L.length){$("czMsg").textCon
   agendarSalvar();$("czMsg").className="";$("czMsg").textContent=`✔ ${L.length} tratativa(s) gravada(s) no padrão "OS ... - SERVIÇO". Já aparecem em OS e tratativas e na coordenação.`;aplicar();czRender();};
 
 /* ================= reincidências (coluna Qtd OS) ================= */
-let reFx="",reAgr="vez",reSrv="";const RE_INICIO="2026-11-17";
+let reFx="",reAgr="vez",reSrv="";const RE_ABERTOS=new Set();document.addEventListener("toggle",e=>{const d=e.target;if(d&&d.dataset&&d.dataset.reg){d.open?RE_ABERTOS.add(d.dataset.reg):RE_ABERTOS.delete(d.dataset.reg);}},true);const RE_INICIO="2026-11-17";
 const reQn=r=>Number(String(r[I.qtd]??"").replace(",","."))||0;
 // agrupa por fornecimento: reincidências = Qtd OS (a maior das linhas), dias = o mais antigo
 function reGrupos(rows,polo){const M=new Map();for(const x of rows){const r=x.r||x;const q=reQn(r);if(q<2)continue;const f=key(r[I.forn]);if(!f)continue;const d=Number(r[I.dias])||0;
@@ -1348,9 +1350,9 @@ function reRender(){if(!$("pRe"))return;reGuardar();const FXc={"+31 dias":"#C236
   if(reAgr==="srv"&&L.length){const F=new Map();for(const g of L){if(!F.has(g.fam))F.set(g.fam,[]);F.get(g.fam).push(g);}
     const FL=[...F].sort((a,b)=>b[1].length-a[1].length||a[0].localeCompare(b[0],"pt-BR"));
     $("reT").innerHTML=modo+FL.map(([fam,gs])=>{const mx=Math.max(...gs.map(g=>g.q));const n31=gs.filter(g=>g.fx==="+31 dias").length;
-      return `<details class="re-gp re-gs" open><summary><span class="re-gt">${esc(fam)}<em>até ${nf(mx)}x${n31?` · ${nf(n31)} com +31`:""}</em></span><b>${nf(gs.length)}</b><span class="re-gch"></span></summary>${gs.map(g=>rowR(g).replace('<div class="re-r"','<div class="re-r re-rs"')).join("")}</details>`;}).join("");return;}
+      return `<details class="re-gp re-gs"><summary><span class="re-gt">${esc(fam)}<em>até ${nf(mx)}x${n31?` · ${nf(n31)} com +31`:""}</em></span><b>${nf(gs.length)}</b><span class="re-gch"></span></summary>${gs.map(g=>rowR(g).replace('<div class="re-r"','<div class="re-r re-rs"')).join("")}</details>`;}).join("");return;}
   $("reT").innerHTML=L.length?modo+nivs.map((q,i)=>{const gs=L.filter(g=>g.q===q);const lab=i===0&&nivs.length>1?"Mais reincidências":i===nivs.length-1&&nivs.length>1?"Menos reincidências":"";
-    return `<details class="re-gp" open><summary><span class="re-q q${q>=4?4:q}">${nf(q)}x</span><span class="re-gt">${nf(q)} vezes${lab?` <em>${lab}</em>`:""}</span><b>${nf(gs.length)}</b><span class="re-gch"></span></summary>${gs.map(rowR).join("")}</details>`;}).join(""):'<div class="re-vz">Nenhum fornecimento com reincidência nesta planilha.</div>';}
+    return `<details class="re-gp" data-reg="v${q}"${RE_ABERTOS.has("v"+q)?" open":""}><summary><span class="re-q q${q>=4?4:q}">${nf(q)}x</span><span class="re-gt">${nf(q)} vezes${lab?` <em>${lab}</em>`:""}</span><b>${nf(gs.length)}</b><span class="re-gch"></span></summary>${gs.map(rowR).join("")}</details>`;}).join(""):'<div class="re-vz">Nenhum fornecimento com reincidência nesta planilha.</div>';}
 $("pRe").addEventListener("click",e=>{const sv=e.target.closest("[data-resrv]");if(sv){e.stopPropagation();reSrv=sv.dataset.resrv;reRender();return;}const b=e.target.closest("[data-ref]");if(b){e.stopPropagation();reFx=b.dataset.ref;reRender();}},true);
 
 /* ================= escrever DATABRICKS na planilha de trabalho (só Fernanda) ================= */
