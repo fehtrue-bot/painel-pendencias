@@ -311,6 +311,14 @@ body{font-size:15px}
 /* atenção */
 .at{display:flex;flex-direction:column;gap:10px}
 .pa-w{gap:6px}
+.pa-tag.ag{color:#0B4F8A}
+.pa-os{margin:6px 2px 2px;border:1px solid #CFE0EF;border-radius:10px;background:#F4F9FD;overflow:hidden}
+.pa-osh{display:flex;align-items:center;gap:8px;padding:9px 10px}.pa-osh[data-go]{cursor:pointer}.pa-osh[data-go]:hover{background:#E8F2FB}
+.pa-osh span{flex:1;min-width:0}.pa-osh span b{display:block;font-size:13px;color:#0B4F8A}.pa-osh span small{font-size:11px;color:#7A8794}
+.pa-osh strong{font-size:20px;font-weight:800;color:#0B4F8A;font-variant-numeric:tabular-nums}.pa-osh em{font-style:normal;color:#8A99A6;font-weight:700}
+.pa-osl{display:flex;flex-wrap:wrap;gap:4px 12px;padding:7px 10px;border-top:1px solid #DCE8F3;background:#fff}
+.pa-osl span{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:#4A5B6B;cursor:pointer}.pa-osl span:hover{text-decoration:underline}.pa-osl i{width:7px;height:7px;border-radius:50%}.pa-osl b{color:#0B2545}
+
 .pa-bar{display:flex;height:8px;border-radius:5px;overflow:hidden;gap:2px;margin:2px 0 4px}.pa-bar i{display:block;min-width:4px}
 .pa-g{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#7A8794;margin:10px 2px 0}
 .pa{border:1px solid #E3E8EE;border-left:4px solid var(--c);border-radius:10px;background:#fff;overflow:hidden}
@@ -1036,21 +1044,21 @@ function render(){
    // 1) prazos: uma linha por faixa
    const fx={};for(const [k2] of FAIXAS)fx[k2]={sem:0,com:0};for(const x of D){const f=fx[x.r[I.faixa]];if(f)clean(x.t)?f.com++:f.sem++;}
    const barra=`<div class="pa-bar">${FAIXAS.map(([k2])=>{const n=fx[k2].sem+fx[k2].com;return n?`<i style="flex:${n};background:${FXc[k2]}" title="${k2}: ${n}"></i>`:"";}).join("")}</div>`;
+   const cSF={};for(const x of D){const k=sitOS(x);if(!k)continue;const f=x.r[I.faixa];(cSF[f]=cSF[f]||{})[k]=(cSF[f][k]||0)+1;}
+   const oe=S.osExec,bxS=S.baixadas;
+   const painelOS=k2=>{const c=cSF[k2]||{};const nAg=(c.ag||0)+(c["ag?"]||0);const nBx=bxS?(c.bxa||0):0;
+     const it2=[["ex","Já executadas","#23824F"],["sx","Baixadas s/ execução","#6B7785"],["nf","Não está na carteira","#C2362B"]].filter(([k])=>c[k]);
+     if(!nAg&&!it2.length&&!nBx)return "";
+     return `<div class="pa-os"><div class="pa-osh" ${nAg?`data-go='${JSON.stringify({esp:"osab",faixa:k2})}' title="Ver as OS aguardando execução"`:""}><span><b>Aguardando execução</b><small>${oe?`OS aberta na carteira de ${dm(oe.dc)}`:"tratativa com OS aberta"}</small></span><strong>${nf(nAg)}</strong>${nAg?"<em>›</em>":""}</div>${it2.length||nBx?`<div class="pa-osl">${it2.map(([k,l,cor])=>`<span data-go='${JSON.stringify({esp:"os:"+k,faixa:k2})}' title="Ver estas OS"><i style="background:${cor}"></i>${l} <b>${nf(c[k])}</b></span>`).join("")}${nBx?`<span data-go='${JSON.stringify({esp:"bx",faixa:k2})}' title="Ver estas OS"><i style="background:#E6D600"></i>Baixadas (amarelo) <b>${nf(nBx)}</b></span>`:""}</div>`:""}</div>`;};
    let a=`<div class="pa-g">Prazos</div>`;
    for(const [k2,l] of FAIXAS){const f=fx[k2],n=f.sem+f.com;const c31=k2==="+31 dias";const comOS=c31?C31.c31.filter(x=>osDe(x.t)).length:0;
      let corpo=ln({faixa:k2,trat:"sem"},"Sem tratativa",f.sem,"#C2362B")+ln(c31?{esp:"c31"}:{faixa:k2,trat:"com"},"Com tratativa",f.com,"#23824F",c31&&f.com?`${nf(comOS)} com OS aberta · ${nf(f.com-comOS)} sem OS aberta`:"");
      if(c31&&C31.v31.length)corpo+=ln({esp:"v31"},"Viraram +31 hoje",C31.v31.length,"#8E2A22","estavam em 15 a 30 dias ontem");
      if(k2==="15 a 30 dias"&&C31.p31.length){corpo+=ln({esp:"p31"},"Viram +31 em até 7 dias",C31.p31.length,"#E07B24","24 a 30 dias e sem OS aberta");
        const G={};for(const x of C31.p31){const k=tipoTrat(x.t);G[k]=(G[k]||0)+1;}Object.keys(G).sort((a,b)=>(a===""?-1:b===""?1:G[b]-G[a])).forEach(k=>{corpo+=`<div class="pa-l pa-s" data-go='${JSON.stringify({esp:k?"p31t:"+k:"p31s"})}' title="Ver estas OS"><i class="nd"></i><span>↳ ${esc(k?cap1(k):"sem tratativa")}</span><b>${nf(G[k])}</b><em>›</em></div>`;});}
+     corpo+=painelOS(k2);
      const ex=f.sem?`· <span class="pa-tag">${nf(f.sem)} sem tratativa</span>`:`· <span class="pa-tag ok">todas com tratativa</span>`;
-     a+=bloco("fx:"+k2,FXc[k2],l,!n?"nenhuma OS":f.sem?`${nf(f.com)} com tratativa`:"",nf(n),corpo,!n?"":f.sem?ex:'<span class="pa-tag ok">todas com tratativa</span>');}
-   // 2) OS abertas
-   {const cS={};for(const x of D){const k=sitOS(x);if(k)cS[k]=(cS[k]||0)+1;}const nAg=(cS.ag||0)+(cS["ag?"]||0),oe=S.osExec,bx=S.baixadas,nBx=D.filter(x=>baixada(x.os)).length;
-    const agF={};for(const x of D){const k=sitOS(x);if(k==="ag"||k==="ag?"){const f=x.r[I.faixa];agF[f]=(agF[f]||0)+1;}}
-    let corpo=`<div class="agf">${FAIXAS.map(([k2,l])=>`<div class="${agF[k2]?"":"z"}" style="--c:${FXc[k2]}"${agF[k2]?` data-go='${JSON.stringify({esp:"osab",faixa:k2})}'`:""}><b>${nf(agF[k2]||0)}</b><span>${l}</span></div>`).join("")}</div>`;
-    corpo+=[["ex","Já executadas","#23824F","a OS da tratativa foi executada, mas a pendência segue na base"],["sx","Baixadas sem execução","#6B7785",""],["nf","OS não está na carteira","#C2362B","conferir o número da OS na tratativa"]].filter(([k])=>cS[k]).map(([k,l,c,sb])=>ln({esp:"os:"+k},l,cS[k],c,sb)).join("");
-    if(bx&&nBx)corpo+=ln({esp:"bx"},"Baixadas (amarelo na rede)",nBx,"#C9B800","ainda na base de hoje");
-    a+=`<div class="pa-g">OS abertas</div>`+bloco("os","#0B4F8A","Aguardando execução",oe?`OS aberta na carteira de ${dm(oe.dc)}`:"tratativa com OS aberta",nf(nAg),corpo);}
+     {const c=cSF[k2]||{},nAg=(c.ag||0)+(c["ag?"]||0);a+=bloco("fx:"+k2,FXc[k2],l,!n?"nenhuma OS":f.sem?`${nf(f.com)} com tratativa`:"",nf(n),corpo,(!n?"":f.sem?ex:'<span class="pa-tag ok">todas com tratativa</span>')+(nAg?` · <span class="pa-tag ag">${nf(nAg)} aguardando execução</span>`:""));}}
    // 3) hoje
    {const e=hoje.novas!=null?hoje.novas:H.novas,x=hoje.executadas;let corpo="";
     if(H.novas)corpo+=ln({cat:"Novas"},"OS novas hoje",H.novas,"#0B6E99",`${nf(H.comNovas)} já com tratativa`);
