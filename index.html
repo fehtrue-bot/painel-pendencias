@@ -339,6 +339,7 @@ body{font-size:15px}
 .re-r{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 6px;border-top:1px solid #EEF1F4;cursor:pointer;border-radius:8px}.re-r:hover{background:#F2F8FB}
 .re-rt{min-width:0}.re-rt b{display:block;font-size:13px;color:#0B2545;font-variant-numeric:tabular-nums}.re-rt small{display:block;font-size:11px;color:#7A8794;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .re-rf{text-align:right}.re-rf b{display:block;font-size:12.5px;color:var(--c)}.re-rf small{font-size:11px;color:#8A99A6}
+.re-add{cursor:pointer;font-size:12.5px;font-weight:700;color:#00639A;border:1px solid #C9D5DE;border-radius:8px;padding:6px 10px;white-space:nowrap;background:#fff}.re-add:hover{background:#F2F8FB}body:not(.editor) .re-add{display:none}
 .re-c{padding:0;overflow:hidden}.re-hl{display:flex;align-items:center;justify-content:space-between;gap:16px}.re-big{display:flex;align-items:center;gap:10px}.re-big b{font-size:40px;font-weight:800;color:#0B2545;line-height:1;font-variant-numeric:tabular-nums}.re-big span{font-size:12px;color:#6B7A86;line-height:1.25}
 .re-sc{max-height:440px;overflow:auto}.re-t td.mono b{display:block;color:#0B2545}
 .re-hh{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}.re-hd{flex:none}.re-hl2{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8A99A6;margin-right:4px}.re-hd{display:inline-flex;align-items:baseline;gap:5px;background:#F4F7FA;border-radius:8px;padding:4px 9px}.re-hd small{font-size:11px;color:#7A8794}.re-hd b{font-size:13.5px;color:#0B2545}.re-hd em{font-style:normal;font-size:11px;font-weight:700;color:#7A8794}.re-hd em.dn{color:#23824F}.re-hd em.up{color:#C2362B}.re-h{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}.re-h h3{margin:0;font-size:16px}.re-h p{margin:2px 0 0;font-size:12.5px;color:#7A8794}
@@ -680,7 +681,7 @@ body{background:#E8EEF7}
     <div class="kpis" id="kpis"></div>
     <div class="dash" id="blocos">
       <article class="card s12"><header class="ch"><div><h3>Evolução das pendências</h3><p id="reducao"></p></div></header><div class="chart" id="chart"></div><details class="hist"><summary>Ver tabela do histórico</summary><div class="scroll"><table id="tbHist"></table></div></details></article>
-      <article class="card s12"><header class="ch"><div><h3>Evolução das reincidências</h3><p id="reEvoNota"></p></div></header><div class="chart" id="reChart"></div></article>
+      <article class="card s12"><header class="ch"><div><h3>Evolução das reincidências</h3><p id="reEvoNota"></p></div><label class="btn-sm re-add" id="reAddL" title="Suba os Detalhamentos de dias anteriores (com a data no nome) para completar o histórico">＋ Completar histórico<input type="file" id="reAdd" accept=".xlsx,.xls,.csv,.xml,.html" multiple hidden></label></header><div class="chart" id="reChart"></div></article>
       <article class="card s8"><header class="ch"><div><h3>Pendências por serviço</h3><p>quantidade de OS hoje e quanto já tem tratativa</p></div><div class="leg2"><span style="--c:#2FA36B">Com tratativa</span><span style="--c:#F3C46B">Sem tratativa</span></div></header><div id="tbServ"></div></article>
       <article class="card s4"><header class="ch"><div><h3>Tempo de atraso</h3><p id="faixaNota">distribuição das OS por faixa</p></div></header><div id="tbFaixa"></div></article>
       <article class="card s12" id="pNovasMes"><header class="ch"><div><h3 id="nmTit">Entradas × saídas no mês</h3><p id="nmNota">OS que entraram e que saíram em cada dia do mês · começa de novo todo dia 1º</p></div><div class="nmres" id="nmRes"></div></header><div class="chart" id="nmChart"></div></article>
@@ -1154,14 +1155,14 @@ function render31(c){const L=c.p31,T=[["s","Sem tratativa","#C2362B"],["v","Para
     h+=`<tr><td class="q">${d===1?"Amanhã":"Em "+d+" dias"}</td>${T.map(([k,,cor])=>cel(Ld.filter(x=>x.tipo31===k).length,cor,"p31"+k+"d"+d)).join("")}<td class="r"><span class="nb3 tot"${` data-go='${JSON.stringify({esp:"p31d"+d})}'`}>${Ld.length}</span></td></tr>`;}
   h+=`<tr class="tt"><td>Total</td>${T.map(([k,,cor])=>cel(n(k),cor,"p31"+k)).join("")}<td class="r"><span class="nb3 tot" data-go='${JSON.stringify({esp:"p31"})}'>${L.length}</span></td></tr></tbody></table></div>`;
   $("p31box").innerHTML=h;}
-function renderReEvo(){const el=$("reChart");if(!el)return;try{reGuardar();}catch(e){}const H=(S&&S.reHist)||{};const ds=Object.keys(H).filter(d=>S.linhas&&S.linhas[d]).sort();
+function renderReEvo(){const el=$("reChart");if(!el)return;try{reGuardar();}catch(e){}const H=(S&&S.reHist)||{};const ds=Object.keys(H).sort();
   if(!ds.length){el.innerHTML='<div class="empty">Ainda sem dias com a planilha completa guardada.</div>';$("reEvoNota").textContent="";return;}
   const pts=ds.map(d=>({lab:dm(d),v:H[d].n,v31:H[d].n31||0}));const a0=pts[0].v,a1=pts[pts.length-1].v,df=a1-a0;
   $("reEvoNota").innerHTML=`fornecimentos com reincidência (Qtd OS 2 ou mais) · ${pts[0].lab} ${nf(a0)} → hoje ${nf(a1)}${pts.length>1?(df?` · <b style="color:${df<0?"#23824F":"#C2362B"}">${df>0?"+":"−"}${nf(Math.abs(df))}</b> ${df<0?"a menos":"a mais"}`:" · sem mudança"):""}`;
-  const W=Math.max(1200,pts.length*110),Hh=300,pl=44,pr=12,pt=30,pb=34,max=Math.max(...pts.map(p=>p.v||0))*1.15||1,bw=(W-pl-pr)/pts.length,y=v=>pt+(Hh-pt-pb)*(1-v/max);
+  const W=Math.max(900,pts.length*62),Hh=190,pl=36,pr=10,pt=24,pb=28,max=Math.max(...pts.map(p=>p.v||0))*1.18||1,bw=(W-pl-pr)/pts.length,y=v=>pt+(Hh-pt-pb)*(1-v/max);
   let g="";const stp=Math.max(5,Math.ceil(max/4/5)*5);for(let v=0;v<=max;v+=stp){const yy=y(v);g+=`<line x1="${pl}" x2="${W-pr}" y1="${yy}" y2="${yy}" stroke="#E6ECF1" stroke-dasharray="${v===0?"0":"3 4"}"/><text x="${pl-8}" y="${yy+4}" text-anchor="end" font-size="11" fill="#7A8994">${nf(v)}</text>`;}
-  pts.forEach((p,i)=>{const x=pl+i*bw+bw*.18,w=bw*.64,last=i===pts.length-1;const h31=Hh-pb-y(p.v31);g+=`<rect x="${x}" y="${y(p.v)}" width="${w}" height="${Hh-pb-y(p.v)}" rx="6" fill="${last?"url(#gReU)":"url(#gRe)"}"/>${p.v31?`<rect x="${x}" y="${Hh-pb-h31}" width="${w}" height="${h31}" fill="${last?"#5C0F0A":"#C2362B"}" opacity="${last?".35":".28"}"><title>${p.v31} com +31 dias</title></rect>`:""}<text x="${x+w/2}" y="${y(p.v)-8}" text-anchor="middle" font-size="15" font-weight="700" fill="${last?"#A3271C":"#14212B"}">${nf(p.v)}</text><text x="${x+w/2}" y="${Hh-10}" text-anchor="middle" font-size="13" fill="#5E6E7B" font-weight="${last?"700":"400"}">${p.lab}</text>`;});
-  el.innerHTML=`<div class="scroll"><svg viewBox="0 0 ${W} ${Hh}" style="min-width:560px" role="img" aria-label="Reincidências por dia"><defs><linearGradient id="gRe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6B98E"/><stop offset="1" stop-color="#FBE0CC"/></linearGradient><linearGradient id="gReU" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E0663A"/><stop offset="1" stop-color="#A3271C"/></linearGradient></defs>${g}</svg></div><p class="note" style="margin:6px 4px 0">A parte vermelha clara no pé de cada barra são os fornecimentos com reincidência há mais de 31 dias.</p>`;}
+  pts.forEach((p,i)=>{const w=Math.min(bw*.64,46),x=pl+i*bw+(bw-w)/2,last=i===pts.length-1;const h31=Hh-pb-y(p.v31);g+=`<rect x="${x}" y="${y(p.v)}" width="${w}" height="${Hh-pb-y(p.v)}" rx="6" fill="${last?"url(#gReU)":"url(#gRe)"}"/>${p.v31?`<rect x="${x}" y="${Hh-pb-h31}" width="${w}" height="${h31}" fill="${last?"#5C0F0A":"#C2362B"}" opacity="${last?".35":".28"}"><title>${p.v31} com +31 dias</title></rect>`:""}<text x="${x+w/2}" y="${y(p.v)-6}" text-anchor="middle" font-size="12" font-weight="700" fill="${last?"#A3271C":"#14212B"}">${nf(p.v)}</text><text x="${x+w/2}" y="${Hh-9}" text-anchor="middle" font-size="11" fill="#5E6E7B" font-weight="${last?"700":"400"}">${p.lab}</text>`;});
+  el.innerHTML=`<div class="scroll"><svg viewBox="0 0 ${W} ${Hh}" style="min-width:560px;max-height:220px;width:100%" role="img" aria-label="Reincidências por dia"><defs><linearGradient id="gRe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6B98E"/><stop offset="1" stop-color="#FBE0CC"/></linearGradient><linearGradient id="gReU" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E0663A"/><stop offset="1" stop-color="#A3271C"/></linearGradient></defs>${g}</svg></div><p class="note" style="margin:6px 4px 0">A parte vermelha clara no pé de cada barra são os fornecimentos com reincidência há mais de 31 dias.</p>`;}
 function renderHist(){try{renderReEvo();}catch(e){console.warn(e);}
   const ini=S.config.inicio;const asc=S.dias.filter(d=>d.total!=null).sort((a,b)=>a.data<b.data?-1:1);
   const pts=(ini?[{lab:"Início",total:ini}]:[]).concat(asc.map(d=>({lab:dm(d.data),total:d.total})));
@@ -1345,13 +1346,22 @@ function reIdx(){const ds=Object.keys(S.linhas||{}).sort();const k=ds.join(",")+
   REIDX=M;REIDXk=k;return M;}
 function reInfo(r){const q=reQn(r);const x=reIdx().get(key(r[I.forn]));if(q>=2)return `<b class="re-sim">Sim · ${nf(q)} vezes</b> (Qtd OS hoje)${x&&x.priR?` · reincidente desde ${dm(x.priR)}, em ${nf(x.diasR)} ${x.diasR===1?"dia":"dias"} da base`:""}${x&&x.max>q?` · já chegou a ${nf(x.max)} vezes`:""}`;
   if(x&&x.diasR)return `Hoje não (Qtd OS ${nf(q)}) · já teve reincidência em ${nf(x.diasR)} ${x.diasR===1?"dia":"dias"} da base, desde ${dm(x.priR)}, até ${nf(x.max)} vezes`;return `Não · Qtd OS ${nf(q||0)}`;}
+function reMarcar(d,rows){if(!S||!d)return;S.reHist=S.reHist||{};const G=reGrupos(rows||[]);S.reHist[d]={n:G.length,n31:G.filter(g=>g.fx==="+31 dias").length};}
+// completar o histórico com planilhas antigas (Detalhamento de dias anteriores)
+async function reCompletar(files){const out=[],erros=[];for(const f of files){try{const md=f.name.match(/(\d{4})-(\d{2})-(\d{2})/)||f.name.match(/(\d{2})[._-](\d{2})[._-](\d{4})/);
+    if(!md){erros.push(f.name+" (sem data no nome)");continue;}const d=md[1].length===4?`${md[1]}-${md[2]}-${md[3]}`:`${md[3]}-${md[2]}-${md[1]}`;
+    const wb=await abrirPlanilha(f);const aoa=await wb.ler(wb.nomes[0]);const hi=cabecalho(aoa||[]);if(hi<0){erros.push(f.name+" (sem cabeçalho)");continue;}
+    const hdr=aoa[hi].map(c=>U(clean(c)));const idx=COLS.map(n=>hdr.indexOf(U(n)));if(idx[I.qtd]<0||idx[I.forn]<0){erros.push(f.name+" (sem Qtd OS)");continue;}
+    const rows=aoa.slice(hi+1).filter(r=>r&&r.some(c=>c!==""&&c!=null)).map(r=>idx.map((j,k)=>j<0?"":k===I.data?excelData(r[j]):txtCel(r[j]))).filter(r=>!r[I.atc]||S.config.atcs.includes(String(r[I.atc]).replace(/^0+/,"")));
+    reMarcar(d,rows);out.push(d);}catch(e){erros.push(f.name+" ("+e.message+")");}}
+  agendarSalvar();render();return {out,erros};}
 function reGuardar(){if(!S)return;S.reHist=S.reHist||{};let mud=false;for(const d of Object.keys(S.linhas||{})){if(d<RE_INICIO)continue;const G=reGrupos(S.linhas[d]||[]);const st={n:G.length,n31:G.filter(g=>g.fx==="+31 dias").length};const v=S.reHist[d];if(!v||v.n!==st.n||v.n31!==st.n31){S.reHist[d]=st;mud=true;}}if(mud&&editor)agendarSalvar();}
 function reRender(){if(!$("pRe"))return;reGuardar();const FXc={"+31 dias":"#C2362B","15 a 30 dias":"#E07B24","7 a 15 dias":"#C9A227","até 7 dias":"#2FA36B"};
   const G=reGrupos(derivar());
   const cF={};for(const g of G)cF[g.fx]=(cF[g.fx]||0)+1;
   $("reFx").innerHTML=`<button type="button" data-ref="" aria-pressed="${!reFx}">Todos <b>${nf(G.length)}</b></button>`+FAIXAS.filter(([k])=>cF[k]).map(([k,l])=>`<button type="button" data-ref="${k}" aria-pressed="${reFx===k}"><i class="re-d" style="background:${FXc[k]}"></i>${l.replace(" dias","")} <b>${nf(cF[k])}</b></button>`).join("");
   // histórico compacto
-  {const H=(S&&S.reHist)||{};const ds=Object.keys(H).filter(d=>d>=RE_INICIO&&S.linhas&&S.linhas[d]).sort();
+  {const H=(S&&S.reHist)||{};const ds=Object.keys(H).filter(d=>d>=RE_INICIO).sort();
    $("reH").innerHTML=ds.length?`<div class="re-hh"><span class="re-hl2">Histórico</span>${ds.map((d,i)=>{const v=H[d].n,p=i?H[ds[i-1]].n:null,df=p==null?0:v-p;return `<span class="re-hd" title="${dm(d)}: ${nf(v)} fornecimentos com reincidência · ${nf(H[d].n31)} com +31"><small>${dm(d)}</small><b>${nf(v)}</b>${p==null?"":`<em class="${df<0?"dn":df>0?"up":""}">${df<0?"▼":df>0?"▲":"="}${df?Math.abs(df):""}</em>`}</span>`;}).join("")}</div>`:"";const hh=$("reH").querySelector(".re-hh");if(hh)hh.scrollLeft=hh.scrollWidth;}
   const SRV=["Vazamento de água","Obstrução","Hidro vazando","Outros"];const cS={};for(const g of G.filter(g=>!reFx||g.fx===reFx))cS[g.fam]=(cS[g.fam]||0)+1;
   const totS=Object.values(cS).reduce((a,b)=>a+b,0);
@@ -1371,6 +1381,8 @@ function reRender(){if(!$("pRe"))return;reGuardar();const FXc={"+31 dias":"#C236
     return `<details class="re-gp" data-reg="v${q}"${RE_ABERTOS.has("v"+q)?" open":""}><summary><span class="re-q q${q>=4?4:q}">${nf(q)}x</span><span class="re-gt">${nf(q)} vezes${lab?` <em>${lab}</em>`:""}</span><b>${nf(gs.length)}</b><span class="re-gch"></span></summary>${gs.map(rowR).join("")}</details>`;}).join(""):'<div class="re-vz">Nenhum fornecimento com reincidência nesta planilha.</div>';}
 $("pRe").addEventListener("click",e=>{const sv=e.target.closest("[data-resrv]");if(sv){e.stopPropagation();reSrv=sv.dataset.resrv;reRender();return;}const b=e.target.closest("[data-ref]");if(b){e.stopPropagation();reFx=b.dataset.ref;reRender();}},true);
 
+$("reAdd").addEventListener("change",async e=>{const fs=[...e.target.files];if(!fs.length)return;$("reEvoNota").textContent="Lendo "+fs.length+" planilha(s)…";const r=await reCompletar(fs);e.target.value="";
+  msg(`Histórico de reincidências: ${r.out.length} ${r.out.length===1?"dia incluído":"dias incluídos"}${r.out.length?" ("+r.out.sort().map(dm).join(", ")+")":""}${r.erros.length?" · não li: "+r.erros.join("; "):""}.`);});
 /* ================= escrever DATABRICKS na planilha de trabalho (só Fernanda) ================= */
 let DBW=null,dbArqF=null;
 async function unzipTodos(buf){const u=new Uint8Array(buf),v=new DataView(buf);let e=-1;
@@ -1640,7 +1652,7 @@ async function importarRede(wb,nome){
       const d=dataRede||(S.dias.length?S.dias.slice().sort((a,b)=>a.data<b.data?1:-1)[0].data:null)||(()=>{const x=new Date();x.setDate(x.getDate()-1);return new Date(x.getTime()-x.getTimezoneOffset()*60000).toISOString().slice(0,10);})();
       const old=S.dias.find(x=>x.data===d)||{};
       S.dias=S.dias.filter(x=>x.data!==d).concat([Object.assign({},old,{data:d,total:rows.length,slim:rows.map(r=>[key(r[I.os]),catBase(r),r[I.faixa],poloDe(r),key(r[I.pde])]),enviadoEm:Date.now(),fonte:nome})]);
-      S.linhas[d]=rows;nb=` · base de ${dm(d)} da planilha guardada como comparação`;
+      S.linhas[d]=rows;reMarcar(d,rows);nb=` · base de ${dm(d)} da planilha guardada como comparação`;
     }
   }
   const nbx=Object.keys(S.baixadas.os).length;
@@ -1692,7 +1704,7 @@ $("upSalvar").onclick=()=>{
     const saidas=pendRede.rows.filter(x=>!setN.has(x[0]));
     meta.cruz={arquivo:pendRede.nome,total:rk.size,cont,contTrat,novas:novasR,saidas,em:Date.now()};pendRede=null;}
   else{const ant=S.dias.find(d=>d.data===dt);if(ant&&ant.cruz)meta.cruz=ant.cruz;}
-  S.dias=S.dias.filter(d=>d.data!==dt).concat([meta]);S.linhas[dt]=rows;
+  S.dias=S.dias.filter(d=>d.data!==dt).concat([meta]);S.linhas[dt]=rows;reMarcar(dt,rows);
   if(S.config.inicio==null){S.config.inicio=rows.length;S.config.em=Date.now();}
   podar(S);upload=null;$("upload").hidden=true;$("intro").hidden=true;aplicar();salvar();
   const czm=meta.cruz&&meta.cruz.em>Date.now()-60000?` · cruzado com a planilha da rede: ${nf(meta.cruz.contTrat.length)} já tratadas continuam, ${nf(meta.cruz.saidas.length)} saíram`:"";
